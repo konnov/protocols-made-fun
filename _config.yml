@@ -1,10 +1,12 @@
-remote_theme: pages-themes/architect@v0.2.0
-plugins:
-- jekyll-remote-theme
+theme: minima
+#remote_theme: pages-themes/architect@v0.2.0
+#plugins:
+#- jekyll-remote-theme
 author: Igor Konnov
 title: Protocols Made Fun
 description: All things about protocol specification, testing, and verification
 show_downloads: false
+github.is_project_page: false
 google_analytics: G-BVH4V6TQV9
 domain: konnov.github.io
 url: https://konnov.github.io
