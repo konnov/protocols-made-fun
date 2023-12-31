@@ -1,4 +1,5 @@
 ---
+layout: post
 title: "Setting up this blog"
 date: 2023-12-07
 ---
