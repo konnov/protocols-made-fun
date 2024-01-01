@@ -11,3 +11,18 @@ google_analytics: G-BVH4V6TQV9
 domain: konnov.github.io
 url: https://konnov.github.io
 baseurl: /protocols-made-fun/
+twitter_username: k0nn0v
+github_username:  konnov
+plugins:
+  - jekyll-feed
+exclude:
+  - .sass-cache/
+  - .jekyll-cache/
+  - gemfiles/
+  - Gemfile
+  - Gemfile.lock
+  - node_modules/
+  - vendor/bundle/
+  - vendor/cache/
+  - vendor/gems/
+  - vendor/ruby/
