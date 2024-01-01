@@ -34,3 +34,4 @@ gem "http_parser.rb", "~> 0.6.0", :platforms => [:jruby]
 gem "jekyll", "~> 3.9"
 
 gem "webrick", "~> 1.8"
+gem "jemoji"

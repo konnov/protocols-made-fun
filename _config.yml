@@ -15,6 +15,7 @@ twitter_username: k0nn0v
 github_username:  konnov
 plugins:
   - jekyll-feed
+  - jemoji
 exclude:
   - .sass-cache/
   - .jekyll-cache/
