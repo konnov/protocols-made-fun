@@ -22,13 +22,13 @@ func main() {
 
 Quint highlighting is working:
 
-<pre><code class="quint">
+```quint
 module test {
   var n: int
-  action init = n' = 0
-  action step = n' = n + 1
+  action init = { n' = 0 }
+  action step = { n' = n + 1 }
 }
-</code></pre>
+```
 
 Mermaid is not working:
 
