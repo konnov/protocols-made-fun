@@ -5,3 +5,5 @@ date: 2023-12-07
 ---
 
 Not much to see here. Simply setting up the blog. Stay tuned.
+
+Trying some math: $b \lor \neg b$.
