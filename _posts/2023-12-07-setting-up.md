@@ -17,3 +17,15 @@ func main() {
     fmt.Println("hello world")
 }
 </code></pre>
+
+```mermaid
+stateDiagram-v2
+    direction LR
+    [*] --> Still
+    Still --> [*]
+
+    Still --> Moving
+    Moving --> Still
+    Moving --> Crash
+    Crash --> [*]
+```
