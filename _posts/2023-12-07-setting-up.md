@@ -6,9 +6,11 @@ date: 2023-12-07
 
 Not much to see here. Simply setting up the blog. Stay tuned.
 
-Trying some math: $b \lor \neg b$.
+Math mode is working:
 
-Trying code highlighting:
+$b \lor \neg b$.
+
+Go highlighting is working:
 
 <pre><code class="go">
 package main
@@ -17,6 +19,18 @@ func main() {
     fmt.Println("hello world")
 }
 </code></pre>
+
+Quint highlighting is working:
+
+<pre><code class="quint">
+module test {
+  var n: int
+  action init = n' = 0
+  action step = n' = n + 1
+}
+</code></pre>
+
+Mermaid is not working:
 
 ```mermaid
 stateDiagram-v2
