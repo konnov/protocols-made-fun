@@ -1,0 +1,6 @@
+stateDiagram
+    direction LR
+    [*] --> Loop: init
+    Loop --> Loop: loop
+    Loop --> Done: afterLoop
+    Done --> [*]
