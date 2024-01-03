@@ -1,37 +1,47 @@
 <!-- see: https://my1396.github.io/Econ-Study/2023/10/12/Mathjax.html -->
 
-<!-- inline config -->
-<script>
-  MathJax = {
-    tex: {
-      inlineMath: [['$', '$'], ['\\(', '\\)']],
-      macros: {
-        bold: ["{\\bf #1}", 1],
-        tla: ["{\\textsf{TLA}^+}", 0],
-      }
-    },
-    svg: {
-      fontCache: 'global'
-    },
-  };
-</script>
+{%- if page.math -%}
+  <!-- inline config -->
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
+        macros: {
+          bold: ["{\\bf #1}", 1],
+          tla: ["{\\textsf{TLA}^+}", 0],
+        }
+      },
+      svg: {
+        fontCache: 'global'
+      },
+    };
+  </script>
 
-<!-- load MathJax -->
-<script type="text/javascript" id="MathJax-script" async
-  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
-</script>
+  <!-- load MathJax -->
+  <script type="text/javascript" id="MathJax-script" async
+    src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+  </script>
+{%- endif -%}
 
-<!-- load highlightjs -->
-<link rel="stylesheet"
-  href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/go.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/typescript.min.js"></script>
-<!-- minified:
-https://github.com/informalsystems/quint/blob/main/editor-plugins/highlight.js/quint.js
--->
-<script>
-function quintHljs(hljs){const n={keyword:['module','import','from','export','as','type','assume','const','var','val','def','pure','nondet','action','temporal','run','all','any','if','else'],literal:['false','true','Bool','Nat','Int',],operator:['=>','<=','>','<','=','!=','.','*','+','-','/','%','^','not','or','and','implies','iff',],type:['int','bool','str','Set','Map','List'],punctuation:[',',';','(',')','{','}','[',']'],};return{name:'Quint',case_insensitive:!1,keywords:n,contains:[{scope:'string',begin:'"',end:'"'},{scope:'number',begin:'-?(0x[0-9a-fA-F]([0-9a-fA-F]|_[0-9a-fA-F])*|0|[1-9]([0-9]|_[0-9])*)',},hljs.C_LINE_COMMENT_MODE,hljs.C_BLOCK_COMMENT_MODE,],}}
-hljs.registerLanguage('quint',quintHljs)
-</script>
-<script>hljs.highlightAll();</script>
+{%- if page.go or page.typescript or page.quint -%}
+  <!-- load highlightjs -->
+  <link rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  {%- if page.go -%}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/go.min.js"></script>
+  {%- endif -%}
+  {%- if page.typescript -%}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/typescript.min.js"></script>
+  {%- endif -%}
+  {%- if page.quint -%}
+    <!-- minified:
+    https://github.com/informalsystems/quint/blob/main/editor-plugins/highlight.js/quint.js
+    -->
+    <script>
+    function quintHljs(hljs){const n={keyword:['module','import','from','export','as','type','assume','const','var','val','def','pure','nondet','action','temporal','run','all','any','if','else'],literal:['false','true','Bool','Nat','Int',],operator:['=>','<=','>','<','=','!=','.','*','+','-','/','%','^','not','or','and','implies','iff',],type:['int','bool','str','Set','Map','List'],punctuation:[',',';','(',')','{','}','[',']'],};return{name:'Quint',case_insensitive:!1,keywords:n,contains:[{scope:'string',begin:'"',end:'"'},{scope:'number',begin:'-?(0x[0-9a-fA-F]([0-9a-fA-F]|_[0-9a-fA-F])*|0|[1-9]([0-9]|_[0-9])*)',},hljs.C_LINE_COMMENT_MODE,hljs.C_BLOCK_COMMENT_MODE,],}}
+    hljs.registerLanguage('quint',quintHljs)
+    </script>
+  {%- endif -%}
+  <script>hljs.highlightAll();</script>
+{%- endif -%}
