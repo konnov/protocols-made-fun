@@ -5,12 +5,12 @@
  * Igor Konnov, 2024.
  */
 module prng1 {
-    type PC = | Loop | Done
+    type PC = | InLoop | Done
 
     var pc: PC
 
     action init: bool = {
-        pc' = Loop
+        pc' = InLoop
     }
 
     action step = any {
@@ -19,12 +19,12 @@ module prng1 {
     }
 
     action loop: bool = all {
-        pc == Loop,
-        pc' = Loop,
+        pc == InLoop,
+        pc' = InLoop,
     }
 
     action postLoop: bool = all {
-        pc == Loop,
+        pc == InLoop,
         pc' = Done,
     }
 }

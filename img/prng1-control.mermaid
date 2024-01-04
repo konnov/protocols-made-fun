@@ -1,6 +1,7 @@
+%% mmdc -i prng1-control.mermaid -o prng1-control.png -b transparent
 stateDiagram
     direction LR
-    [*] --> Loop: init
-    Loop --> Loop: loop
-    Loop --> Done: afterLoop
+    [*] --> InLoop: init
+    InLoop --> InLoop: loop
+    InLoop --> Done: afterLoop
     Done --> [*]
