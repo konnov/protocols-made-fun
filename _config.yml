@@ -18,6 +18,7 @@ plugins:
   - jekyll-feed
   - jemoji
 exclude:
+  - _scripts
   - .sass-cache/
   - .jekyll-cache/
   - gemfiles/
