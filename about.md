@@ -3,6 +3,9 @@ layout: page
 title: About
 ---
 
+Keep hearing about PMF from your manager and you don't know what it is? PMF is
+Protocols Made Fun. You are welcome!
+
 This is Igor Konnov's blog about protocol specification, testing, and
 verification. Licensed under [CC BY
 4.0](https://creativecommons.org/licenses/by/4.0/) :recycle:. You can find more
