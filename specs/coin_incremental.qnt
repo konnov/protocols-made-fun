@@ -99,7 +99,7 @@ module coin_incremental {
                 require(isUInt(newReceiverBal)),
                 balances' =
                     balances
-                    .put(sender, newSenderBal)
+                    .set(sender, newSenderBal)
                     .put(receiver, newReceiverBal)
             }
         },
