@@ -90,7 +90,7 @@ module coin_incremental {
         if (sender == receiver) {
             balances' = balances
         } else {
-            val newSenderBal = balances.getOrElse(sender, 0) - amount
+            val newSenderBal = balances.get(sender) - amount
             val newReceiverBal = balances.getOrElse(receiver, 0) + amount
             all {
                 // Again, Solidity does an automatic overflow test.
