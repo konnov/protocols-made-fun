@@ -20,12 +20,14 @@ some typesetting to make it work in Markdown. These comments are shown in
 *italic*, or in $\tla{}$ comments such as:
 
 ```tlaplus
-original text \* comment
+original text   \* I: my comment
 ```
 
 In addition to that, since it is not easy to combine math and code
 highlighting, I am using the ASCII typesetting as well as the Unicode
-typesetting, as produced by [tlauc][].
+typesetting, as produced by [tlauc][]. Finally, Markdown is not nearly as
+good as LaTeX. I could not reproduce the last section of [TLA+ Summary][],
+which maps ASCII operators to their LaTeX presentation.
 
 ## Module-Level Constructs
 
@@ -135,22 +137,22 @@ required.)*
 ### Logic
 
 ```tlaplus
-p /\ q    \* p and q
+p /\ q    \* I: p and q
 p ∧ q
-p \/ q    \* p or q
+p \/ q    \* I: p or q
 p ∨ q
-~p        \* not p
+~p        \* I: not p
 ¬p
-p => q    \* p implies q
+p => q    \* I: p implies q
 p ⇒ q
-p <=> q   \* p if and only if q
+p <=> q   \* I: p if and only if q
 p ⇔  q
 TRUE
 FALSE
-BOOLEAN   \* the set { TRUE, FALSE }
-\A x \in S: P       \* forall x in S: P, see Note (1) below
+BOOLEAN             \* the set { TRUE, FALSE }
+\A x \in S: P       \* I: forall x in S: P, see Note (1) below
 ∀ x ∈ S: P
-\E x \in S: P       \* exists x in S: P, see Note (1) below
+\E x \in S: P       \* I: exists x in S: P, see Note (1) below
 ∃ x ∈ S: P
 CHOOSE x \in S: P   \* An x in S satisfying P
 ```
@@ -176,7 +178,7 @@ S \intersect T
 S ∩ T
 S \subseteq T
 S ⊆ T
-S \ T   \* set difference
+S \ T                   \* set difference
 { e_1, ..., e_n }       \* Set consisting of elements e_i
 { x \in S: p }          \* Set of elements x in S satisfying p, see Note (2) below
 { x ∈ S: p }
@@ -229,10 +231,13 @@ S_1 × … × S_n
 ## Miscellaneous Constructs
 
 ```tlaplus
-IF p THEN e_1 else e_2    \* e_1 if p is true else e_2
+IF p THEN e_1 else e_2
+            \* e_1 if p is true else e_2
+
 CASE p_1 -> e_1 [] ... [] p_n -> e_n
 CASE p_1 → e_1 □ … □ p_n → e_n
             \* Some e_i such that p_i is true
+
 CASE p_1 -> e_1 [] … [] p_n -> e_n [] OTHER -> e
 CASE p_1 → e_1 □ … □ p_n → e_n □ OTHER → e
             \* Some e_i such that p_i is true, or e if all p_i are false
@@ -283,6 +288,109 @@ SF_e(A)   \* Strong fairness for action A
 F ~> G    \* F leads to G
 F ↝ G
 ```
+
+## User-Definable Operator Symbols
+
+*We are using the ASCII notation. To see a nice typesetting of these operators,
+check the PDF version in [TLA+ Summary][]*.
+
+### Infix Operators
+
+```tlaplus
++         -     *        /        \o      ++
+\div      %     ^        ..       ...     --
+(+)       (-)   (\X)     (/)      (.)     **
+<         >     <=       >=       \sqcap  //
+\prec     \succ \preceq  \succeq  \sqcup  ^^
+\ll       \gg   <:       :>       &       &&
+                                  |       %%
+\sqsubset \sqsupset \sqsubseteq \sqsupseteq
+\subset   \supset               \supseteq
+                                \star     @@
+|-        -|    |=       =|     \bullet   ##
+~       \simeq  \approx  \cong    $       $$
+\bigcirc  ::=   \asymp  \doteq    ??      !!
+\propto   \wr   \uplus
+```
+
+Some of these operators are defined in the standard modules:
+
+ - `Naturals`, `Integers`, `Reals` define:
+    `+`, `-`, `*`, `\div`, `%`, `^`, `..`, `<`, `>`, `<=`, `>=`
+ - `Reals` defines: `/`
+ - `Sequences` defines: `\o`
+ - `Bags` defines: `(+)`, `(-)`, `\sqsubseteq`
+ - `TLC` defines: `:>`, `@@`
+
+### Postfix Operators
+
+```tlaplus
+^+    ^*    ^#
+```
+
+## Operators Defined in Standard Modules
+
+**Module** $Naturals$
+
+```tlaplus
++     -   *       ^   ..    Nat
+\div  %   <= =>   <   >
+```
+
+Note that $Naturals$ defines only infix `-`.
+
+**Module** $Integers$
+
+```tlaplus
++     -   *       ^   ..    Nat
+\div  %   <= =>   <   >     Int
+```
+
+**Module** $Reals$
+
+```tlaplus
++     -   *   /   ^   ..    Nat   Real
+\div  %   <= =>   <   >     Int   Infinity
+```
+
+**Module** $Sequences$
+
+```tlaplus
+\o      Head    SelectSeq   SubSeq
+Append  Len     Seq         Tail
+```
+
+**Module** $FiniteSets$
+
+```tlaplus
+IsFiniteSet   Cardinality
+```
+
+**Module** $Bags$
+
+```tlaplus
+(+)             BagIn     CopiesIn    SubBag
+(-)             BagOfAll  EmptyBag
+\sqsubseteq     BagToSet  IsABag
+BagCardinality  BagUnion  SetToBag
+```
+
+**Module** $RealTime$
+
+```tlaplus
+RTBound   RTNow   \* declared to be a variable
+```
+
+**Module TLC**
+
+```tlaplus
+:>        @@    Print   Assert    JavaTime  Permutations
+SortSeq
+```
+
+## ASCII Representation of Typeset Symbols
+
+*Please check [TLA+ Summary][]. This is too much for Markdown.*
 
 
 [highlightjs]: https://highlightjs.org/
