@@ -22,7 +22,13 @@ from:
    * Thomas Pani: Informal Systems (Austria), 2022-2023.
    * For details, see the [Quint License][] == [Apache 2.0][].
 
+ - [Apalache][] that was developed at TU Wien, Inria Nancy, Interchain
+   Foundation, and Informal Systems. See the [Apalache License][] ==  [Apache
+   2.0][] for details.
+
 [Quint]: https://github.com/informalsystems/quint
 [Quint License]: https://github.com/informalsystems/quint/blob/main/LICENSE
+[Apalache]: https://github.com/informalsystems/apalache
+[Apalache License]: https://github.com/informalsystems/apalache/blob/main/LICENSE
 [Apache 2.0]: https://www.apache.org/licenses/LICENSE-2.0
 [My Webpage]: https://konnov.github.io/
