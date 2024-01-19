@@ -20,7 +20,9 @@ some typesetting to make it work in Markdown. These comments are shown in
 *italic*, or in $\tla{}$ comments such as:
 
 ```tlaplus
-original text   \* I: my comment
+original text   \* I: my single-line comment
+  (* or
+     in a multiline comment *)  
 ```
 
 In addition to that, since it is not easy to combine math and code
@@ -121,7 +123,7 @@ current module.
 LOCAL def
 ```
 
-Makes the definition(s) of $def$ (which may be a definition or an `INSTANCE`
+Makes the definition(s) of `def` (which may be a definition or an `INSTANCE`
 statement) local to the current module, thereby not obtained when extending or
 instantiating the module.
 
@@ -198,8 +200,10 @@ UNION S                 \* Union of all elements of S
 ```tlaplus
 f[e]                    \* Function application
 DOMAIN f                \* Domain of function f
-[x ∈ S ↦ e]             \* Function f such that f[x] = e for x ∈ S, see Note (1) above
-[S → T]                 \* Set of functions f with f[x] ∈ T for x ∈ S
+[x \in S |-> e]         \* Function f such that f[x] = e for x ∈ S, see Note (1) above
+[x ∈ S ↦ e]
+[S -> T]                \* Set of functions f with f[x] ∈ T for x ∈ S
+[S → T]
 [f EXCEPT ![e_1] = e_2] \* Function g equal to f except g[e_1] = e_2, see Note (3) below
 ```
 
@@ -231,7 +235,7 @@ S_1 × … × S_n
 ## Miscellaneous Constructs
 
 ```tlaplus
-IF p THEN e_1 else e_2
+IF p THEN e_1 ELSE e_2
             \* e_1 if p is true else e_2
 
 CASE p_1 -> e_1 [] ... [] p_n -> e_n
@@ -269,7 +273,7 @@ LET d_1 ≜ e_1 ... d_n ≜ e_n IN e
 
 ```tlaplus
 e'            \* The value of e in the final state of a step
-[A]_e         \* A ∨  (e' = e)
+[A]_e         \* A ∨ (e' = e)
 <A>_e         \* A ∧ (e' ≠ e)
 ENABLED A     \* An A step is possible
 UNCHANGED e   \* e' = e
