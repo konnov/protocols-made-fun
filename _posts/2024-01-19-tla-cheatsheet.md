@@ -388,6 +388,53 @@ RTBound   RTNow   \* declared to be a variable
 SortSeq
 ```
 
+## Precedence Ranges of Operators
+
+The relative precedence of two operators is unspecified if their ranges
+overlap. Left-associative operators are indicated by (L).
+
+**Prefix Operators**
+
+```tlaplus
+~         4-4     []    4-15    UNION   8-8
+ENABLED   4-15    <>    4-15    DOMAIN  9-9
+UNCHANGED 4-15  SUBSET  8-8       -     12-12
+```
+
+**Infix Operators**
+
+```tlaplus
+=>      1-1      <=         5-5       <:         7-7        (-)       11-11 (L)
+-+->    2-2      \ll        5-5       \          8-8        -         11-11 (L)
+<=>     2-2      \prec      5-5       \union     8-8 (L)    --        11-11 (L)
+~>      2-2      \preceq    5-5       \intersect 8-8 (L)    &         13-13 (L)
+/\      3-3 (L)  \propto    5-5       ..         9-9        &&        13-13 (L)
+\/      3-3 (L)  \sim       5-5       ...        9-9        (.)       13-13 (L)
+/=      5-5      \simeq     5-5       !!         9-13       (/)       13-13
+-|      5-5      \sqsubset  5-5       ##         9-13 (L)   (\X)      13-13 (L)
+::=     5-5      \sqsubseteq 5-5      $          9-13 (L)   *         13-13 (L)
+:=      5-5      \sqsupset  5-5       $$         9-13 (L)   **        13-13 (L)
+<       5-5      \sqsupseteq 5-5      ??         9-13 (L)   /         13-13
+=       5-5      \subset    5-5       \sqcap     9-13 (L)   //        13-13
+=|      5-5      \subseteq  5-5       \sqcup     9-13 (L)   \bigcirc  13-13 (L)
+>       5-5      \succ      5-5       \uplus     9-13 (L)   \bullet   13-13 (L)
+\approx 5-5      \succeq    5-5       \wr        9-14       \div      13-13
+\asymp  5-5      \supset    5-5       (+)       10-10 (L)   \o        13-13 (L)
+\cong   5-5      \supseteq  5-5       +         10-10 (L)   \star     13-13 (L)
+\doteq  5-5      |-         5-5       ++        10-10 (L)   ^         14-14
+>=      5-5      |=         5-5       %         10-11       ^^        14-14
+\gg     5-5      \cdot      5-14 (L)  %%        10-11 (L)   .         17-17 (L)
+\in     5-5      @@         6-6  (L)  |         10-11 (L)
+\notin  5-5      :>         7-7       ||        10-11 (L)
+```
+
+**Postfix Operators**
+
+```tlaplus
+^+    15-15   ^*     15-15     ^#    15-15      ' 15-15
+```
+
+
 ## ASCII Representation of Typeset Symbols
 
 *Please check [TLA+ Summary][]. This is too much for Markdown.*
