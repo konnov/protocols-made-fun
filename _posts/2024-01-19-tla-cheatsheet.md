@@ -88,7 +88,7 @@ Defines $f$ to be the function with domain $S$ such that $f[x] = exp$ for all
 $x$ in $S$. (The symbol $f$ may occur in $exp$, allowing a recursive
 definition.)
 
-*Note*: $x \in S$ may be replaced by a comma-separated list of items $v \in S$,
+**Note**: $x \in S$ may be replaced by a comma-separated list of items $v \in S$,
 where $v$ is either a comma-separated list or a tuple of identifiers.
 
 ```tlaplus
