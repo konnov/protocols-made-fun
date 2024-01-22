@@ -23,16 +23,22 @@
   </script>
 {%- endif -%}
 
-{%- if page.go or page.typescript or page.quint -%}
+{%- if page.go or page.typescript or page.tlaplus or page.quint -%}
   <!-- load highlightjs -->
   <link rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css">
+        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/isbl-editor-light.css"></link>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
   {%- if page.go -%}
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/go.min.js"></script>
   {%- endif -%}
   {%- if page.typescript -%}
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/typescript.min.js"></script>
+  {%- endif -%}
+  {%- if page.tlaplus -%}
+
+  <script
+    src="https://cdn.jsdelivr.net/gh/konnov/tlaplus-highlightjs/tlaplus-minified.js">
+  </script>
   {%- endif -%}
   {%- if page.quint -%}
     <!-- minified:
