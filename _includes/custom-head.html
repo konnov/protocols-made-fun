@@ -26,7 +26,7 @@
 {%- if page.go or page.typescript or page.tlaplus or page.quint -%}
   <!-- load highlightjs -->
   <link rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css">
+        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/isbl-editor-light.css"></link>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
   {%- if page.go -%}
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/go.min.js"></script>
@@ -36,7 +36,7 @@
   {%- endif -%}
   {%- if page.tlaplus -%}
     <script>
-function a(A){var n={keyword:['ACTION','ASSUME','ASSUMPTION','AXIOM','BY','CASE','CONSTANT','CONSTANTS','DEF','DEFINE','DEFS','DOMAIN','ELSE','ENABLED','EXCEPT','EXTENDS','HAVE','HIDE','IF','IN','INSTANCE','LAMBDA','LEMMA','LET','LOCAL','MODULE','NEW','OBVIOUS','OMITTED','OTHER','PICK','PROOF','PROPOSITION','PROOF','PROPOSITION','PROVE','QED','RECURSIVE','STATE','SUBSET','SUFFICES','TAKE','TEMPORAL','THEN','THEOREM','UNCHANGED','UNION','USE','VARIABLE','VARIABLES','WITH','WITNESS'],literal:['FALSE','TRUE'],type:['BOOLEAN','Int','Nat','Real','Seq'],punctuation:[',','(',')','{','}','[',']',']_','>>_']};return{name:'TLA+',case_insensitive:!1,keywords:n,contains:[{scope:'string',begin:'"',end:'"'},{scope:'number',begin:'-?(0x[0-9a-fA-F]([0-9a-fA-F]|_[0-9a-fA-F])*|0|[1-9]([0-9]|_[0-9])*)'},A.COMMENT('\\\\\\*','$'),A.COMMENT('\\(\\*','\\*\\)'),{className:'symbol',begin:/\\[A-Za-z]+|\\|\/|WF_|SF_|'|\|->|\[\]|\(\+\)|\(-\)|\(\\X\)|\(\/\)|\(\.\)|&|\||@@|##|\^|\$|\?|\!|~|~>|<=>|=>|>=|<=|>>|<<|<:|>|<|:=|==|=|\/=|#=|\.|\*|\+|-|%|::=|:|:>|\^\^|\^\+|\^\*|\^\#/}]}}hljs.registerLanguage('tlaplus',a);
+function a(A){var n={keyword:['ACTION','ASSUME','ASSUMPTION','AXIOM','BY','CASE','CONSTANT','CONSTANTS','DEF','DEFINE','DEFS','DOMAIN','ELSE','ENABLED','EXCEPT','EXTENDS','HAVE','HIDE','IF','IN','INSTANCE','LAMBDA','LEMMA','LET','LOCAL','MODULE','NEW','OBVIOUS','OMITTED','OTHER','PICK','PROOF','PROPOSITION','PROOF','PROPOSITION','PROVE','QED','RECURSIVE','STATE','SUBSET','SUFFICES','TAKE','TEMPORAL','THEN','THEOREM','UNCHANGED','UNION','USE','VARIABLE','VARIABLES','WITH','WITNESS'],literal:['FALSE','TRUE','BOOLEAN','Int','Nat','Real','Seq'],punctuation:[',','(',')','{','}','[',']',']_','>>_']};return{name:'TLA+',case_insensitive:!1,keywords:n,contains:[{scope:'string',begin:'"',end:'"'},A.COMMENT('\\\\\\*','$'),A.COMMENT('\\(\\*','\\*\\)'),{className:'symbol',begin:/\\[A-Za-z]+|\\|\/|WF_|SF_|'|\|->|\[\]|\(\+\)|\(-\)|\(\\X\)|\(\/\)|\(\.\)|&|\||@@|##|\$|\?|\!|~|~>|<=>|=>|>=|<=|>>|<<|<:|>|<|:=|==|=|\/=|#=|\.|\*|\+|-|%|::=|:|:>|\^\^|\^\+|\^\*|\^\#|\^/}]}}hljs.registerLanguage('tlaplus',a);hljs.registerLanguage('tla',a);
     </script>
   {%- endif -%}
   {%- if page.quint -%}

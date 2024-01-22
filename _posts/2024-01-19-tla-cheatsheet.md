@@ -27,9 +27,11 @@ original text   \* I: my single-line comment
 
 In addition to that, since it is not easy to combine math and code
 highlighting, I am using the ASCII typesetting as well as the Unicode
-typesetting, as produced by [tlauc][]. Finally, Markdown is not nearly as
-good as LaTeX. I could not reproduce the last section of [TLA+ Summary][],
-which maps ASCII operators to their LaTeX presentation.
+typesetting, as produced by [tlauc][]. For the Unicode characters, no syntax
+highlighting is introduced: These characters are already distinct enough for
+my eye. Finally, Markdown is not nearly as good as LaTeX. I could not
+reproduce the last section of [TLA+ Summary][], which maps ASCII operators to
+their LaTeX presentation.
 
 ## Module-Level Constructs
 
@@ -296,7 +298,7 @@ F ↝ G
 ## User-Definable Operator Symbols
 
 *We are using the ASCII notation. To see a nice typesetting of these operators,
-check the PDF version in [TLA+ Summary][]*.
+check the PDF version in the [TLA+ Summary][]*.
 
 ### Infix Operators
 
@@ -317,7 +319,7 @@ check the PDF version in [TLA+ Summary][]*.
 \propto   \wr   \uplus
 ```
 
-Some of these operators are defined in the standard modules:
+*Some of these operators are defined in the standard modules:*
 
  - `Naturals`, `Integers`, `Reals` define:
     `+`, `-`, `*`, `\div`, `%`, `^`, `..`, `<`, `>`, `<=`, `>=`
@@ -441,7 +443,7 @@ UNCHANGED 4-15  SUBSET  8-8       -     12-12
 
 ## ASCII Representation of Typeset Symbols
 
-*Please check [TLA+ Summary][]. This is too much for Markdown.*
+*Please check the [TLA+ Summary][]. This is too much for Markdown.*
 
 
 [highlightjs]: https://highlightjs.org/
