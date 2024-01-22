@@ -35,9 +35,10 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/typescript.min.js"></script>
   {%- endif -%}
   {%- if page.tlaplus -%}
-    <script>
-function a(A){var n={keyword:['ACTION','ASSUME','ASSUMPTION','AXIOM','BY','CASE','CONSTANT','CONSTANTS','DEF','DEFINE','DEFS','DOMAIN','ELSE','ENABLED','EXCEPT','EXTENDS','HAVE','HIDE','IF','IN','INSTANCE','LAMBDA','LEMMA','LET','LOCAL','MODULE','NEW','OBVIOUS','OMITTED','OTHER','PICK','PROOF','PROPOSITION','PROOF','PROPOSITION','PROVE','QED','RECURSIVE','STATE','SUBSET','SUFFICES','TAKE','TEMPORAL','THEN','THEOREM','UNCHANGED','UNION','USE','VARIABLE','VARIABLES','WITH','WITNESS'],literal:['FALSE','TRUE','BOOLEAN','Int','Nat','Real','Seq'],punctuation:[',','(',')','{','}','[',']',']_','>>_']};return{name:'TLA+',case_insensitive:!1,keywords:n,contains:[{scope:'string',begin:'"',end:'"'},A.COMMENT('\\\\\\*','$'),A.COMMENT('\\(\\*','\\*\\)'),{className:'symbol',begin:/\\[A-Za-z]+|\\|\/|WF_|SF_|'|\|->|\[\]|\(\+\)|\(-\)|\(\\X\)|\(\/\)|\(\.\)|&|\||@@|##|\$|\?|\!|~|~>|<=>|=>|>=|<=|>>|<<|<:|>|<|:=|==|=|\/=|#=|\.|\*|\+|-|%|::=|:|:>|\^\^|\^\+|\^\*|\^\#|\^/}]}}hljs.registerLanguage('tlaplus',a);hljs.registerLanguage('tla',a);
-    </script>
+
+  <script
+    src="https://cdn.jsdelivr.net/gh/konnov/tlaplus-highlightjs/tlaplus-minified.js">
+  </script>
   {%- endif -%}
   {%- if page.quint -%}
     <!-- minified:

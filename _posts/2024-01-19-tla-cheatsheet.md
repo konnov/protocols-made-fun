@@ -1,15 +1,15 @@
 ---
 layout: post
 title: "TLA+ cheatsheet in Markdown"
-date: 2024-01-19
+date: 2024-01-22
 categories: tlaplus
 tlaplus: true
 math: true
 ---
 
-I have realized that I need $\tla{}$ syntax highlighting for my next blog post.
-Since [highlightjs][] did not support $\tla{}$, I have introduced a
-highlighting theme in [tlaplus-highlightjs][]. The best way to test
+I realized that I needed $\tla{}$ syntax highlighting for my next blog
+post. Since [highlightjs][] did not support $\tla{}$, I have introduced a
+syntax highlighlting file in [tlaplus-highlightjs][]. The best way to test
 highlighting is by typing the [TLA+ Summary][] by [Leslie Lamport][]
 (originally, in pdf) on this page.
 
