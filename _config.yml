@@ -9,9 +9,9 @@ description: All things about protocol specification, testing, and verification.
 show_downloads: false
 github.is_project_page: false
 google_analytics: G-BVH4V6TQV9
-domain: protocol-made-fun.com
-url: https://protocol-made-fun.com
-baseurl: /protocols-made-fun/
+domain: protocols-made-fun.com
+url: https://protocols-made-fun.com
+baseurl: /
 twitter_username: k0nn0v
 github_username:  konnov
 plugins:
