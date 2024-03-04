@@ -1,4 +1,7 @@
-## Impressum
+---
+layout: page
+title: Impressum
+---
 
 Igor Konnov
 
@@ -18,9 +21,4 @@ Online-Streitbeilegungsplattform der EU zu richten: http://ec.europa.eu/odr.
 Gewerbeordnung: www.ris.bka.gv.at. Sie können allfällige Beschwerde auch an die
 oben angegebene E-Mail-Adresse richten.
 
-## Datenschutz
-
-[Datenschutz][]
-
 [GISA]: https://www.gisa.gv.at/
-[Datenschutz]: ./datenschutz.md
