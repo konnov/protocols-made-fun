@@ -8,7 +8,7 @@ Einzelunternehmen Igor Konnov
 Freies Gewerbe: Dienstleistungen in der automatischen Datenverarbeitung und
 Informationstechnik
 
-Kontaktdaten: igor.konnov+impressum@gmail.com
+Kontaktdaten: igor+impressum@konnov.phd
 
 1230 Wien, Austria, weitere Daten auf [GISA][].
 
