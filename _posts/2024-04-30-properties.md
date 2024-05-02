@@ -51,6 +51,11 @@ there is a valid attack path that does not have hand-wavy hypotheticals).
 
 ## 2. Specifying a High
 
+Let's start with specifying a behavior that demonstrates a finding deserving a
+High.
+
+### 2.1. Attempt 1: An Abstract Protocol
+
 
 
 
