@@ -456,8 +456,8 @@ the balances.
 
 So far we have seen more or less obvious effects of a DeFi attack, even though
 the underlying protocol could be quite complex. It does not always happen that
-an attacker steals all the tokens. Even if they steal, say, 5% of the total
-value locked, then they may be well off.
+an attacker steals or burns almost all tokens. Even if they steal, say, 5% of
+the total value locked, then they may be well off.
 
 How can we specify such an attack? Intuitively, Eve has to extract more value
 from the protocol than she invested. To this end, we have to keep track of how
@@ -558,8 +558,32 @@ The specification `AbstractDeFi2` extends `AbstractDeFi` as follows:
 
 We also introduce a model-checking instance [MC_AbstractDeFi2.tla][].
  
-## 6. Withdrawing Without Deposit
+## 6. Refining the Draining Attacks
 
+### 6.1. A Naive Invariant
+
+Now that we have `amountsIn` and `amountsOut`, we can specify a no draining
+state invariant:
+
+```tla
+\* A naive invariant: Eve cannot extract funds from the protocol.
+WithdrawLessThanDepositInv ≜
+    amountsIn["eve"] > 0 ⇒ (amountsOut["eve"] ≤ amountsIn["eve"])
+```
+
+The model checker finds a counterexample to the above invariant in a few
+seconds. To make the table compact we write
+`balances[a]/amountsIn[a]/amountsOut[a]` for every address `a`.
+
+| State Number | **owner** | **contract** | **eve** | **alice** | **bob** | **investor** | **0x0** |
+|--------------|-----------|--------------|---------|-----------|---------|--------------|---------|
+| 0.           | 100/0/0   | 0/0/0        | 0/0/0   | 0/0/0     | 0/0/0   | 0/0/0        | 0/0/0   |
+| 1.           | 100/0/0   | 0/0/0        | 0/0/0   | 0/0/0     | 0/0/0   | 0/0/0        | 0/0/0   |
+| 2.           | 17/0/0    | 48/0/0       | 4/0/1   | 42/0/0    | 85/0/0  | 66/0/0       | 2/0/0   |
+
+
+
+### 6.2. A Temporal Property
 
 ## 7. Centralization Risks
 
