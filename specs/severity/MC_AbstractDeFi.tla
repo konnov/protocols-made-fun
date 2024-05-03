@@ -1,5 +1,5 @@
 ------ MODULE MC_AbstractDeFi ------
-EXTENDS Integers
+EXTENDS Integers, Apalache
 
 \* a few addresses for illustration purposes
 ADDR == { "alice", "bob", "eve", "contract", "investor", "owner" }
@@ -18,9 +18,40 @@ INSTANCE AbstractDeFi
 
 \* A state invariant that specifies that there is no drain-all high:
 \* It's never the case that Eve (the attacker) gets all the tokens.
-DrainAllHighInv ==
+DrainAllInv ==
     \E a \in ADDR \ { "eve" }:
         balances[a] > 0
+
+\* A state invariant that specifies that all tokens cannot be burnt.
+BurnAllInv ==
+    \E a \in ADDR:
+        balances[a] > 0
+
+\* A state invariant that specifies that all tokens cannot be burnt.
+\* This invariant considers the amounts below 5 to be dust.
+BurnAllButDustInv ==
+    \E a \in ADDR:
+        balances[a] >= 5
+
+\* A state invariant that specifies that the balances should not go
+\* below the initial supply.
+BurnSomeInv ==
+    LET AddInitial(sum, addr) == sum + INITIAL_SUPPLY[addr]
+        AddCurrent(sum, addr) == sum + balances[addr]
+        initialTotal == ApaFoldSet(AddInitial, 0, ADDR)
+        currentTotal == ApaFoldSet(AddCurrent, 0, ADDR)
+    IN
+    currentTotal >= initialTotal
+
+\* A state invariant that specifies that the balances should not go
+\* significantly below the initial supply.
+BurnHalfInv ==
+    LET AddInitial(sum, addr) == sum + INITIAL_SUPPLY[addr]
+        AddCurrent(sum, addr) == sum + balances[addr]
+        initialTotal == ApaFoldSet(AddInitial, 0, ADDR)
+        currentTotal == ApaFoldSet(AddCurrent, 0, ADDR)
+    IN
+    currentTotal >= initialTotal \div 2
 
 \* Trivial false invariants to get examples:
 

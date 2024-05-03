@@ -74,7 +74,7 @@ and to various addresses. For instance, many Ethereum contracts creatively
 manipulate with ETH. This is what we distill into a very abstract specification
 of a DeFi protocol in TLA<sup>+</sup>[^1]: 
 
-**File: [AbstractDeFi.tla][]**
+**Source: [AbstractDeFi.tla][]**
 
 ```tla
 ------ MODULE AbstractDeFi ------
@@ -132,7 +132,7 @@ and burning them.
 If you wonder about `ADDR`, `AMOUNTS`, and `INITIAL_SUPPLY`, check how we set them
 up in a specification instance:
 
-**File: [MC_AbstractDeFi.tla][]**
+**Source: [MC_AbstractDeFi.tla][]**
 
 ```tla
 ...
@@ -145,12 +145,12 @@ INITIAL_SUPPLY ≜ [ a ∈ ADDR ↦ IF a = "owner" THEN 100 ELSE 0 ]
 ...
 ```
 
-Our protocol is quite general. Like in real protocols, multiple accounts may be
-updated in a single step (e.g., in a single blockchain transaction), e.g., by
-updating contract balances, burning gas, transferring protocol fees, etc. We
-could make our abstract protocol even more general by maintaing balances for
-multiple token types. To keep things simple, we will restrict the protocol to
-one token type.
+Our protocol specification is quite general, perhaps, even too general. Like in
+real protocols, multiple accounts may be updated in a single step (e.g., in a
+single blockchain transaction), e.g., by updating contract balances, burning
+gas, transferring protocol fees, etc. We could make our abstract protocol even
+more general by maintaing balances for multiple token types. To keep things
+simple, we will restrict the protocol to one token type.
 
 By writing this abstract protocol, we have introduced a crucial assumption:
 
@@ -160,8 +160,8 @@ If we compare `AbstractDeFi` with an arbitrary smart contract in DeFi, we will
 immediately notice that `AbstractDeFi` is quite permissive in comparison to the
 actual contract. Indeed, this is why we call our specification "abstract". It
 does allow for many behaviors that are ruled out in actual protocols. Yet, our
-specification is useful, as it lets us capture behaviors without going into
-unnecessary details.
+specification is useful, as it lets us capture interesting behaviors without
+going into unnecessary details.
 
 ## 3. Specifying a High
 
@@ -170,29 +170,30 @@ a High? When I started to think about that, I realized that there is probably
 no one "good" way of specifying all kinds of highs. Hence, we will go over a
 series of various highs, starting with the most dangerous ones.
 
-### 3.1. DrainAll: Drain All Tokens
+### 3.1. Draining All Tokens
 
-Let's start with specifying the most obvious, the most evil, behavior. Every now
-and then, we see protocols where an attacker is able to drain all tokens from
-the protocol. Following the tradition, we would say that the attacker is called
-Eve. To express this property, we simply write the following state invariant:
+Let's start with specifying the most obvious, the most evil, behavior
+:smiling_imp:. Every now and then, we see protocols where an attacker is able to
+drain all tokens from the protocol. Following the tradition, we would say that
+the attacker is called Eve. To express this property, we simply write the
+following state invariant:
 
-**File: [MC_AbstractDeFi.tla][]**
+**Source: [MC_AbstractDeFi.tla][]**
 
 ```tla
 \* A state invariant that specifies that there is no way to drain all tokens:
 \* It's never the case that Eve (the attacker) gets all the tokens.
-DrainAllHighInv ≜                                                               
+DrainAllInv ≜                                                               
     ∃ a ∈ ADDR \ { "eve" }:
         balances[a] > 0
 ```
 
-The invariant `DrainAllHighInv` says that there is at least one address with a
+The invariant `DrainAllInv` says that there is at least one address with a
 non-negative balance, and this address is different from `"eve"`, the attacker.
 
-This all sounds abstract. Can we have an example? Yep, I simply ran the
-[Apalache][] model checker to produce a behavior that violates
-`DrainAllHighInv`.  Here is one example Apalache gave to me:
+This all sounds too abstract. Can we have an example? Yep. I simply run the
+model checker [Apalache][] to produce a behavior that violates `DrainAllInv`.
+Here is one example that Apalache gave to me:
 
 | **owner** | **contract** | **eve** | **alice** | **bob** | **investor** |
 |-----------|--------------|---------|-----------|---------|--------------|
@@ -204,11 +205,140 @@ ChatGPT was quite helpful in transforming it to the above markdown table.*)
 
 If you are a security researcher and you find a behavior like the one above in a
 security contest, that's definitely a big win for you. Collect the reward and
-enjoy your life :palm_tree: Of course, such findings are rare. They would
+enjoy your life :palm_tree: Or, maybe not, if 200 other participants have found
+the same issue :scream:. Of course, such findings are rare. They would
 demonstrate a catastrophic flaw in the protocol. Also, the model checker was
 lazy and produced us an example, where the funds were drained in a single step,
 while a large part of it was burnt. In real life, an attacker would typically
-drain finds via multiple transactions.
+drain funds via multiple transactions.
+
+Let's go back to the Code4rena classification of a high:
+
+> 3 — High: Assets can be stolen/lost/compromised directly (or indirectly if
+there is a valid attack path that does not have hand-wavy hypotheticals).
+
+Our invariant `DrainAllInv` specifies the case of assets being stolen.
+
+### 3.2. Burning Tokens
+
+**BurnAll.** We have seen an example of tokens being stolen. How about tokens being lost?
+Let's write a state invariant that tells us that it should not be possible to
+burn all the tokens:
+
+**Source: [MC_AbstractDeFi.tla][]**
+
+```tla
+\* A state invariant that specifies that all tokens cannot be burnt.
+BurnAllInv ≜
+    ∃ a ∈ ADDR:
+        balances[a] > 0
+```
+
+We run the model checker and it gives us an example of a behavior that violates
+`BurnAllInv`:
+
+| **owner** | **contract** | **eve** | **alice** | **bob** | **investor** |
+|-----------|--------------|---------|-----------|---------|--------------|
+| **100**   | 0            | 0       | 0         | 0       | 0            |
+| 0         | 0            | 0       | 0         | 0       | 0            |
+
+**BurnAllButDust.** To be fair, it seems to be almost impossible that a protocol
+burns all of the tokens down to zero. Typically, some dust amounts would be left
+on the accounts. It is easy to modify `BurnAllInv` to account for dust amounts.
+Say, the amounts below 5 are considered to be dust:
+
+**Source: [MC_AbstractDeFi.tla][]**
+
+```tla
+\* A state invariant that specifies that all tokens cannot be burnt.
+\* This invariant considers the amounts below 5 to be dust.
+BurnAllButDustInv ≜
+    ∃ a ∈ ADDR:
+        balances[a] >= 5
+```
+
+We run the model checker again. This time, to check `BurnAllButDustInv`:
+
+| **owner** | **contract** | **eve** | **alice** | **bob** | **investor** |
+|-----------|--------------|---------|-----------|---------|--------------|
+| **100**   | 0            | 0       | 0         | 0       | 0            |
+| **3**     | 0            | **4**   | **4**     | **1**   | **2**        |
+
+The model checker produces a somewhat bizarre example: Dust amounts were spread
+over five accounts, though it is still well below the initial supply.  This
+behavior still follows the `AbstractDeFi` specification.  Perhaps, there are
+protocols like that in the wild?
+
+**BurnSomeInv.** Okay, we can specify what it means to burn all or almost all of
+the tokens. How often does that happen? Similar to the case of `DrainAllInv`, it
+should be a rare finding. How about not burning all the tokens, but burning some
+of the initial supply? This is what we specify with `BurnSomeInv` below:
+
+**Source: [MC_AbstractDeFi.tla][]**
+
+```tla
+\* A state invariant that specifies that the balances should not go
+\* below the initial supply.
+BurnSomeInv ≜
+    LET AddInitial(sum, addr) ≜ sum + INITIAL_SUPPLY[addr]
+        AddCurrent(sum, addr) ≜ sum + balances[addr]
+        initialTotal ≜ ApaFoldSet(AddInitial, 0, ADDR)
+        currentTotal ≜ ApaFoldSet(AddCurrent, 0, ADDR)
+    IN
+    currentTotal ≥ initialTotal
+```
+
+Even though `BurnSomeInv` looks a bit more complex than `BurnAllInv`, there is
+not much happening. We simply sum over the initial balances and the current
+balances, then compare the sums. The model checker gives us an example that
+violates `BurnSomeInv`:
+
+| **owner** | **contract** | **eve** | **alice** | **bob** | **investor** |
+|-----------|--------------|---------|-----------|---------|--------------|
+| **100**   | 0            | 0       | 0         | 0       | 0            |
+| **99**    | 0            | 0       | 0         | 0       | 0            |
+
+**Economic Feasibility.** Whereas the above example looks valid, it would be
+*hard to get a valid high
+finding out of that. Why? Logically speaking, it demonstrates a bug. However, we
+should not forget that DeFi deals with finances instead of perfect logic. Most
+likely, the above behavior would be rejected as a non-finding with a verdict of
+being "economically infeasible". The reason is that that attacker would have to
+burn gas to run this attack. If it costs the attacker more in gas to run the
+attack than they would benefit from it, e.g., from the token prices going down,
+then this attack would not be considered economically feasible.
+
+The bad news is that the model checker has no idea about finances and what is
+feasible or not. The good news is that it is up to us to tell it what it means.
+For example, we could say that burning over 50% of the initial funds is
+not good, for sure:
+
+**Source: [MC_AbstractDeFi.tla][]**
+
+```tla
+\* A state invariant that specifies that the balances should not go
+\* significantly below the initial supply.
+BurnHalfInv ≜
+    LET AddInitial(sum, addr) ≜ sum + INITIAL_SUPPLY[addr]
+        AddCurrent(sum, addr) ≜ sum + balances[addr]
+        initialTotal ≜ ApaFoldSet(AddInitial, 0, ADDR)
+        currentTotal ≜ ApaFoldSet(AddCurrent, 0, ADDR)
+    IN
+    currentTotal ≥ initialTotal ÷ 2
+```
+
+This time, the model checker produces the following example:
+
+| **owner** | **contract** | **eve** | **alice** | **bob** | **investor** |
+|-----------|--------------|---------|-----------|---------|--------------|
+| **100**   | 0            | 0       | 0         | 0       | 0            |
+| **10**    | 0            | **4**   | **1**     | 0       | **34**       |
+
+Again, the model checker has scattered the balances over various accounts, since
+this is allowed. What is important, the example shows that over a half of the
+tokens have disappeared, as we requested.
+
+
 
 
 
