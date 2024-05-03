@@ -4,6 +4,7 @@ title: "Is it a medium, is it a high: What are the protocol expectations?"
 date: 2024-04-30
 categories: smart-contracts contests specification tlaplus
 math: true
+tlaplus: true
 ---
 
 ## 1. Introduction
@@ -24,18 +25,18 @@ detail about what is considered the most precious finding, that is a "high" or a
 "medium". For example, see [Code4rena Severity Categorization][] and [Sherlock's
 Criteria for Issue Validity][]. In addition to that, [Code4rena Incentive Model
 and Awards][] incentivizes security researchers to find unique issues. That is
-why a perfectly fine High which would be a big win in a traditional security
-audit may easily result in a payout of $0.12 in a security contest :flushed:
+why a perfectly fine High, which would be a big win in a traditional security
+audit, may easily result in a payout of $0.12 in a security contest :flushed:
 
-In the end of the day, even given all the guidelines, the contest sponsors and
-the judges have to figure out which fundings are worth rewarding. In this blog
+At the end of the day, even given all the guidelines, the contest sponsors and
+the judges have to figure out which findings are worth rewarding. In this blog
 post I would like to step away from the discussions about the human subjectivity
 in the contests. The question I have been asking myself for some time:
 
 *Is it even possible to formally specify highs and mediums for some protocols*?
 
-Let's try. After all, bugs were not invented by blockchain engineers, and
-researchers in [Formal Verification][] have been preoccupied with similar
+Let's try. After all, bugs were not invented by blockchain engineers.
+Researchers in [Formal Verification][] have been preoccupied with similar
 questions for decades. For example, [Temporal Specification Patterns][] classify
 properties of concurrent and reactive systems.
 
@@ -49,16 +50,171 @@ with stated assumptions, but external requirements.
 > 3 — High: Assets can be stolen/lost/compromised directly (or indirectly if
 there is a valid attack path that does not have hand-wavy hypotheticals).
 
-## 2. Specifying a High
+## 2. An Abstract DeFi Protocol
 
-Let's start with specifying a behavior that demonstrates a finding deserving a
-High.
+Since Mediums and Highs involve a protocol, we need a protocol to talk about.
+At this point, a security researcher would typically choose one of the two
+approaches:
 
-### 2.1. Attempt 1: An Abstract Protocol
+ 1. Point to a concrete protocol, e.g., a smart contract in Solidity.
+
+ 1. Present an idea of a protocol in English, perhaps, adding a bit of
+ math notation on top of it.
+
+Instead of following one of the above approaches, I am following the third
+approach, which is much more powerful, even though less common. I am using
+Temporal Logic of Actions, or TLA<sup>+</sup>, which was designed exactly for
+[Specifying Systems][]. I am not going to explain TLA<sup>+</sup> in this blog
+post. There are plenty of resources out there, including [Learn TLA][] by Hillel
+Wayne.  If you want to quickly recall the syntax of TLA<sup>+</sup>, check my
+[TLA+ cheatsheet][].
+
+What do most of the DeFi protocols have in common? Well, they move tokens from
+and to various addresses. For instance, many Ethereum contracts creatively
+manipulate with ETH. This is what we distill into a very abstract specification
+of a DeFi protocol in TLA<sup>+</sup>[^1]: 
+
+**File: [AbstractDeFi.tla][]**
+
+```tla
+------ MODULE AbstractDeFi ------
+EXTENDS Integers
+
+CONSTANT
+    \* A set of account addresses.
+    \* @type: Set(Str);
+    ADDR,
+    \* A set of token amounts.
+    \* @type: Set(Int);
+    AMOUNTS,
+    \* Initial supply of tokens for all addresses.
+    \* @type: Str -> Int;
+    INITIAL_SUPPLY
+
+VARIABLES
+    \* Balances for one kind of a token, e.g., ETH.
+    \* @type: Str -> Int;
+    balances
+
+\* Negative and positive updates to the token amounts
+Deltas ≜ AMOUNTS ∪ { -i: i ∈ AMOUNTS}
+
+\* Protocol initialization, e.g., contract instantiation
+Init ≜
+    balances = INITIAL_SUPPLY
+
+\* An abstract transfer between multiple accounts.
+\* @type: (Str -> Int) => Bool;
+Update(deltas) ≜
+    \* update the balances
+    LET newBalances ≜ [ a ∈ ADDR ↦ balances[a] + deltas[a] ] IN 
+    ∧ ∀ a ∈ ADDR: newBalances[a] ∈ AMOUNTS
+    ∧ balances' = newBalances
+    \* A concrete protocol would have plenty of other constraints.
+    \* However, we are not interested in these details.
+
+\* A single protocol step, e.g., a public function of a smart contract
+Next ≜
+    ∃ deltas ∈ [ ADDR → Deltas ]:
+        Update(deltas)
+=====================================
+```
+
+What does `AbstractDeFi` actually specify? Well, we have a state machine, that
+keeps track of token `balances` for every address from the set `ADDR`.
+Initially, the balances are set to `INITIAL_SUPPLY`, e.g., we could give all the
+tokens to the contract owner. At every step, the balance of each account `a \in
+ADDR` is updated by some delta from `deltas[a]`. If you think about it, many
+DeFi protocols fit into this description. For example, the famous [ERC20][]
+token standard is concerned with transferring tokens, and, optionally, minting
+and burning them.
+
+If you wonder about `ADDR`, `AMOUNTS`, and `INITIAL_SUPPLY`, check how we set them
+up in a specification instance:
+
+**File: [MC_AbstractDeFi.tla][]**
+
+```tla
+...
+\* a few addresses for illustration purposes
+ADDR ≜ { "alice", "bob", "eve", "contract", "investor", "owner" }
+\* a small range of amounts
+AMOUNTS ≜ 0‥100
+\* only the owner gets tokens initially
+INITIAL_SUPPLY ≜ [ a ∈ ADDR ↦ IF a = "owner" THEN 100 ELSE 0 ]
+...
+```
+
+Our protocol is quite general. Like in real protocols, multiple accounts may be
+updated in a single step (e.g., in a single blockchain transaction), e.g., by
+updating contract balances, burning gas, transferring protocol fees, etc. We
+could make our abstract protocol even more general by maintaing balances for
+multiple token types. To keep things simple, we will restrict the protocol to
+one token type.
+
+By writing this abstract protocol, we have introduced a crucial assumption:
+
+*All changes to `balances` are made via `AbstractDeFi`.*
+
+If we compare `AbstractDeFi` with an arbitrary smart contract in DeFi, we will
+immediately notice that `AbstractDeFi` is quite permissive in comparison to the
+actual contract. Indeed, this is why we call our specification "abstract". It
+does allow for many behaviors that are ruled out in actual protocols. Yet, our
+specification is useful, as it lets us capture behaviors without going into
+unnecessary details.
+
+## 3. Specifying a High
+
+Now that we have given a bit of shape to our DeFi protocol, how do we specify
+a High? When I started to think about that, I realized that there is probably
+no one "good" way of specifying all kinds of highs. Hence, we will go over a
+series of various highs, starting with the most dangerous ones.
+
+### 3.1. DrainAll: Drain All Tokens
+
+Let's start with specifying the most obvious, the most evil, behavior. Every now
+and then, we see protocols where an attacker is able to drain all tokens from
+the protocol. Following the tradition, we would say that the attacker is called
+Eve. To express this property, we simply write the following state invariant:
+
+**File: [MC_AbstractDeFi.tla][]**
+
+```tla
+\* A state invariant that specifies that there is no way to drain all tokens:
+\* It's never the case that Eve (the attacker) gets all the tokens.
+DrainAllHighInv ≜                                                               
+    ∃ a ∈ ADDR \ { "eve" }:
+        balances[a] > 0
+```
+
+The invariant `DrainAllHighInv` says that there is at least one address with a
+non-negative balance, and this address is different from `"eve"`, the attacker.
+
+This all sounds abstract. Can we have an example? Yep, I simply ran the
+[Apalache][] model checker to produce a behavior that violates
+`DrainAllHighInv`.  Here is one example Apalache gave to me:
+
+| **owner** | **contract** | **eve** | **alice** | **bob** | **investor** |
+|-----------|--------------|---------|-----------|---------|--------------|
+| **100**   | 0            | 0       | 0         | 0       | 0            |
+| 0         | 0            | **22**  | 0         | 0       | 0            |
+
+(*To tell you the truth, Apalache gave me an example in TLA<sup>+</sup>, but
+ChatGPT was quite helpful in transforming it to the above markdown table.*)
+
+If you are a security researcher and you find a behavior like the one above in a
+security contest, that's definitely a big win for you. Collect the reward and
+enjoy your life :palm_tree: Of course, such findings are rare. They would
+demonstrate a catastrophic flaw in the protocol. Also, the model checker was
+lazy and produced us an example, where the funds were drained in a single step,
+while a large part of it was burnt. In real life, an attacker would typically
+drain finds via multiple transactions.
 
 
 
 
+
+[^1]: I found TLA<sup>+</sup> specs to be more accessible in this blog post when they are written in Unicode, as produced by the tool [tlauc][] by [Andrew Helwer][].
 [Solarkraft]: https://konnov.phd/portfolio/solarkraft/
 [Stellar Community Fund]: https://communityfund.stellar.org/
 [UniStaker Infrastructure]: https://code4rena.com/reports/2024-02-uniswap-foundation
@@ -75,3 +231,12 @@ High.
 [TLA+]: https://lamport.azurewebsites.net/tla/tla.html
 [Formal Verification]: https://en.wikipedia.org/wiki/Formal_verification
 [Temporal Specification Patterns]: https://matthewbdwyer.github.io/psp/
+[Specifying Systems]: https://lamport.azurewebsites.net/tla/book.html
+[Learn TLA]: https://learntla.com/
+[TLA+ cheatsheet]: https://protocols-made-fun.com/tlaplus/2024/01/22/tla-cheatsheet.html
+[ERC20]: https://docs.openzeppelin.com/contracts/4.x/erc20
+[AbstractDeFi.tla]: {{ site.baseurl }}/specs/severity/AbstractDeFi.tla
+[MC_AbstractDeFi.tla]: {{ site.baseurl }}/specs/severity/MC_AbstractDeFi.tla
+[tlauc]: https://github.com/tlaplus-community/tlauc
+[Andrew Helwer]: https://ahelwer.ca/
+[Hillel Wayne]: https://www.hillelwayne.com/
