@@ -25,11 +25,13 @@ INSTANCE AbstractDeFi2
 
 \* State invariants that may be of interest.
 
-\* A state invariant that specifies that there is no drain-all high:
-\* It's never the case that Eve (the attacker) gets all the tokens.
-DrainAllInv ==
-    \E a \in ADDR \ { "eve" }:
-        balances[a] > 0
+\* A naive invariant: Eve cannot extract funds from the protocol.
+WithdrawLessThanDepositInv ==
+    amountsIn["eve"] > 0 => (amountsOut["eve"] <= amountsIn["eve"])
+
+\* A safety property: If Eve has not deposited anything, she cannot withdraw.
+CannotWithdrawWithoutDeposit ==
+    [](amountsIn["eve"] = 0) => [](amountsOut["eve"] = 0)   
 
 EveBalanceIsZero ==
     balances["eve"] = 0

@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Is it a medium, is it a high: What are the protocol expectations?"
+title: "Is it a medium or a high: What are the protocol expectations?"
 date: 2024-04-30
 categories: smart-contracts contests specification tlaplus
 math: true
@@ -431,18 +431,7 @@ Obviously, the model checker produces an example of minting tokens:
 
 Our abstract DeFi protocol has generously minted tokens to everyone, including Eve.
 
-### 3.5. Draining Tokens Again
-
-So far we have seen more or less obvious effects of a DeFi attack, even though
-the underlying protocol could be quite complex. It does not always happen that
-an attacker steals all the tokens. Even if they steal, say, 5% of the total
-value locked, then they may be well off.
-
-How can we specify such an attack? Intuitively, Eve has to extract more value
-than she invested. To this end, we have to keep track of how much Eve has sent
-to the protocol and received from it.
-
-### 4. A Bullet-Proof Protocol?
+## 4. A Bullet-Proof Protocol?
 
 Having restricted our protocol with `NextPreserving` and `NextNonDecreasing` in
 the previous sections, we may be tempted to combine both of these two
@@ -463,7 +452,118 @@ Kind of. If we look carefully at the constraints in
 absolutely nothing useful. It starts with the initial supply and never changes
 the balances.
 
+## 5. Refining the Abstract DeFi Protocol
 
+So far we have seen more or less obvious effects of a DeFi attack, even though
+the underlying protocol could be quite complex. It does not always happen that
+an attacker steals all the tokens. Even if they steal, say, 5% of the total
+value locked, then they may be well off.
+
+How can we specify such an attack? Intuitively, Eve has to extract more value
+from the protocol than she invested. To this end, we have to keep track of how
+much Eve has sent to the protocol and received from it. Unfortunately, our
+`AbstractDeFi` protocol is too abstract for this purpose. We cannot even
+distinguish between depositing, withdrawing, and other protocol actions.
+Hence, we refine `AbstractDeFi` into `AbstractDeFi2`:
+
+**Source: [AbstractDeFi2.tla][]**
+
+```tla
+------ MODULE AbstractDeFi2 ------
+EXTENDS Integers
+
+CONSTANT
+    \* A set of account addresses.
+    \* @type: Set(Str);
+    ADDR,
+    \* Externally owned addresses.
+    \* @type: Set(Str);
+    EOA,
+    \* A set of token amounts.
+    \* @type: Set(Int);
+    AMOUNTS,
+    \* Initial supply of tokens for all addresses.
+    \* @type: Str -> Int;
+    INITIAL_SUPPLY
+
+ASSUME EOA ⊆ ADDR
+
+VARIABLES
+    \* Balances for one kind of a token, e.g., ETH.
+    \* @type: Str -> Int;
+    balances,
+    \* Amounts that were deposited.
+    \* @type: Str -> Int;
+    amountsIn,
+    \* Amounts that were withdrawn.
+    \* @type: Str -> Int;
+    amountsOut
+
+\* Negative and positive updates to the token amounts
+Deltas ≜ AMOUNTS ∪ { -i: i ∈ AMOUNTS}
+
+\* Protocol initialization, e.g., contract instantiation
+Init ≜
+    ∧ balances = INITIAL_SUPPLY
+    ∧ amountsIn = INITIAL_SUPPLY
+    ∧ amountsOut = [ a ∈ ADDR ↦ 0 ]
+
+\* An abstract transfer between multiple accounts.
+\* @type: (Str -> Int) => Bool;
+Update(deltas) ≜
+    \* update the balances
+    LET newBalances ≜ [ a ∈ ADDR ↦ balances[a] + deltas[a] ] IN 
+    ∧ ∀ a ∈ ADDR: newBalances[a] ∈ AMOUNTS
+    ∧ balances' = newBalances
+    ∧ UNCHANGED ⟨amountsIn, amountsOut⟩
+    \* A concrete protocol would have plenty of other constraints.
+    \* However, we are not interested in these details.
+
+\* An abstract deposit.
+\* @type: (Str, Int) => Bool;
+Deposit(sender, amount) ≜
+    ∧ balances[sender] + amount ∈ AMOUNTS
+    ∧ balances' = [ balances EXCEPT ![sender] = @ + amount ]
+    ∧ amountsIn' = [ amountsIn EXCEPT ![sender] = @ + amount ]
+    ∧ UNCHANGED amountsOut
+
+\* An abstract withdrawal.
+\* @type: (Str, Int) => Bool;
+Withdraw(sender, amount) ≜
+    ∧ balances[sender] - amount ∈ AMOUNTS
+    ∧ balances' = [ balances EXCEPT ![sender] = @ - amount ]
+    ∧ amountsOut' = [ amountsOut EXCEPT ![sender] = @ + amount ]
+    ∧ UNCHANGED amountsIn
+
+\* A single protocol step, e.g., a public function of a smart contract
+Next ≜
+    ∨ ∃ deltas ∈ [ ADDR → Deltas ]:
+        Update(deltas)
+    ∨ ∃ sender ∈ EOA, amount ∈ AMOUNTS:
+        ∨ Deposit(sender, amount)
+        ∨ Withdraw(sender, amount)
+=====================================
+```
+
+The specification `AbstractDeFi2` extends `AbstractDeFi` as follows:
+
+ - In addition to the constant `ADDR`, it has `EOA` for externally-owned
+ addresses.
+ 
+ - In addition to the state variable `balances`, it has state variables
+ `amountsIn` and `amountsOut`
+
+ - In addition to the action `Update`, it has two more actions:
+ `Deposit` and `Withdraw`.
+
+We also introduce a model-checking instance [MC_AbstractDeFi2.tla][].
+ 
+## 6. Withdrawing Without Deposit
+
+
+## 7. Centralization Risks
+
+## 8. Conclusions
 
 
 [^1]: I found TLA<sup>+</sup> specs to be more accessible in this blog post when they are written in Unicode, as produced by the tool [tlauc][] by [Andrew Helwer][].
@@ -490,6 +590,8 @@ the balances.
 [ERC20]: https://docs.openzeppelin.com/contracts/4.x/erc20
 [AbstractDeFi.tla]: {{ site.baseurl }}/specs/severity/AbstractDeFi.tla
 [MC_AbstractDeFi.tla]: {{ site.baseurl }}/specs/severity/MC_AbstractDeFi.tla
+[AbstractDeFi2.tla]: {{ site.baseurl }}/specs/severity/AbstractDeFi2.tla
+[MC_AbstractDeFi2.tla]: {{ site.baseurl }}/specs/severity/MC_AbstractDeFi2.tla
 [tlauc]: https://github.com/tlaplus-community/tlauc
 [Andrew Helwer]: https://ahelwer.ca/
 [Hillel Wayne]: https://www.hillelwayne.com/
