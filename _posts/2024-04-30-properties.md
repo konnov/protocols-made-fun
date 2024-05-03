@@ -374,7 +374,7 @@ Here we are. The address `0x0` has the balance of 29, and there is no way to
 recover these tokens.
 
 If you look at the example carefully, no tokens were burnt or minted. The token
-supply remains to be the same. I have asked the model checker to do it on
+supply happens to be the same. I have asked the model checker to do it on
 purpose by using the definition `NextPreserving` instead of `Next`:
 
 **Source: [MC_AbstractDeFi.tla][]**
@@ -422,7 +422,7 @@ EveNoBalanceIncreaseInv ≜
     balances'["eve"] ≤ balances["eve"]
 ```
 
-Obviously, the model checker produces an example of generously minting tokens:
+Obviously, the model checker produces an example of minting tokens:
 
 | **owner** | **contract** | **eve** | **alice** | **bob** | **investor** | **0x0**      |
 |-----------|--------------|---------|-----------|---------|--------------|--------------|
@@ -430,6 +430,17 @@ Obviously, the model checker produces an example of generously minting tokens:
 | **100**   | **61**       | **67**  | **1**     | **80**  | **98**       | **29**       |
 
 Our abstract DeFi protocol has generously minted tokens to everyone, including Eve.
+
+### 3.5. Draining Tokens Again
+
+So far we have seen more or less obvious effects of a DeFi attack, even though
+the underlying protocol could be quite complex. It does not always happen that
+an attacker steals all the tokens. Even if they steal, say, 5% of the total
+value locked, then they may be well off.
+
+How can we specify such an attack? Intuitively, Eve has to extract more value
+than she invested. To this end, we have to keep track of how much Eve has sent
+to the protocol and received from it.
 
 ### 4. A Bullet-Proof Protocol?
 
@@ -447,7 +458,7 @@ NextPreservingAndNonDecreasing ≜
 
 Interestingly, the model checker does not find a counterexample to **all
 invariants** that we have written so far. Is it a perfect bullet-proof protocol?
-Kind of, yes.  However, if we look carefully at the constraints in
+Kind of. If we look carefully at the constraints in
 `NextPreservingAndNonDecreasing`, we will see that this protocol is doing
 absolutely nothing useful. It starts with the initial supply and never changes
 the balances.
