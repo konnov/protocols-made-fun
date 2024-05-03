@@ -2,7 +2,7 @@
 EXTENDS Integers, Apalache
 
 \* a few addresses for illustration purposes
-ADDR == { "alice", "bob", "eve", "contract", "investor", "owner" }
+ADDR == { "alice", "bob", "eve", "contract", "investor", "owner", "0x0" }
 \* a small range of amounts
 AMOUNTS == 0..100
 \* only the owner gets tokens initially
@@ -13,6 +13,30 @@ VARIABLES
     balances
 
 INSTANCE AbstractDeFi
+
+\* The next step that preserves the total supply.
+\* Use NextPreserving instead of Next, when you do not want to see the
+\* examples of burning and minting.
+NextPreserving ==    
+    /\ Next
+    /\ LET AddBefore(sum, addr) == sum + balances[addr]
+           AddAfter(sum, addr) == sum + balances'[addr]
+           totalBefore == ApaFoldSet(AddBefore, 0, ADDR)
+           totalAfter == ApaFoldSet(AddAfter, 0, ADDR)
+       IN
+       totalBefore = totalAfter
+
+\* The next step that does not allow the total supply decrease.
+\* Use NonDecreasing instead of Next, when you do not want to see the
+\* examples of burning.
+NextNonDecreasing ==    
+    /\ Next
+    /\ \A addr \in ADDR:
+          balances'[addr] >= balances[addr]
+
+\* a combination of the above two transition relations
+NextPreservingAndNonDecreasing ==
+    NextPreserving /\ NextNonDecreasing          
 
 \* State invariants that may be of interest.
 
@@ -52,6 +76,14 @@ BurnHalfInv ==
         currentTotal == ApaFoldSet(AddCurrent, 0, ADDR)
     IN
     currentTotal >= initialTotal \div 2
+
+\* A state invariant: no transfer to zero should ever happen.
+LockingInZeroInv ==
+    balances["0x0"] = 0
+
+\* An action invariant: Eve cannot increase her balance.
+EveNoBalanceIncreaseInv ==
+    balances'["eve"] <= balances["eve"]
 
 \* Trivial false invariants to get examples:
 

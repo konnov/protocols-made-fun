@@ -137,7 +137,7 @@ up in a specification instance:
 ```tla
 ...
 \* a few addresses for illustration purposes
-ADDR ≜ { "alice", "bob", "eve", "contract", "investor", "owner" }
+ADDR == { "alice", "bob", "eve", "contract", "investor", "owner", "0x0" }
 \* a small range of amounts
 AMOUNTS ≜ 0‥100
 \* only the owner gets tokens initially
@@ -176,7 +176,7 @@ Let's start with specifying the most obvious, the most evil, behavior
 :smiling_imp:. Every now and then, we see protocols where an attacker is able to
 drain all tokens from the protocol. Following the tradition, we would say that
 the attacker is called Eve. To express this property, we simply write the
-following state invariant:
+following [State Invariant][]:
 
 **Source: [MC_AbstractDeFi.tla][]**
 
@@ -207,21 +207,24 @@ If you are a security researcher and you find a behavior like the one above in a
 security contest, that's definitely a big win for you. Collect the reward and
 enjoy your life :palm_tree: Or, maybe not, if 200 other participants have found
 the same issue :scream:. Of course, such findings are rare. They would
-demonstrate a catastrophic flaw in the protocol. Also, the model checker was
-lazy and produced us an example, where the funds were drained in a single step,
-while a large part of it was burnt. In real life, an attacker would typically
-drain funds via multiple transactions.
+demonstrate a catastrophic flaw in the protocol. Sometimes, this is caused by
+incorrectly set permissions, e.g., see [Decent721][] (my first :dollar:). Also,
+the model checker was lazy and produced us an example, where the funds were
+drained in a single step, while a large part of it was burnt. In real life, an
+attacker would typically drain funds via multiple transactions.
 
 Let's go back to the Code4rena classification of a high:
 
 > 3 — High: Assets can be stolen/lost/compromised directly (or indirectly if
 there is a valid attack path that does not have hand-wavy hypotheticals).
 
-Our invariant `DrainAllInv` specifies the case of assets being stolen.
+Our invariant `DrainAllInv` specifies the case of assets being stolen.  Even
+more, it specifies the case of all assets being stolen. We revisit this property
+later.
 
 ### 3.2. Burning Tokens
 
-**BurnAll.** We have seen an example of tokens being stolen. How about tokens being lost?
+We have seen an example of tokens being stolen. How about tokens being lost?
 Let's write a state invariant that tells us that it should not be possible to
 burn all the tokens:
 
@@ -242,10 +245,10 @@ We run the model checker and it gives us an example of a behavior that violates
 | **100**   | 0            | 0       | 0         | 0       | 0            |
 | 0         | 0            | 0       | 0         | 0       | 0            |
 
-**BurnAllButDust.** To be fair, it seems to be almost impossible that a protocol
-burns all of the tokens down to zero. Typically, some dust amounts would be left
-on the accounts. It is easy to modify `BurnAllInv` to account for dust amounts.
-Say, the amounts below 5 are considered to be dust:
+**Accounting for dust.** To be fair, it seems to be almost impossible that a
+protocol burns all of the tokens down to zero. Typically, some dust amounts
+would be left on the accounts. It is easy to modify `BurnAllInv` to account for
+dust amounts.  Say, the amounts below 5 are considered to be dust:
 
 **Source: [MC_AbstractDeFi.tla][]**
 
@@ -269,10 +272,11 @@ over five accounts, though it is still well below the initial supply.  This
 behavior still follows the `AbstractDeFi` specification.  Perhaps, there are
 protocols like that in the wild?
 
-**BurnSomeInv.** Okay, we can specify what it means to burn all or almost all of
-the tokens. How often does that happen? Similar to the case of `DrainAllInv`, it
-should be a rare finding. How about not burning all the tokens, but burning some
-of the initial supply? This is what we specify with `BurnSomeInv` below:
+**Burning some tokens.** Okay, we can specify what it means to burn all or
+almost all of the tokens. How often does that happen? Similar to the case of
+`DrainAllInv`, it should be a rare finding. How about not burning all the
+tokens, but burning some of the initial supply? This is what we specify with
+`BurnSomeInv` below:
 
 **Source: [MC_AbstractDeFi.tla][]**
 
@@ -298,15 +302,15 @@ violates `BurnSomeInv`:
 | **100**   | 0            | 0       | 0         | 0       | 0            |
 | **99**    | 0            | 0       | 0         | 0       | 0            |
 
-**Economic Feasibility.** Whereas the above example looks valid, it would be
-*hard to get a valid high
-finding out of that. Why? Logically speaking, it demonstrates a bug. However, we
-should not forget that DeFi deals with finances instead of perfect logic. Most
-likely, the above behavior would be rejected as a non-finding with a verdict of
-being "economically infeasible". The reason is that that attacker would have to
-burn gas to run this attack. If it costs the attacker more in gas to run the
-attack than they would benefit from it, e.g., from the token prices going down,
-then this attack would not be considered economically feasible.
+**Economic feasibility.** Whereas the above example looks valid, it would be
+hard to get a valid high finding out of that. Why? Logically speaking, it
+demonstrates a bug. However, we should not forget that DeFi deals with finances
+instead of perfect logic. Most likely, the above behavior would be rejected as a
+non-finding with a verdict of being "economically infeasible". The reason is
+that the attacker would have to burn gas to run this attack. If it costs the
+attacker more in gas to run the attack than they would benefit from it, e.g.,
+from the token prices going down, then this attack would not be considered
+economically feasible.
 
 The bad news is that the model checker has no idea about finances and what is
 feasible or not. The good news is that it is up to us to tell it what it means.
@@ -338,13 +342,121 @@ Again, the model checker has scattered the balances over various accounts, since
 this is allowed. What is important, the example shows that over a half of the
 tokens have disappeared, as we requested.
 
+OK. We have considered many ways to burn tokens. Are we done with losing tokens?
+Not yet. There is one more curious way to lose tokens.
 
+### 3.3. Transferring Tokens to an Uncontrolled Address
 
+Another way to lose tokens is by transferring them to an address that no one can
+control. Perhaps, the most famous example of this is transferring tokens to the
+address `0x0...0` in Ethereum, see [Transfer to zero address][]. In 2024, it's
+virtually impossible to get a reward for finding a transfer to `0x0....0`,
+though locking funds in a smart contract can still be a valid finding.
+
+It is easy to specify that a designated address should not receive tokens:
+
+**Source: [MC_AbstractDeFi.tla][]**
+
+```tla
+\* A state invariant: no transfer to zero should ever happen.
+LockingInZeroInv ≜
+    balances["0x0"] = 0
+```
+
+Again, the model checker is ready to give us a counterexample to `LockingInZeroInv`:
+
+| **owner** | **contract** | **eve** | **alice** | **bob** | **investor** | **0x0**      |
+|-----------|--------------|---------|-----------|---------|--------------|--------------|
+| **100**   | 0            | 0       | 0         | 0       | 0            | 0            |
+| **8**     | **2**        | 0       | 0         | 0       | **61**       | **29**       |
+
+Here we are. The address `0x0` has the balance of 29, and there is no way to
+recover these tokens.
+
+If you look at the example carefully, no tokens were burnt or minted. The token
+supply remains to be the same. I have asked the model checker to do it on
+purpose by using the definition `NextPreserving` instead of `Next`:
+
+**Source: [MC_AbstractDeFi.tla][]**
+
+```tla
+\* The next step that preserves the total supply.
+\* Use NextPreserving instead of Next, when you do not want to see the          
+\* examples of burning and minting.
+NextPreserving ≜
+    ∧ Next
+    ∧ LET AddBefore(sum, addr) ≜ sum + balances[addr]
+          AddAfter(sum, addr) ≜ sum + balances'[addr]
+          totalBefore ≜ ApaFoldSet(AddBefore, 0, ADDR)
+          totalAfter ≜ ApaFoldSet(AddAfter, 0, ADDR)
+      IN
+      totalBefore = totalAfter
+```
+
+### 3.4. Minting Tokens
+
+Surprisingly, we are still not done exploring the ways for Eve getting rich
+according to the "law of the code". Assume that we forbid our protocol to
+decrease the balances on all accounts. We can easily write a restricted form of `Next`,
+similar to `NextPreserving`:
+
+**Source: [MC_AbstractDeFi.tla][]**
+
+```tla
+\* The next step that does not allow the total supply decrease.
+\* Use NonDecreasing instead of Next, when you do not want to see the
+\* examples of burning.
+NextNonDecreasing ≜
+    ∧ Next
+    ∧ ∀ addr ∈ ADDR:
+        balances'[addr] ≥ balances[addr]
+```
+
+Further, we write an [Action Invariant][] for Eve:
+
+**Source: [MC_AbstractDeFi.tla][]**
+
+```tla
+\* An action invariant: Eve cannot increase her balance.
+EveNoBalanceIncreaseInv ≜
+    balances'["eve"] ≤ balances["eve"]
+```
+
+Obviously, the model checker produces an example of generously minting tokens:
+
+| **owner** | **contract** | **eve** | **alice** | **bob** | **investor** | **0x0**      |
+|-----------|--------------|---------|-----------|---------|--------------|--------------|
+| **100**   | 0            | 0       | 0         | 0       | 0            | 0            |
+| **100**   | **61**       | **67**  | **1**     | **80**  | **98**       | **29**       |
+
+Our abstract DeFi protocol has generously minted tokens to everyone, including Eve.
+
+### 4. A Bullet-Proof Protocol?
+
+Having restricted our protocol with `NextPreserving` and `NextNonDecreasing` in
+the previous sections, we may be tempted to combine both of these two
+constraints like this:
+
+**Source: [MC_AbstractDeFi.tla][]**
+
+```tla
+\* a combination of the above two transition relations
+NextPreservingAndNonDecreasing ≜
+    NextPreserving ∧ NextNonDecreasing
+```
+
+Interestingly, the model checker does not find a counterexample to **all
+invariants** that we have written so far. Is it a perfect bullet-proof protocol?
+Kind of, yes.  However, if we look carefully at the constraints in
+`NextPreservingAndNonDecreasing`, we will see that this protocol is doing
+absolutely nothing useful. It starts with the initial supply and never changes
+the balances.
 
 
 
 
 [^1]: I found TLA<sup>+</sup> specs to be more accessible in this blog post when they are written in Unicode, as produced by the tool [tlauc][] by [Andrew Helwer][].
+
 [Solarkraft]: https://konnov.phd/portfolio/solarkraft/
 [Stellar Community Fund]: https://communityfund.stellar.org/
 [UniStaker Infrastructure]: https://code4rena.com/reports/2024-02-uniswap-foundation
@@ -370,3 +482,7 @@ tokens have disappeared, as we requested.
 [tlauc]: https://github.com/tlaplus-community/tlauc
 [Andrew Helwer]: https://ahelwer.ca/
 [Hillel Wayne]: https://www.hillelwayne.com/
+[Transfer to zero address]: https://solodit.xyz/issues/transfer-to-zero-address-mixbytes-none-gearbox-protocol-markdown_
+[Decent721]: https://github.com/code-423n4/2024-01-decent-findings/issues/721
+[State Invariant]: https://apalache.informal.systems/docs/apalache/principles/invariants.html#state-invariants
+[Action Invariant]: https://apalache.informal.systems/docs/apalache/principles/invariants.html#action-invariants
