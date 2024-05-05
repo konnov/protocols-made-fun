@@ -25,13 +25,13 @@ INSTANCE AbstractDeFi2
 
 \* State invariants that may be of interest.
 
-\* A naive invariant: Eve cannot extract funds from the protocol.
-WithdrawLessThanDepositInv ==
-    amountsIn["eve"] > 0 => (amountsOut["eve"] <= amountsIn["eve"])
+\* A naive invariant: Eve cannot extract more than 150.00% of the deposit from the protocol
+WithdrawCappedInv ==
+    amountsIn["eve"] > 0 => (amountsOut["eve"] <= (15000 * amountsIn["eve"]) \div 10000)
 
-\* A safety property: If Eve has not deposited anything, she cannot withdraw.
-CannotWithdrawWithoutDeposit ==
-    [](amountsIn["eve"] = 0) => [](amountsOut["eve"] = 0)   
+\* A safety property: Eve's withdrawals are limited with her deposits.
+LimitedDeposit ==
+    []((amountsIn["eve"] > amountsOut["eve"]) => [](amountsOut["eve"] <= (15000 * amountsIn["eve"]) \div 10000))
 
 EveBalanceIsZero ==
     balances["eve"] = 0

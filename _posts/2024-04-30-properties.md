@@ -50,7 +50,7 @@ with stated assumptions, but external requirements.
 > 3 — High: Assets can be stolen/lost/compromised directly (or indirectly if
 there is a valid attack path that does not have hand-wavy hypotheticals).
 
-## 2. An Abstract DeFi Protocol
+## 2. Abstract DeFi Protocol
 
 Since Mediums and Highs involve a protocol, we need a protocol to talk about.
 At this point, a security researcher would typically choose one of the two
@@ -163,7 +163,7 @@ does allow for many behaviors that are ruled out in actual protocols. Yet, our
 specification is useful, as it lets us capture interesting behaviors without
 going into unnecessary details.
 
-## 3. Specifying a High
+## 3. Formalizing a High
 
 Now that we have given a bit of shape to our DeFi protocol, how do we specify
 a High? When I started to think about that, I realized that there is probably
@@ -431,7 +431,7 @@ Obviously, the model checker produces an example of minting tokens:
 
 Our abstract DeFi protocol has generously minted tokens to everyone, including Eve.
 
-## 4. A Bullet-Proof Protocol?
+## 4. Bullet-Proof Protocol?
 
 Having restricted our protocol with `NextPreserving` and `NextNonDecreasing` in
 the previous sections, we may be tempted to combine both of these two
@@ -560,31 +560,69 @@ We also introduce a model-checking instance [MC_AbstractDeFi2.tla][].
  
 ## 6. Refining the Draining Attacks
 
-### 6.1. A Naive Invariant
+Let's see how we could formalize more refined attacks, not just "drain it all".
 
-Now that we have `amountsIn` and `amountsOut`, we can specify a no draining
-state invariant:
+### 6.1. Naive Invariant
+
+Now that we have `amountsIn` and `amountsOut`, we can think of how to detect a
+state, where Eve exhibits malicious activity. Our first attempt is somewhat
+naive.  We state that it should be impossible for Eve to generate more than 50%
+on top of what she has deposited.
 
 ```tla
-\* A naive invariant: Eve cannot extract funds from the protocol.
-WithdrawLessThanDepositInv ≜
-    amountsIn["eve"] > 0 ⇒ (amountsOut["eve"] ≤ amountsIn["eve"])
+\* A naive invariant: Eve cannot extract more than 150.00% of her deposit from the protocol
+WithdrawCappedInv ≜
+    amountsIn["eve"] > 0 ⇒ (amountsOut["eve"] ≤ (15000 * amountsIn["eve"]) ÷ 10000)
 ```
 
-The model checker finds a counterexample to the above invariant in a few
-seconds. To make the table compact we write
-`balances[a]/amountsIn[a]/amountsOut[a]` for every address `a`.
+Since our abstract protocol is virtually unrestricted in what kind of updates it
+permits, the model checker quickly finds a countereexample to
+`WithdrawCappedInv`. To keep the table compact we write the triple
+`balances[a]/amountsIn[a]/amountsOut[a]` for every address `a`:
 
-| State Number | **owner** | **contract** | **eve** | **alice** | **bob** | **investor** | **0x0** |
-|--------------|-----------|--------------|---------|-----------|---------|--------------|---------|
-| 0.           | 100/0/0   | 0/0/0        | 0/0/0   | 0/0/0     | 0/0/0   | 0/0/0        | 0/0/0   |
-| 1.           | 100/0/0   | 0/0/0        | 0/0/0   | 0/0/0     | 0/0/0   | 0/0/0        | 0/0/0   |
-| 2.           | 17/0/0    | 48/0/0       | 4/0/1   | 42/0/0    | 85/0/0  | 66/0/0       | 2/0/0   |
+| State/Address | **owner** | **contract** | **eve** | **alice** | **bob** | **investor** | **0x0** |
+|---------------|-----------|--------------|---------|-----------|---------|--------------|---------|
+| 0.            | **100/100**/0   | 0/0/0     | 0/0/0   | 0/0/0     | 0/0/0   | 0/0/0        | 0/0/0  |
+| 1.            | **56/100**/0 | **14**/0/0 | **64**/0/0 | **67**/0/0 | **27**/0/0 | **73**/0/0 | **41**/0/0   |
+| 2.            | **56/100**/0  | **14**/0/0 | **62**/0/**2** | **67**/0/0 | **27**/0/0 | **73**/0/0 | **41**/0/0 |
+| 3.            | **56/100/**0  | **14**/0/0 | **63/1/2** | **67**/0/0 | **27**/0/0  | **73**/0/0 | **41**/0/0   |
 
+The invariant `WithdrawCappedInv` is violated in the third state, as Eve
+deposited 1 token in the third state, whereas she withdrew 2 tokens (in the
+second state). However, if we look carefully at the above example, we will see
+that something is wrong.  Indeed, Eve has the following values in the second
+state:
 
+```tla
+  amountsIn["eve"] = 0 ∧ amountsOut["eve"] = 2
+```
 
-### 6.2. A Temporal Property
+The above example demonstrates a strange behavior, where Eve could withdraw 2
+tokens without depositing anything. On one hand, it would probably demonstrate a
+bug in a real protocol. On the other hand, Eve could receive rewards such as
+protocol fees, which could explain this behavior.
 
+*Can we write a property that actually connects deposited tokens and withdrawn
+tokens?*
+
+### 6.2. Less Naive Safety Property
+
+Intuitively, we would like to say something like that:
+
+  *Whenever Eve deposits a positive amount, she cannot withdraw over 150% of
+   this amount.*
+
+This sounds like a temporal relation between deposits and withdrawals. Good that
+we are using Temporal Logic of Actions! In TLA<sup>+</sup>, we can easily write
+this property as `LimitedDeposit`:
+
+```tla
+\* A safety property: Eve's withdrawals are limited with her deposits.
+LimitedDeposit ≜
+    □((amountsIn["eve"] > amountsOut["eve"])
+         ⇒ □(amountsOut["eve"] ≤ (15000 * amountsIn["eve"]) ÷ 10000))
+```
+    
 ## 7. Centralization Risks
 
 ## 8. Conclusions
