@@ -558,13 +558,13 @@ The specification `AbstractDeFi2` extends `AbstractDeFi` as follows:
 
 We also introduce a model-checking instance [MC_AbstractDeFi2.tla][].
  
-## 6. Refining the Draining Attacks
+## 6. Refining Draining Attacks
 
 Let's see how we could formalize more refined attacks, not just "drain it all".
 
 ### 6.1. Naive Invariant
 
-Now that we have `amountsIn` and `amountsOut`, we can think of how to detect a
+Now that we have `amountsIn` and `amountsOut`, we can think about detecting a
 state, where Eve exhibits malicious activity. Our first attempt is somewhat
 naive.  We state that it should be impossible for Eve to generate more than 50%
 on top of what she has deposited.
@@ -576,29 +576,28 @@ WithdrawCappedInv ≜
 ```
 
 Since our abstract protocol is virtually unrestricted in what kind of updates it
-permits, the model checker quickly finds a countereexample to
-`WithdrawCappedInv`. To keep the table compact we write the triple
-`balances[a]/amountsIn[a]/amountsOut[a]` for every address `a`:
+permits, the model checker quickly finds a counterexample to
+`WithdrawCappedInv`:
 
-| State/Address | **owner** | **contract** | **eve** | **alice** | **bob** | **investor** | **0x0** |
-|---------------|-----------|--------------|---------|-----------|---------|--------------|---------|
-| 0.            | **100/100**/0   | 0/0/0     | 0/0/0   | 0/0/0     | 0/0/0   | 0/0/0        | 0/0/0  |
-| 1.            | **56/100**/0 | **14**/0/0 | **64**/0/0 | **67**/0/0 | **27**/0/0 | **73**/0/0 | **41**/0/0   |
-| 2.            | **56/100**/0  | **14**/0/0 | **62**/0/**2** | **67**/0/0 | **27**/0/0 | **73**/0/0 | **41**/0/0 |
-| 3.            | **56/100/**0  | **14**/0/0 | **63/1/2** | **67**/0/0 | **27**/0/0  | **73**/0/0 | **41**/0/0   |
+| **State**     | **`amountsIn["eve"]`** | **`balances["eve"]`**  | **`amountsOut["eve"]`** |
+| -------------:| ----------------------:| ----------------------:| -----------------------:|
+| 0.            | 0                      | 0                      | 0                       | 
+| 1.            | 0                      | **64**                 | 0                       |
+| 2.            | 0                      | **62**                 | **2**                   |
+| 3.            | **1**                  | **63**                 | **2**                   |
 
 The invariant `WithdrawCappedInv` is violated in the third state, as Eve
 deposited 1 token in the third state, whereas she withdrew 2 tokens (in the
-second state). However, if we look carefully at the above example, we will see
-that something is wrong.  Indeed, Eve has the following values in the second
-state:
+second state). If we look carefully at the above example, we will see that
+something is not exactly as we might have expected.  Indeed, Eve has the
+following values in the second state:
 
 ```tla
   amountsIn["eve"] = 0 ∧ amountsOut["eve"] = 2
 ```
 
 The above example demonstrates a strange behavior, where Eve could withdraw 2
-tokens without depositing anything. On one hand, it would probably demonstrate a
+tokens without depositing anything. On one hand, it could probably demonstrate a
 bug in a real protocol. On the other hand, Eve could receive rewards such as
 protocol fees, which could explain this behavior.
 
@@ -618,11 +617,42 @@ this property as `LimitedDeposit`:
 
 ```tla
 \* A safety property: Eve's withdrawals are limited with her deposits.
-LimitedDeposit ≜
+CappedWithdrawal ≜
     □((amountsIn["eve"] > amountsOut["eve"])
          ⇒ □(amountsOut["eve"] ≤ (15000 * amountsIn["eve"]) ÷ 10000))
 ```
-    
+
+The symbol `□` stands for "always", and `⇒` is classical implication, that is,
+`A ⇒ B` is equivalent to `¬A ∨ B`. When we check this property against
+[MC_AbstractDeFi2.tla][], the model checker produces a counterexample, e.g.:
+
+| **State**     | **`amountsIn["eve"]`** | **`balances["eve"]`**  | **`amountsOut["eve"]`** |
+| -------------:| ----------------------:| ----------------------:| -----------------------:|
+| 0.            | 0                      | 0                      | 0                       |
+| 1.            | **5**                  | **5**                  | 0                       |
+| 2.            | **5**                  | **42**                 | 0                       |
+| 3.            | **5**                  | **26**                 | **16**                  |
+
+If we find a behavior like the one above in a real protocol, this may clearly
+demonstrate an issue.
+
+### 6.3. Increasing Rewards with Time
+
+Whereas the behavior in the previous section could demonstrate a draining attack
+in one protocol, it could be seen as a false positive in another protocol.
+Indeed, our safety property `CappedWithdrawal` restricts all withdrawals at 150%
+of the deposits. It does not seem to be realistic in a staking protocol, where
+depositors may collect higher rewards in several years.
+
+When we have to express more fine-grained protocol properties like staking
+rewards, we have to introduce time in the protocol, e.g., block numbers.
+Further, we have to account for the periods of time when certain amounts are
+staked, and we have to constrain the withdrawals with the potential rewards.
+
+It's possible to further refine our abstract DeFi protocol. However, this blog
+post is too long already. If you are interested in seeing such properties, let
+me know.
+
 ## 7. Centralization Risks
 
 ## 8. Conclusions

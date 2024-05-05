@@ -30,7 +30,7 @@ WithdrawCappedInv ==
     amountsIn["eve"] > 0 => (amountsOut["eve"] <= (15000 * amountsIn["eve"]) \div 10000)
 
 \* A safety property: Eve's withdrawals are limited with her deposits.
-LimitedDeposit ==
+CappedWithdrawal ==
     []((amountsIn["eve"] > amountsOut["eve"]) => [](amountsOut["eve"] <= (15000 * amountsIn["eve"]) \div 10000))
 
 EveBalanceIsZero ==
