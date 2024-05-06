@@ -735,7 +735,8 @@ They would be even harder to write by hand.
 
 If you need my help in specifying the expected properties of your protocols, be
 it smart contracts, consensus, or distributed systems in general, feel free to
-[contact me](mailto:igor@konnov.phd).
+[contact me](mailto:igor@konnov.phd). In case you disagree with my thoughts, I
+would like to hear from you too!
 
 Curious to learn more about industrial applications of TLA<sup>+</sup>?
 Watch the latest talks from [TLA+ Conference 2024][].
