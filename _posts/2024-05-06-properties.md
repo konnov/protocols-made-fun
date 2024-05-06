@@ -2,7 +2,7 @@
 layout: post
 title: "Is it a high: What are your protocol properties?"
 date: 2024-05-06
-categories: smart-contracts contests specification tlaplus
+categories: smart-contracts contests specification invariants properties tlaplus
 math: true
 tlaplus: true
 ---
