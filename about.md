@@ -3,8 +3,8 @@ layout: page
 title: About
 ---
 
-Keep hearing about PMF from your manager and you don't know what it is? PMF is
-Protocols Made Fun. You are welcome!
+Keep hearing about PMF from your manager and you don't know what it is? Among other things,
+PMF is Protocols Made Fun.
 
 This is Igor Konnov's blog about protocol specification, testing, and
 verification. Licensed under [CC BY
@@ -14,6 +14,10 @@ details about me on [My Webpage][].
 This site refers to and/or derives from small portions of code and/or examples
 from:
 
+ - [Apalache][] that was developed at TU Wien, Inria Nancy, Interchain
+   Foundation, and Informal Systems. See the [Apalache License][] ==  [Apache
+   2.0][] for details.
+
  - [Quint][] that was developed at Informal Systems by:
    * Igor Konnov: Informal Systems (Austria) 2021-2023.
    * Shon Feder: Informal Systems (Canada), 2021-2023.
@@ -21,10 +25,6 @@ from:
    * Jure Kukovec: Informal Systems (Austria) 2021-2023.
    * Thomas Pani: Informal Systems (Austria), 2022-2023.
    * For details, see the [Quint License][] == [Apache 2.0][].
-
- - [Apalache][] that was developed at TU Wien, Inria Nancy, Interchain
-   Foundation, and Informal Systems. See the [Apalache License][] ==  [Apache
-   2.0][] for details.
 
 [Quint]: https://github.com/informalsystems/quint
 [Quint License]: https://github.com/informalsystems/quint/blob/main/LICENSE
