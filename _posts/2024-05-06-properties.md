@@ -1,7 +1,7 @@
 ---
 layout: post
-title: "Is it a medium or a high: What are the protocol expectations?"
-date: 2024-04-30
+title: "Is it a high: What are your protocol properties?"
+date: 2024-05-06
 categories: smart-contracts contests specification tlaplus
 math: true
 tlaplus: true
