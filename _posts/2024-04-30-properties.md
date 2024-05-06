@@ -163,7 +163,7 @@ does allow for many behaviors that are ruled out in actual protocols. Yet, our
 specification is useful, as it lets us capture interesting behaviors without
 going into unnecessary details.
 
-## 3. Formalizing a High
+## 3. Formalizing Highs
 
 Now that we have given a bit of shape to our DeFi protocol, how do we specify
 a High? When I started to think about that, I realized that there is probably
@@ -638,16 +638,18 @@ demonstrate an issue.
 
 ### 6.3. Increasing Rewards with Time
 
-Whereas the behavior in the previous section could demonstrate a draining attack
-in one protocol, it could be seen as a false positive in another protocol.
-Indeed, our safety property `CappedWithdrawal` restricts all withdrawals at 150%
-of the deposits. It does not seem to be realistic in a staking protocol, where
-depositors may collect higher rewards in several years.
+Whereas the protocol behavior in the previous section could demonstrate a
+draining attack in one protocol, it could be seen as a false positive in another
+protocol.  Indeed, our safety property `CappedWithdrawal` restricts all
+withdrawals at 150% of the deposits. For example, it does not seem to be
+realistic in a staking protocol, where depositors may collect higher rewards in
+several years.
 
 When we have to express more fine-grained protocol properties like staking
-rewards, we have to introduce time in the protocol, e.g., block numbers.
-Further, we have to account for the periods of time when certain amounts are
-staked, and we have to constrain the withdrawals with the potential rewards.
+rewards, we have to introduce the notion of time in the protocol. This usually
+needs consensus block numbers or timestamps. Further, we have to account for the
+periods of time when certain amounts are staked, and we have to constrain the
+withdrawals with the potential rewards.
 
 It's possible to further refine our abstract DeFi protocol. However, this blog
 post is too long already. If you are interested in seeing such properties, let
@@ -655,9 +657,89 @@ me know.
 
 ## 7. Centralization Risks
 
+So far, we have been seeing behaviors, in which Eve was obtaining or destroying
+tokens. Since we have not specified details of the actual protocol, we
+implicitly assumed that all the behaviors involved the actions by Eve. However,
+it often happens that an attacker can perform their actions only after the
+protocol adminstrator -- usually, the protocol owner -- has performed specific
+actions.
+
+This is where subtle issues may appear. In principle, the protocol owner could
+simply steal all the tokens or destroy the protocol contracts. If the protocol
+owner is a single externally-owned account (EOA), then the protocol has a single
+point of failure, namely, the protocol owner. This is why people say that such
+protocols have the risk of centralization, even though the rest of their
+operations is decentralized. Technically, the protocol owner does not have to be
+a single EOA. Instead, it could be a proxy contract that requires multiple
+signatures (multisig) for every transaction. Still, if this multisig contract
+requires only a few signatures, it can be considered centralized.
+
+Since the protocol owner has so much power, [centralization risks][] usually
+lead to no reward. However, sometimes the protocol owner may unlock absolutely
+valid protocol features that are exploited by an attacker later. Formalizing and
+verifying such findings is not trivial. To start with, we would have to
+partition the protocol actions according to the roles that are required to
+execute them. For instance, in Solidity, owner-only external functions usually
+come with the modifier `onlyOwner`. We could definitely specify role-related
+properties. However, it is out of scope for this blog post.
+
 ## 8. Conclusions
 
+We have looked into the most common behaviors that could indicate an attack
+leading to a potentially "High" finding. I am pretty sure that there are still
+plenty of findings on [Solodit][] that would need more fine-grained
+specifications of the properties and the protocols. Nevertheless, I believe
+that thinking about protocols and their properties in terms of state machines
+is extremely useful, for the following reasons:
 
+ 1. We *move away from extremely ambiguous descriptions in natural language* to
+ precise descriptions in a formal language that is designed for this purpose.  I
+ have been using TLA<sup>+</sup> in this blog post, since I am most comfortable
+ with the language and its tooling. Obviously, having been developing
+ [Apalache][] for over than seven years, I know how to express properties in
+ such a way that it works the best for the human reader and the model checker. I
+ could have used [Quint][] instead of TLA<sup>+</sup> and it would not make much
+ of a difference for this blog post. I just felt that the more mathematical
+ syntax of TLA<sup>+</sup> would suit this level of abstraction more naturally.
+ 
+ 1. We can *use tools* to produce positive examples that would help you in
+ understanding the properties better. As we have seen in the blog post, the
+ tools are extremely helpful in findind *counterexamples*, that is,
+ demonstrating the cases when the properties are violated. I have been using
+ [Apalache][]. Actually, we could find the same problems with [TLC][], though it
+ could take longer. Alternatively, we could express our abstract protocols in
+ Solidity and use a fuzzer such as [Medusa][] to produce examples. However, when
+ using a fuzzer, we would not be able to conclude that certain invariants could
+ not be violated.
+
+ 1. When we start thinking about protocols and their properties in terms of
+ state machines, we can rely upon the *decades of research* in computer-aided
+ verification and model checking. We do not have to reinvent from scratch the
+ techniques that are written in thousands of pages in [Handbook of Model
+ Checking][] and [Principles of Model Checking][].
+ 
+ 1. Classifying protocol properties is essential for *tool development*. When we
+ see that certain properties are required by multiple protocols, we can
+ fine-tune the tools to check these properties.
+
+This blog post is quite long. I have not considered another layer of attacks,
+namely, availability attacks. If you are curious to see a blog post on this
+topic, let me know. These are the attacks that disable certain actions in a
+protocol. Interestingly, such attacks require reasoning about liveness of the
+protocol, not just its safety. This would require temporal properties instead of
+invariants. Sometimes, it is possible to express such properties with state
+invariants. This is what [Apalache][] does internally, implementing the
+technique that is described in the paper called [Liveness Checking as Safety
+Checking][]. These invariants are large and hard to understand for a
+non-expert. They would be even harder to write by hand.
+
+If you need my help in specifying the expected properties of your protocols, be
+it smart contracts, consensus, or distributed systems in general, feel free to
+[contact me](mailto:igor@konnov.phd).
+
+
+**Footnotes:**
+ 
 [^1]: I found TLA<sup>+</sup> specs to be more accessible in this blog post when they are written in Unicode, as produced by the tool [tlauc][] by [Andrew Helwer][].
 
 [Solarkraft]: https://konnov.phd/portfolio/solarkraft/
@@ -691,3 +773,9 @@ me know.
 [Decent721]: https://github.com/code-423n4/2024-01-decent-findings/issues/721
 [State Invariant]: https://apalache.informal.systems/docs/apalache/principles/invariants.html#state-invariants
 [Action Invariant]: https://apalache.informal.systems/docs/apalache/principles/invariants.html#action-invariants
+[Centralization risks]: https://github.com/code-423n4/docs/blob/main/awarding/judging-criteria/severity-categorization.md#centralization-risks
+[Solodit]: https://solodit.xyz
+[Medusa]: https://github.com/crytic/medusa
+[Liveness Checking as Safety Checking]: https://www.sciencedirect.com/science/article/pii/S1571066104804109?via%3Dihub
+[Handbook of Model Checking]: https://link.springer.com/book/10.1007/978-3-319-10575-8
+[Principles of Model Checking]: https://mitpress.mit.edu/9780262026499/principles-of-model-checking/
