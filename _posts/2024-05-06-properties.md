@@ -12,13 +12,13 @@ tlaplus: true
 
 It has been a while, since I wrote to this blog. I was not just chilling these
 months though :mountain_bicyclist:. My friends and I have received funding from
-the Stellar Foundation to develop [Solarkraft][]. More funding is in progress.
-We also have been looking for bugs in Web3 protocols at [Code4rena][] and
-[Sherlock][], individually as well as in the team called [CodeWasp][]. Although
-we are still aiming at discovering a magic recipe to finding high-rewarding
-bugs, we had a few successes already such as getting the first places in the
-[UniStaker Infrastructure][] and [Mento][], among other findings in the recent
-months. 
+the Stellar Foundation to develop [Solarkraft][]. More funding is in on the way
+:yum:.  We also have been looking for bugs in Web3 protocols at [Code4rena][]
+and [Sherlock][], individually as well as in the team called [CodeWasp][].
+Although we are still aiming at discovering a magic recipe to finding
+high-rewarding bugs, we had a few successes already such as getting the first
+places in the [UniStaker Infrastructure][] and [Mento][], among other findings
+in the recent months. 
 
 One immediate observation about the Web3 contests is that not every valid
 finding guarantees a payout at the competition platforms. These platforms go in
