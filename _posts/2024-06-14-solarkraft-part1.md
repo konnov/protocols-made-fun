@@ -79,12 +79,14 @@ Caught your interest? [Reach out][Contact]!
 
 It should be clear by now that the traditional security model is quite error-prone. It involves a lot of diverse actors of varying skill levels, and targets individual development phases with different methods.
 
-![]({{ site.baseurl }}/img/solarkraft-monitoring.png)
-
 Can we take a security approach that cuts across all development phases?  
 Yes! With Solarkraft, we propose a [runtime monitoring][] solution to our problem. Runtime monitoring is a proactive approach that **monitors a smart contract for expected and abnormal behavior** as soon as it executes – and can happen during all phases of the development lifecycle. Not only that – it can supplement the artifacts (test, audit protocols, ...) developed by the traditional approach.
 
+![]({{ site.baseurl }}/img/solarkraft-monitoring.png)
+
 Here's how it works:
+
+![]({{ site.baseurl }}/img/solarkraft-architecture.jpg)
 
 1. **Monitor Specification:** Developers define a _runtime monitor_ that captures the expected behavior of the contract using a formal language like [TLA+][]. These specifications outline
     - **pre-conditions**: conditions that must be met before a function can execute,
@@ -94,8 +96,6 @@ Here's how it works:
     - **failure conditions**: conditions under which the smart contract must revert.
 
 (Solarkraft introduces two novel ideas: small _modular_ monitor specifications, and a _hybrid_ monitoring approach. We will cover both in a later posts.)
-
-![]({{ site.baseurl }}/img/solarkraft-architecture.jpg)
 
 {:start="2"}
 2. **Monitoring in Action:** The Solarkraft _fetcher_ component of the runtime monitor continuously observes the blockchain for contract invocations and retrieves the transaction data.
