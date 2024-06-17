@@ -19,7 +19,7 @@ tags:
 
 ![]({{ site.baseurl }}/img/solarkraft.png)
 
-» **This guest post by [Thomas Pani][] first appeared [on his blog](https://thpani.net/2024/06/why-smart-contract-bugs-matter-and-how-runtime-monitoring-saves-the-day-solarkraft-1/).**
+» **This guest post by [Thomas Pani][] first appeared [on his blog][part1].**
 
 _In this series of blog posts, I'm introducing [Solarkraft][], a TLA+-based runtime monitoring solution for [Soroban smart contracts][Soroban]. We will start easy, with an overview of smart contracts, their principal vulnerabilities, and the traditional model of securing smart contracts, and an overview of how Solarkraft proposes a new solution._  
 _The following posts dive deeper into Soroban and Solarkraft, how to write TLA+-based runtime monitors in Solarkraft, and the more technical parts of our unique runtime monitoring solution (modular and hybrid runtime monitors)._
@@ -119,6 +119,9 @@ _Development of Solarkraft was supported by the [Stellar Development Foundation]
 [Solarkraft]: https://thpani.net/solarkraft/
 [Audits]: https://thpani.net/audits/
 [Contact]: https://thpani.net/#contact
+
+[part1]: https://thpani.net/2024/06/why-smart-contract-bugs-matter-and-how-runtime-monitoring-saves-the-day-solarkraft-1/
+[part2]: https://thpani.net/2024/06/small-and-modular-runtime-monitors-in-tla-for-soroban-smart-contracts-solarkraft-2/
 
 [Igor Konnov]: https://konnov.phd
 [Jure Kukovec]: https://www.linkedin.com/in/jure-kukovec/
