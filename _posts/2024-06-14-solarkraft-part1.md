@@ -21,7 +21,7 @@ tags:
 
 » **This guest post by [Thomas Pani][] first appeared [on his blog][part1].**
 
-_In this series of blog posts, I'm introducing [Solarkraft][], a TLA+-based runtime monitoring solution for [Soroban smart contracts][Soroban]. We will start easy, with an overview of smart contracts, their principal vulnerabilities, and the traditional model of securing smart contracts, and an overview of how Solarkraft proposes a new solution._  
+_In this series of blog posts, we introduce [Solarkraft][], a TLA+-based runtime monitoring solution for [Soroban smart contracts][Soroban]. We will start easy, with an overview of smart contracts, their principal vulnerabilities, and the traditional model of securing smart contracts, and an overview of how Solarkraft proposes a new solution._  
 _The following posts dive deeper into Soroban and Solarkraft, how to write TLA+-based runtime monitors in Solarkraft, and the more technical parts of our unique runtime monitoring solution (modular and hybrid runtime monitors)._
 
 _Solarkraft has been developed in collaboration by [Igor Konnov][], [Jure Kukovec][], [Andrey Kuprianov][] and [Thomas Pani][]._
