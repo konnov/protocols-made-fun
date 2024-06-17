@@ -15,8 +15,6 @@ tags:
   - "stellar"
   - "tla"
   - "tlaplus"
-math: true
-tlaplus: true
 ---
 
 ![]({{ site.baseurl }}/img/solarkraft.png)
