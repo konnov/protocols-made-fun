@@ -110,7 +110,7 @@ By continuously monitoring behavior against formal specifications, runtime monit
 
 - **Early Detection:** Runtime monitoring can identify potential issues early in the execution process, allowing for quicker mitigation and reducing the attack window for malicious actors.
 
-In the following posts of this series, we'll delve deeper into the world of runtime monitoring in Solarkraft with TLA+. We'll explore how to specify contract behavior using this language, dive into Solarkraft's unique specification and monitoring strategies, and see how runtime verification can be seamlessly integrated into the development workflow to build more secure and reliable smart contracts.
+In the following posts of this series, we'll delve deeper into the world of runtime monitoring in Solarkraft with TLA+. We'll explore [how to specify contract behavior using this language][part2], dive into Solarkraft's unique specification and monitoring strategies, and see how runtime verification can be seamlessly integrated into the development workflow to build more secure and reliable smart contracts.
 
 _Development of Solarkraft was supported by the [Stellar Development Foundation][] with a generous Activation Award from the [Stellar Community Fund][] of 50,000 USD in XLM._
 
