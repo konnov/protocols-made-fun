@@ -166,13 +166,13 @@ We expect `claim()` to revert if the time bound given by the depositor is violat
 
 ```tlaplus
 MustRevert_claim_BeforeTimeBound(env) ≜
-    ∧ Balance.time_bound.kind = Variant("Before", UNIT)
+    ∧ Balance.time_bound.kind = "Before"
     ∧ env.timestamp > Balance.time_bound.timestamp
 ```
 
 Here, we check two conditions – they are connected through TLA+'s conjunction `∧`, indicating that _both_ conditions must hold for the contract to revert.
 
-`Variant("Before", UNIT)` is simply the equivalent way of writing the Rust variant `Before()`. So if we see a "before" time bound, but the block timestamp is _after_ the timestamp specified during `deposit()`, the call to `claim()` should revert.
+`"Before"` is simply the equivalent way of writing the Rust variant `Before()`. So if we see a "before" time bound, but the block timestamp is _after_ the timestamp specified during `deposit()`, the call to `claim()` should revert.
 
 ### Monitors in TLA+ are _Smadular_
 
@@ -202,7 +202,7 @@ Yet, we managed to give a **small behavioral Solarkraft spec** in just 3 lines o
 
 ```tlaplus
 MustRevert_claim_BeforeTimeBound(env) ≜
-    ∧ Balance.time_bound.kind = Variant("Before", "U_OF_UNIT")
+    ∧ Balance.time_bound.kind = "Before"
     ∧ env.timestamp > Balance.time_bound.timestamp
 ```
 
