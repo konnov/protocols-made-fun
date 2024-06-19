@@ -29,7 +29,7 @@ _Solarkraft has been developed in collaboration by [Igor Konnov][], [Jure Kukove
 If you’ve read the previous posts, and are keen to start using Solarkraft, you’ve come to the right place. In this post, we’ll give you a detailed overview of the various features of Solarkraft, and explain how to use each one, step-by-step.
 We’ve recorded a short video demonstrating every command, which you can follow along as give more details:
 
-![]({{ site.baseurl }}/video/SolarkraftDemo.mp4)
+{% include youtube.html id="bRrjsHjMEOk" %}
 
 ## Before we start
 In order to use `solarkraft`, you need the following:
