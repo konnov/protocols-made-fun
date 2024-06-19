@@ -36,13 +36,7 @@ which you can follow along as we give more details:
 
 {% include youtube.html id="bRrjsHjMEOk" %}
 
-<br></br>
-
 ### A ten-minute tutorial
-
-If you prefer a longer voiced tutorial, you can find it here:
-
-<br></br>
 
 {% include youtube.html id="E99TNzTHLXI" %}
 
