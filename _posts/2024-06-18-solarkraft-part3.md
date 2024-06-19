@@ -115,6 +115,11 @@ If you call `solarkraft verify --alert`, and provide the contract ID of such an 
   2. `list`, to see which transactions you have already fetched, and what their verification statuses are, then
   3. `verify` to check the transaction data against the monitor specification, and  `--alert`, if you want the verification results to get submitted on-chain automatically
 
+## What's next?
+
+Our final post will present a deep-dive into the topic of runtime monitoring; it will address forward and backward reasoning, "hybrid" monitors, and the circumstances in which either is appropriate and/or necessary.
+
+_Development of Solarkraft was supported by the [Stellar Development Foundation][] with a generous Activation Award from the [Stellar Community Fund][] of 50,000 USD in XLM._
 
 
 [Solarkraft]: https://thpani.net/solarkraft/
