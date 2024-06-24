@@ -31,9 +31,9 @@ While the previous posts explain the current state of the project, in this one w
 
 ## Blockchain Runtime Monitors
 
-Runtime monitoring, also known as [Runtime verification][], is a well-established field, where many practical approaches have been devised and applied successfully. Based on this heritage, we proposed in [Part 2: "Guardians of the Blockchain"][part2] the first version Web3 runtime monitoring system for the Stellar blockchain, which is based on the [TLA+][] specification language, a well-established formalism for specifying and verifying distributed systems. 
+Runtime monitoring, also known as [runtime verification][], is a well-established field, where many practical approaches have been devised and applied successfully. Based on this heritage, we proposed the first version Web3 runtime monitoring system for the Stellar blockchain in [Part 2: "Guardians of the Blockchain"][part2]. Our system is based on the [TLA+][] specification language, a well-established formalism for specifying and verifying distributed systems. 
 
-Taking a step back from the concrete solution, let's try to answer the more abstract question: _What do we want to achieve with runtime monitors in blockchains?_ As eventually runtime monitors are going to be deployed and executed _on the live blockchain_, and they should satisfy the three requirements:
+Taking a step back from the concrete solution, let's try to answer the more abstract question: _What do we want to achieve with runtime monitors in blockchains?_ As runtime monitors are eventually going to be deployed and executed _on the live blockchain_, and they should satisfy the following requirements:
 
 - **Prevent safety violations** (_safety_): bad things, such as your token balance being stolen, should not happen. This is the primary goal of runtime monitors: react preventively, and abort unwanted executions.
 - **Detect liveness violations** (_liveness_): good things should be able to happen! E.g. you, as an account owner, should be able to withdraw your own balance. If a legitimate transaction keeps reverting, that's also a bug, not less severe than someone stealing your tokens.
@@ -41,20 +41,22 @@ Taking a step back from the concrete solution, let's try to answer the more abst
 
 The problem we've observed with the previously employed specification approaches is that the specs of _what_ the method should do can easily be much larger than the actual implementation; compare e.g. this [ERC-721 Certora spec][] with the [ERC-721 implementation][] (don't forget to exclude comments when comparing). So we would like to add to the above the following soft requirement:
 
-- **Specify behaviors compactly and independently** (_compactness and modularity_): it is usually the case that a smart contract encompasses a lot of various aspects (e.g. authentication, authorization, storage management, math computations), as well is written/employed/reasoned about by various roles (e.g. smart contract developer, mathematician, architect, UI developer). All of those roles should be able to specify various aspects of the smart contract behavior as easily and as independently as possible.
+- **Specify behaviors compactly and independently** (_compactness and modularity_): it is usually the case that a smart contract encompasses a lot of various aspects (e.g. authentication, authorization, storage management, math computations), and is written/employed/reasoned about by various roles (e.g. smart contract developer, mathematician, architect, UI developer). All of those roles should be able to specify various aspects of the smart contract behavior as easily and as independently as possible.
 
-So monitors should be able to specify both _safety_ and _liveness_ properties, be _complete_ wrt. the current and future system behaviors, and, preferably, also be _compact and modular_. For that we propose to apply a certain structure to the _direct monitors_ (those reasoning from cause to effect), as well as complement it with _reverse monitors_ (those going from effect to cause), thus combining them together in what we call _hybrid monitors_.
+So monitors should be able to specify both _safety_ and _liveness_ properties, be _complete_ wrt. the current and future system behaviors, and, preferably, also be _compact and modular_. For that we propose a conceptual separation of monitors into _direct monitors_ (those reasoning from cause to effect), and _reverse monitors_ (those going from effect to cause). We can combine the two together in what we call _hybrid monitors_.
 
 
 ## Direct Monitors
 
-Here we reason from the cause (method invocation) to the effect, but apply a structure which closely mimics in formal semantics what we expect to see when we program smart contracts. The essence of the structure is in the picture below:
+Here we reason from the cause (method invocation) to the effect, but apply a structure which closely mimics, in formal semantics, what we expect to see when we program smart contracts. The essence of the structure is in the picture below:
 
 ![Direct monitor specs](/img/DirectMonitors.png)
 
-- `MustFail_i` is a condition under which the method is expected to fail. If _any_ of those conditions hold, the monitor fires, and checks that the method does indeed fail;
-- `MustPass_i` is a condition, under which the method is expected to succeed, _provided that_ none of the `MustFail_i` conditions fired. Each `MustPass_i` condition represents a separate happy path in the method invocation;
-- `MustHold_i` is a condition that should hold over past and next state variables, if the method invocation is successful (e.g. the tokens should be transferred). _All_ of `MustHold_i` should hold if the method is executed successfully.
+In direct monitors, we distinguish three kinds of conditions:
+
+- `MustFail_i` is a condition under which the method is expected to fail. If _any_ of those conditions hold, the monitor activates, and checks that the method does indeed fail;
+- `MustPass_i` is a condition, under which the method is expected to succeed, _provided that_ none of the `MustFail_i` conditions hold. Each `MustPass_i` condition represents a separate happy path in the method invocation;
+- - `MustHold_i` is a condition that should hold after the method invocation is successful (e.g. the tokens should be transferred). Unlike the previous two categories, which reason only about the state of the system before the method invocation, these properties may reference both the post-method state, and the pre-method state. _All_ of `MustHold_i` should hold if the method is executed successfully.
 
 
 In the above, `Must<Fail|Pass|Hold>` is a prefix, which tells the monitor system how to interpret this predicate. The complete pattern for predicate names with these prefixes is as follows:
@@ -65,14 +67,14 @@ Must<Fail|Pass|Hold>_<Method>_<ConditionDescription>
 
 All predicates which refer to the same `<Method>` will be grouped, to create together one _method monitor_. Interpreted formally, the monitor should do the following when `<Method>` is invoked:
 
-1. If any of `MustFail_i` conditions fire, check that method invocation reverts (otherwise, issue a warning / revert if configured to do so)
-2. If none of `MustFail_i` conditions fired, but method invocation reverted, issue a warning (incomplete spec)
-3. If none of  `MustFail_i` fired, and one of `MustPass_i` conditions fired, check that method invocation succeeds (otherwise, issue a warning)
-3. If none of  `MustFail_i` fired, and none of `MustPass_i` conditions fired, but method invocation succeeded, issue a warning of an incomplete spec (or revert if configured to do so)
+1. If any of `MustFail_i` conditions hold, check that method invocation reverts (otherwise, issue a warning / revert if configured to do so)
+2. If none of `MustFail_i` conditions hold, but method invocation reverted, issue a warning (incomplete spec)
+3. If none of  `MustFail_i` hold, and one of `MustPass_i` conditions hold, check that method invocation succeeds (otherwise, issue a warning)
+3. If none of  `MustFail_i` hold, and none of `MustPass_i` conditions hold, but method invocation succeeded, issue a warning of an incomplete spec (or revert if configured to do so)
 4. If method invocation succeeds, check that all of `MustHold_i` conditions hold on the pre- and post-states of the method invocation (otherwise, issue a warning / revert if configured to do so)
 
 
-Notice that above we apply _or_ as default connector for preconditions (`MustFail_i` / `MustPass_i`), and we apply _and_ as default connector for effects (`MustHold_i`). Thus, you may split preconditions/effects into separate predicates at your convenience, thus avoiding complicated logical structure inside predicates themselves.
+Notice that above we apply _or_ as default connector for preconditions (`MustFail_i` / `MustPass_i`), and we apply _and_ as default connector for effects (`MustHold_i`). Thus, you may split preconditions/effects into separate predicates at your convenience, avoiding complicated logical structure inside predicates themselves.
 
 
 
@@ -84,12 +86,12 @@ Having outlined the general structure of direct monitors, let's apply it to the 
 
 As can be seen, a direct method monitor is decomposed into a collection of independent and small monitors, i.e. we did achieve our (soft) goal of _compactness and modularity_. Safety and liveness goals also seem to be satisfied:
 
-- _Safety_: Timelock's direct monitors guarantee the whole bunch of safety properties, a safety property is usually ensured by either <font style="background: #fd4d4d;">MustFail</font>, or <font style="background: #ffe342;">MustHold</font>, or a combination of both conditions. For example:
+- _Safety_: Timelock's direct monitors guarantee numerous safety properties. A safety property is usually ensured by either <font style="background: #fd4d4d;">MustFail</font>, or <font style="background: #ffe342;">MustHold</font>, or a combination of both conditions. For example:
   - The property "only the approved claimant may claim the deposit" is ensured by the <font style="background: #fd4d4d;">NonClaimant</font> sub-monitor;
   - The property "the Timelock contract receives the deposited funds from the claimant" is ensured by the combination of <font style="background: #fd4d4d;">NotEnoughBalance</font> and  <font style="background: #ffe342;">TokenTransferred</font> sub-monitors.
- - _Liveness_: Timelock's liveness properties are guaranteed by the <font style="background: #54c45e;">MustPass</font> conditions: 
-   - Implicit in case of `deposit` (whatever doesn't fail, should succeed);
-   - Explicit in case of `claim`: a claim happening before the time bound, when its kind is `Before`, should succeed due to <font style="background: #54c45e;">BeforeTimeBound</font> (provided all other conditions are met); similarly, a claim happening after the time bound, when its kind is `After`, should succeed due to <font style="background: #54c45e;">AfterTimeBound</font>.
+- _Liveness_: Timelock's liveness properties are guaranteed by the <font style="background: #54c45e;">MustPass</font> conditions: 
+  - Implicit in case of `deposit` (whatever doesn't fail, should succeed);
+  - Explicit in case of `claim`: a claim happening before the time bound, when its kind is `Before`, should succeed due to <font style="background: #54c45e;">BeforeTimeBound</font> (provided all other conditions are met); similarly, a claim happening after the time bound, when its kind is `After`, should succeed due to <font style="background: #54c45e;">AfterTimeBound</font>.
 
 
 Can the described approach of direct monitors be considered satisfactory? Please stop to think about it for a sec, before opening our answer below.
@@ -97,12 +99,12 @@ Can the described approach of direct monitors be considered satisfactory? Please
 <details>
 <summary> <b>Are direct monitors enough?</b></summary>
 
-<p>You may have guessed the answer: we believe NO! And here is an (incomplete) list of whys:</p>
+<p>You may have guessed the answer: we believe NO! And here is an (incomplete) list of reasons why:</p>
 
 <ol>
-<li> A method may have a side effect, which was overlooked by the spec author. E.g. a boolean flag is set, which in another method allows to direct funds to another account.</li>
-<li> Code evolves, but the spec stays as is; as a result a side effect above is introduced unintentionally, with the stale spec not accounting for it.</li>
-<li> Internal state component is modified in multiple methods, in different ways. The specification about how the component should be updated is scattered in multiple places, and loopholes may easily creep in.</li>
+<li> A method may have a side effect, which was overlooked by the spec author. E.g. a boolean flag gets set, which allows the redirection of funds to another account in a different method.</li>
+<li> Code evolves, but the spec stays as is; as a result a side effect, like the one above, is introduced unintentionally, with the stale spec not accounting for it.</li>
+<li> The same internal state component is modified by multiple methods, in different ways. The specification of how the component should be updated is scattered across multiple places, and loopholes may easily creep in.</li>
 <li> An invariant which is preserved by the method of this contract, is violated by a method from another contract. As no specs are written or monitored for this other contract, no violation is detected.</li>
 </ol>
 
@@ -116,11 +118,14 @@ With reverse reasoning we will try to patch the loopholes that were left by dire
 
 ![Reverse monitor specs](/img/ReverseMonitors.png)
 
+In reverse monitors, we distinguish two kinds of conditions:
 
 - `MonitorTrigger_i` is a condition which triggers (activates) the monitor. If _any_ of those conditions hold, the monitor is activated;
-- `MonitorEffect_i` is a condition over past and next state variables, which specifies the effect that the the monitor, if activated, should check. _All_ of `MonitorEffect_i` should hold if the transaction is successful.
+- `MonitorEffect_i` is a condition over past and next state variables, which specifies the effect that the monitor, if activated, should check. _All_ of `MonitorEffect_i` should hold if the transaction is successful.
 
-Similar to direct reasoning, in the above, `Monitor<Trigger|Effect>` is a prefix, which tells the monitor system how to interpret this predicate. The complete pattern for predicate names with these prefixes is as follows:
+Similar to direct reasoning, in the above, `Monitor<Trigger|Effect>` is a prefix, which tells the monitor system how to interpret this predicate. `MonitorEffect` in a reverse monitor plays exactly the same role as `MustHold` in a direct monitor: expresses a post-condition that must hold when the monitor is activated. Preconditions are treated simpler though. Unlike direct monitors, where the precondition is expressed by a combination of `MustFail/MustPass` predicates, `MonitorTrigger` is a single condition which is enough to activate the monitor.
+
+ The complete pattern for predicate names with these prefixes is as follows:
 
 ```
 Monitor<Trigger|Effect>_<Monitor>_<ConditionDescription>
@@ -128,7 +133,7 @@ Monitor<Trigger|Effect>_<Monitor>_<ConditionDescription>
 
 All predicates which refer to the same `<Monitor>` will be grouped, to create together one _effect monitor_. Interpreted formally, the monitor should do the following when activated:
 
-- If _any_ of `MonitorTrigger_i` conditions fire, check that _all_ `MonitorEffect_i` hold over the past and next states (otherwise, issue a warning / revert if configured to do so)
+- If _any_ of `MonitorTrigger_i` conditions hold, check that _all_ `MonitorEffect_i` hold over the past and next states (otherwise, issue a warning / revert if configured to do so)
 
 Again, imposing a simple structure which combines triggers with _or_, but effects with _and_ allows you to avoid cumbersome logic inside monitor predicates.
 
@@ -189,7 +194,7 @@ _Development of Solarkraft was supported by the [Stellar Development Foundation]
 [token_balance]: https://github.com/freespek/solarkraft/blob/cf26a544ab204220eab62a3545300cb689aa899b/doc/case-studies/timelock/token_balance.tla
 
 
-[Runtime verification]: https://en.wikipedia.org/wiki/Runtime_verification
+[runtime verification]: https://en.wikipedia.org/wiki/Runtime_verification
 [TLA+]: https://en.wikipedia.org/wiki/TLA%2B
 [Timelock contract]: https://github.com/stellar/soroban-examples/blob/v20.0.0/timelock/src/lib.rs
 [SCF 24 submission example]: ./scf24/example/README.md
