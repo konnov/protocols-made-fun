@@ -56,7 +56,7 @@ In direct monitors, we distinguish three kinds of conditions:
 
 - `MustFail_i` is a condition under which the method is expected to fail. If _any_ of those conditions hold, the monitor activates, and checks that the method does indeed fail;
 - `MustPass_i` is a condition, under which the method is expected to succeed, _provided that_ none of the `MustFail_i` conditions hold. Each `MustPass_i` condition represents a separate happy path in the method invocation;
-- - `MustHold_i` is a condition that should hold after the method invocation is successful (e.g. the tokens should be transferred). Unlike the previous two categories, which reason only about the state of the system before the method invocation, these properties may reference both the post-method state, and the pre-method state. _All_ of `MustHold_i` should hold if the method is executed successfully.
+- `MustHold_i` is a condition that should hold after the method invocation is successful (e.g. the tokens should be transferred). Unlike the previous two categories, which reason only about the state of the system before the method invocation, these properties may reference both the post-method state, and the pre-method state. _All_ of `MustHold_i` should hold if the method is executed successfully.
 
 
 In the above, `Must<Fail|Pass|Hold>` is a prefix, which tells the monitor system how to interpret this predicate. The complete pattern for predicate names with these prefixes is as follows:
@@ -120,12 +120,12 @@ With reverse reasoning we will try to patch the loopholes that were left by dire
 
 In reverse monitors, we distinguish two kinds of conditions:
 
-- `MonitorTrigger_i` is a condition which triggers (activates) the monitor. If _any_ of those conditions hold, the monitor is activated;
-- `MonitorEffect_i` is a condition over past and next state variables, which specifies the effect that the monitor, if activated, should check. _All_ of `MonitorEffect_i` should hold if the transaction is successful.
+- `MonitorTrigger_i` is a condition over past and next state variables, which triggers (activates) the monitor. If _any_ of those conditions hold, the monitor is activated. These conditions should not be confused with preconditions `MustFail/MustPass` from direct monitors: unlike those, a `MonitorTrigger` can express conditions like _"a state variable has changed its value."_
+- `MonitorEffect_i` is a condition over past and next state variables, which specifies the effect that the monitor, if activated, should check. _All_ of `MonitorEffect_i` should hold if the transaction is successful. These conditions are the same as `MustHold` in direct monitors, and express a post-condition. 
 
-Similar to direct reasoning, in the above, `Monitor<Trigger|Effect>` is a prefix, which tells the monitor system how to interpret this predicate. `MonitorEffect` in a reverse monitor plays exactly the same role as `MustHold` in a direct monitor: expresses a post-condition that must hold when the monitor is activated. Preconditions are treated simpler though. Unlike direct monitors, where the precondition is expressed by a combination of `MustFail/MustPass` predicates, `MonitorTrigger` is a single condition which is enough to activate the monitor.
+_Thus, the main difference wrt. direct monitors is how monitor activation is expressed: while direct monitors are activated by observing the cause (a method invocation with specific parameters), reverse monitors are activated by observing the effect (a change in state variables)._
 
- The complete pattern for predicate names with these prefixes is as follows:
+In the above, `Monitor<Trigger|Effect>` is a prefix, which tells the monitor system how to interpret this predicate. The complete pattern for predicate names with these prefixes is as follows:
 
 ```
 Monitor<Trigger|Effect>_<Monitor>_<ConditionDescription>
@@ -193,11 +193,7 @@ _Development of Solarkraft was supported by the [Stellar Development Foundation]
 [balance_record]: https://github.com/freespek/solarkraft/blob/cf26a544ab204220eab62a3545300cb689aa899b/doc/case-studies/timelock/balance_record.tla
 [token_balance]: https://github.com/freespek/solarkraft/blob/cf26a544ab204220eab62a3545300cb689aa899b/doc/case-studies/timelock/token_balance.tla
 
-
-[runtime verification]: https://en.wikipedia.org/wiki/Runtime_verification
-[TLA+]: https://en.wikipedia.org/wiki/TLA%2B
+[runtime verification]: https://runtime-verification.github.io/
 [Timelock contract]: https://github.com/stellar/soroban-examples/blob/v20.0.0/timelock/src/lib.rs
 [SCF 24 submission example]: ./scf24/example/README.md
 [Timelock monitor spec]: ./case-studies/timelock/timelock_monitor.tla
-
-
