@@ -31,15 +31,15 @@ While the previous posts explain the current state of the project, in this one w
 
 ## Blockchain Runtime Monitors
 
-Runtime monitoring, also known as [runtime verification][], is a well-established field, where many practical approaches have been devised and applied successfully. Based on this heritage, we proposed the first version Web3 runtime monitoring system for the Stellar blockchain in [Part 2: "Guardians of the Blockchain"][part2]. Our system is based on the [TLA+][] specification language, a well-established formalism for specifying and verifying distributed systems. 
+Runtime monitoring, also known as [runtime verification][], is a well-established field, where many practical approaches have been devised and applied successfully. Based on this heritage, we proposed the first version of a Web3 runtime monitoring system for the Stellar blockchain in [Part 2: "Guardians of the Blockchain"][part2]. Our system is based on the [TLA+][] specification language, a well-established formalism for specifying and verifying distributed systems. 
 
-Taking a step back from the concrete solution, let's try to answer the more abstract question: _What do we want to achieve with runtime monitors in blockchains?_ As runtime monitors are eventually going to be deployed and executed _on the live blockchain_, and they should satisfy the following requirements:
+Taking a step back from the concrete solution, let's try to answer the more abstract question: _What do we want to achieve with runtime monitors in blockchains?_ As runtime monitors are eventually going to be deployed and executed _on the live blockchain_, they should satisfy the following requirements:
 
-- **Prevent safety violations** (_safety_): bad things, such as your token balance being stolen, should not happen. This is the primary goal of runtime monitors: react preventively, and abort unwanted executions.
+- **Prevent from safety violations** (_safety_): bad things, such as your token balance being stolen, should not happen. This is the primary goal of runtime monitors: react preventively, and abort unwanted executions.
 - **Detect liveness violations** (_liveness_): good things should be able to happen! E.g. you, as an account owner, should be able to withdraw your own balance. If a legitimate transaction keeps reverting, that's also a bug, not less severe than someone stealing your tokens.
 - **Detect unexpected behaviors** (_completeness_): same as code, specs are not perfect. If a spec author overlooked some behaviors, and they manifest themselves on the live blockchain, this may mean anything: from simple spec incompleteness, to an exploit being executed. Monitors should be configurable to either issue a simple warning, or to prevent such behaviors altogether.
 
-The problem we've observed with the previously employed specification approaches is that the specs of _what_ the method should do can easily be much larger than the actual implementation; compare e.g. this [ERC-721 Certora spec][] with the [ERC-721 implementation][] (don't forget to exclude comments when comparing). So we would like to add to the above the following soft requirement:
+The problem we've observed with the previously employed approaches to formal specification is that the specs of _what_ the method should do can easily be much larger than the actual implementation. So we would like to add to the above the following soft requirement:
 
 - **Specify behaviors compactly and independently** (_compactness and modularity_): it is usually the case that a smart contract encompasses a lot of various aspects (e.g. authentication, authorization, storage management, math computations), and is written/employed/reasoned about by various roles (e.g. smart contract developer, mathematician, architect, UI developer). All of those roles should be able to specify various aspects of the smart contract behavior as easily and as independently as possible.
 
@@ -97,7 +97,7 @@ As can be seen, a direct method monitor is decomposed into a collection of indep
 Can the described approach of direct monitors be considered satisfactory? Please stop to think about it for a sec, before opening our answer below.
 
 <details>
-<summary> <b>Are direct monitors enough?</b></summary>
+<summary> <b>Are direct monitors sufficient?</b></summary>
 
 <p>You may have guessed the answer: we believe NO! And here is an (incomplete) list of reasons why:</p>
 
@@ -198,8 +198,6 @@ _Development of Solarkraft was supported by the [Stellar Development Foundation]
 [TLA+]: https://en.wikipedia.org/wiki/TLA%2B
 [Timelock contract]: https://github.com/stellar/soroban-examples/blob/v20.0.0/timelock/src/lib.rs
 [SCF 24 submission example]: ./scf24/example/README.md
-[ERC-721 Certora spec]: https://github.com/OpenZeppelin/openzeppelin-contracts/blob/255e27e6d22934ddaf00c7f279039142d725382d/certora/specs/ERC721.spec
-[ERC-721 implementation]: https://github.com/OpenZeppelin/openzeppelin-contracts/blob/255e27e6d22934ddaf00c7f279039142d725382d/contracts/token/ERC721/ERC721.sol
 [Timelock monitor spec]: ./case-studies/timelock/timelock_monitor.tla
 
 
