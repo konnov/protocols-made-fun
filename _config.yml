@@ -17,6 +17,10 @@ github_username:  konnov
 plugins:
   - jekyll-feed
   - jemoji
+# https://docs.github.com/en/enterprise-cloud@latest/pages/setting-up-a-github-pages-site-with-jekyll/about-github-pages-and-jekyll#syntax-highlighting
+kramdown:
+  syntax_highlighter_opts:
+    disable : true
 exclude:
   - _scripts
   - .sass-cache/
