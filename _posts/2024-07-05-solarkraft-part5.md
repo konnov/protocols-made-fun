@@ -74,7 +74,7 @@ Notice that the first problem (_monitoring incompleteness_) is exactly the reaso
 
 **Here is where formal methods-based blockchain monitoring comes to save the day.** Formal methods offer a mathematical logic-based solution which allows in many cases to _completely specify and differentiate valid/invalid transactions_. Moreover, using such decades-proven specification languages as [TLA+][] helps to do it very compactly, and employing such powerful symbolic model checkers as [Apalache][] allows us to check formal specifications extremely fast, in fractions of a second. 
 
-**We plan to seamlessly integrate complete validation of transactions against monitor specifications directly into the transaction execution lifecycle.** With our current [Solarkraft system][Solarkraft] we have made the first step towards this ultimate goal of _online blockchain monitoring_; in the subsequent sections we elaborate in more details about the technical details, as well as the next steps towards our goal.
+**We want to seamlessly integrate complete validation of transactions against monitor specifications directly into the transaction execution lifecycle.** With our current [Solarkraft system][Solarkraft] we have made the first step towards this ultimate goal of _online blockchain monitoring_; in the subsequent sections we elaborate in more details about the technical details, as well as the next steps towards our goal.
 
 
 ## Blockchain Monitors in Formal Attire 👔
