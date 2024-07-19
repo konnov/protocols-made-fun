@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "The Rise of Model Checker: Verifying Blockchain Monitors In and Near Realtime (Solarkraft #5)"
-date: 2024-07-05
+date: 2024-07-19
 math: true
 categories: 
   - "solarkraft"
@@ -26,7 +26,7 @@ _Solarkraft has been developed in collaboration by [Igor Konnov][], [Jure Kukove
 
 _This is the fifth and last in a series of blog posts introducing [Solarkraft][], a TLA+-based runtime monitoring solution for [Soroban smart contracts][Soroban]. The first post,_ ["A New Hope – Why Smart Contract Bugs Matter and How Runtime Monitoring Saves the Day"][part1] _gives an overview of smart contracts, explains how traditional security fails to address major challenges in securing crypto assets, and introduces runtime monitoring as a solution. The second post,_ ["Guardians of the Blockchain: Small and Modular Runtime Monitors in TLA+ for Soroban Smart Contracts"][part2] _introduces the language of Solarkraft monitors. The third post,_ ["How to Run Solarkraft"][part3] _gives an overview of the various features of Solarkraft, and explains how to use each one, step-by-step. The forth post,_ ["The Force Awakens: Hybrid Blockchain Runtime Monitors"][part4] _defines and explores the distinctions between direct and reverse blockchain monitors, which together form what we call hybrid monitors._
 
-In this post we first formally define what are hybrid blockchain runtime monitors (from the formal methods point of view), as then proceed to explore the far-reaching avenues of how to go from _offline monitoring_, as done now in Solarkraft, to truly _online monitoring_ on the live blockchain.
+In this post we first formally define what hybrid blockchain runtime monitors are (from the formal methods point of view), as then proceed to explore the far-reaching avenues of how to go from _offline monitoring_, as done now in Solarkraft, to truly _online monitoring_ on the live blockchain.
 
 
 ## Verifying Runtime Monitors on a Blockchain 📒
@@ -61,7 +61,7 @@ To answer that question, **let's see what a typical blockchain monitoring soluti
 - receive real-time alerts and notifications about blockchain events
 - understand usage patterns and fund flows with customized dashboards
 - visualize funding patterns, track wallets, report fraudulent activity
-- understand the risk of a transaction; simulate its outputs in real time
+- understand the risk of a transaction; simulate its outputs in real time.
 
 Typically, some or all of the above activities can be parameterized, e.g. wrt. the addresses, or kinds of transactions, or amounts of funds, etc., which gives these systems a certain level of flexibility. Still, a typical monitoring system suffers from two main drawbacks:
 
@@ -87,14 +87,14 @@ We employ the following notation:
 
 - $$D$$ is the set of all possible data values: strings, numbers, structs, etc. Mathematically we don't distinguish between different data types (though practically we of course do).
 - $$V$$ is the set of typed contract variables. At this stage we don't distinguish between states of different contracts: logical assertions may refer to the state of any contract (e.g. to token balances in other contracts).
-- $$S = S_0, S_1, ...$$ is the sequence of states.
-- $$S_i \subseteq V \rightarrow D$$ is the $$i$$-th contract state, which is a partial mapping from variables to their data values. If a variable $$v$$ is present in the mapping $$S_i$$, we say that it _exists_ in this state.
-- $$T = T_0, T_1, ...$$ is the sequence of transactions. Each transaction brings the contract into its next state, which we denote by $$S_i \xrightarrow{T_i} S_{i+1}$$.
+- $$S = S_0, S_1, ...$$ is a sequence of states.
+- $$S_i \subseteq V \mapsto D$$ is the $$i$$-th contract state, which is a partial mapping from variables to their data values. If a variable $$v$$ is present in the mapping $$S_i$$, we say that it is _defined_ in this state.
+- $$T = T_0, T_1, ...$$ is a sequence of transactions. Each transaction brings the contract into its next state, which we denote by $$S_i \xrightarrow{T_i} S_{i+1}$$.
 - $$P_T$$ is the set of all possible typed method parameters.
-- $$T_i \subseteq P_T \rightarrow D$$: each transaction is a method invocation, represented by a partial mapping from method parameter names to their values; only the parameters specific to the invoked method are present in the mapping.
+- $$T_i \subseteq P_T \mapsto D$$: each transaction is a method invocation, represented by a partial mapping from method parameter names to their values; only the parameters specific to the invoked method are present in the mapping.
 - $$E = E_0, E_1, ...$$ is the blockchain environment, which is a sequence of environment states; each transaction executes in a specific environment state.
 - $$P_E$$ is the set of all typed environment parameters (such as `current_contract_address`, `ledger_timestamp`, or `method_name`).
-- $$E_i = P_E \rightarrow D$$ is a mapping from environment parameters to their values, and defines the current blockchain environment, in which $$T_i$$ executes.
+- $$E_i: P_E \mapsto D$$ is a mapping from environment parameters to their values, and defines the current blockchain environment, in which $$T_i$$ executes.
 - $$X_i \in \mathbb{B} = \{ \top, \bot \}$$ is the result of executing the transaction $$T_i$$: $$\top$$ in case of success, $$\bot$$ in case of failure.
 
 The above definitions describe the structure of the object to which we apply monitor specifications: a smart contract, executing on a blockchain. Now it's time to define the structure of monitor specifications themselves. As checking each direct method specification or reverse effect specification is independent from others, we define only the structure for individual monitors.
@@ -104,9 +104,9 @@ The above definitions describe the structure of the object to which we apply mon
 
 In the above:
 
-- For any $$F_j \in F$$, $$P_k \in P$$ we have $$F_j, P_k \subseteq (E_i, S_i, T_i) \rightarrow \mathbb{B}$$ are boolean conditions of the environment state, the past contract state, and the method parameters.
--  For any $$H_j \in H$$ we have $$H_j \subseteq (E_i, S_i, T_i) \times S_{i+1} \rightarrow \mathbb{B}$$ are boolean conditions of the environment state, the past contract state, the method parameters, and the next contract state.
-- For any $$C_j \in C$$, $$A_k \in A$$ we have $$C_j, A_k \subseteq (E_i, S_i) \times S_{i+1} \rightarrow \mathbb{B}$$ are boolean conditions defined over the environment state, the past contract state, and the next contract state.
+- For any $$F_j \in F$$, $$P_k \in P$$ we have $$F_j, P_k: (E_i, S_i, T_i) \mapsto \mathbb{B}$$ are boolean conditions of the environment state, the past contract state, and the method parameters.
+-  For any $$H_j \in H$$ we have $$H_j: (E_i, S_i, T_i) \times S_{i+1} \mapsto \mathbb{B}$$ are boolean conditions of the environment state, the past contract state, the method parameters, and the next contract state.
+- For any $$C_j \in C$$, $$A_k \in A$$ we have $$C_j, A_k: (E_i, S_i) \times S_{i+1} \mapsto \mathbb{B}$$ are boolean conditions defined over the environment state, the past contract state, and the next contract state.
 
 ### Verification Conditions for Blockchain Monitors
 
@@ -130,7 +130,7 @@ Given the above combined conditions, we check these verification conditions:
 | Success completeness | $$(X_i = \top) \implies \neg \mathbb{C}_{\mathit{Fail}} \wedge \mathbb{C}_{\mathit{Pass}}$$ |
 | Method correctness  | $$(X_i = \top) \implies \mathbb{C}_{\mathit{Hold}}$$ |
 
-Please feel free to contrast these formal verification conditions with the [informal conditions from the previous post][part4directmonitors], as well as with the [TLA+ encoding of verification conditions for Timelock's `deposit` method][depositVCs]. Notice also that the two implications from the pairs "Must fail"/"Failure completeness" and "Must succeed"/"Success completeness" encode together an equivalence between the checks and the transaction execution result. Nevertheless, we consider it a better strategy to treat these conditions separately, as this allows the developers to encode a more fine-grained monitor response. For example, a monitor may forcefully revert a transaction that violates the "Must fail" condition, but only issue a warning when "Failure completeness" is violated.
+Compare these formal verification conditions with the [informal conditions from the previous post][part4directmonitors], as well as with the [TLA+ encoding of verification conditions for Timelock's `deposit` method][depositVCs]. Notice also that the two implications from the pairs "Must fail"/"Failure completeness" and "Must succeed"/"Success completeness" encode together an equivalence between the checks and the transaction execution result. Nevertheless, we consider it a better strategy to treat these conditions separately, as this allows the developers to encode a more fine-grained monitor response. For example, a monitor may forcefully revert a transaction that violates the "Must fail" condition, but only issue a warning when "Failure completeness" is violated.
 
 **For a reverse blockchain monitor** $$M_R = \langle C, A \rangle$$, we also combine individual monitor conditions into larger ones:
 
@@ -169,7 +169,7 @@ A few TLA+ tests for Apalache verification conditions using this encoding can be
 apalache-mc check --length=1 --init=Init_1 --next=Next_1 deposit_test.tla
 ```
 
-As explained above, Apalache is a _bounded_ model checker: it can check execution traces up to a certain bound. On most systems this restriction starts to manifest itself from the execution depth of around 7 steps: the model checker slows down substantially when exploring execution traces longer than that. But specifically for monitoring this restriction is irrelevant: with the execution length of 1 Apalache is blazing fast, and verifies the above formulas in fractions of a second, so it's a perfect choice for monitoring applications.
+As explained above, Apalache is a _bounded_ model checker: it can check execution traces up to a certain bound on the execution length. For most systems this restriction starts to manifest itself from the execution depth of around 7 steps: the model checker slows down substantially when exploring execution traces longer than that. But specifically for monitoring this restriction is irrelevant: with the execution length of 1 Apalache is blazing fast, and verifies the above formulas in fractions of a second, so it's a perfect choice for monitoring applications.
 
 In the above tests a monolithic encoding is used: all monitor conditions are encoded as a single invariant, and also included into the next-state relation. This encoding is the compromise we had to make due to the very limited project timeline, and has a few drawbacks:
 
@@ -229,7 +229,7 @@ Why are these steps important? Because exactly at these steps _new information a
   - the starting state for ledger's transaction set, which is the end state of the previous ledger.
 - Step 10: the starting state $$S_i$$ for transaction $$T_i$$ is determined, which is the result of applying all other transactions preceding $$T_i$$ in the apply order determined at step 8.
 
-_It is worth noting that the apply order determined at step 8 is also a new information, which influences transaction validity (and ultimately determines $$S_i$$). Nevertheless, as steps 8-10 happen essentially at the same time (see [LedgerManagerImpl::closeLedger](https://github.com/stellar/stellar-core/blob/2ba9f8de47faca0b9e3bf3da540f38f15665606b/src/ledger/LedgerManagerImpl.cpp#L894-L906)), this difference in timing is immaterial. For conceptual reasons we prefer to focus on step 10._
+_It is worth noting that the order of application determined at step 8 is also a new piece of information, which influences transaction validity (and ultimately determines $$S_i$$). Nevertheless, as steps 8-10 happen essentially at the same time (see [LedgerManagerImpl::closeLedger](https://github.com/stellar/stellar-core/blob/2ba9f8de47faca0b9e3bf3da540f38f15665606b/src/ledger/LedgerManagerImpl.cpp#L894-L906)), this difference in timing is immaterial. For conceptual reasons we prefer to focus on step 10._
 
 
 When speaking about practicality, timing and throughput parameters start playing an important role:
@@ -239,7 +239,7 @@ When speaking about practicality, timing and throughput parameters start playing
 
 What does the above mean for validating blockchain monitors? Two things:
 
-- With each step, more information becomes available; thus more monitor verification conditions (VCs) can be validated:
+- With each step, additional data becomes available; thus more monitor verification conditions (VCs) can be validated:
   - At step 3: _stateless_ VCs can be validated, i.e. those depending only on $$T_i$$;
   - At step 7: _semi-stateful_ VCs, depending only on $$T_i$$ and $$E_i$$ can be validated;
   - At step 10: all _stateful_ VCs can be validated.
