@@ -11,7 +11,7 @@ github.is_project_page: false
 google_analytics: G-98E1SLS4S5
 domain: protocols-made-fun.com
 url: https://protocols-made-fun.com
-baseurl: /
+baseurl:
 twitter_username: k0nn0v
 github_username:  konnov
 plugins:
