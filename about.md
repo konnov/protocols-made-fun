@@ -8,13 +8,18 @@ other things, PMF is Protocols Made Fun. Of course, your manager will tell you
 that PMF means "Product-Market Fit", but when someone starts throwing that kind
 of PMF at you, the fun is over.
 
-This is [Igor Konnov][My Webpage]'s blog about protocol specification, testing,
-and verification. Licensed under [CC BY 4.0][] :recycle:.
+This is [Igor Konnov][my webpage]'s blog about protocol specification, testing,
+and verification. Licensed under [CC BY 4.0][] :recycle:. I am an independent
+security and formal methods researcher, having a [track record][] in academia
+and the blockchain industry. If you need help with your distributed protocols or
+smart contracts, check [my webpage]. In case you need more than a soloist for
+your task, I have a proven work experience working in a research team with
+[Andrey Kuprianov][], [Thomas Pani][], and [Jure Kukovec][].
 
 ![Igor at Gateway'23]({{ site.baseurl }}/img/igor-gateway23.jpg)
 
-This site refers to and/or derives from small portions of code and/or examples
-from:
+**Disclaimer.** This site refers to and/or derives from small portions of code
+and/or examples from:
 
  - [Apalache][] that was developed at TU Wien, Inria Nancy, Interchain
    Foundation, and Informal Systems. See the [Apalache License][] ==  [Apache
@@ -33,5 +38,9 @@ from:
 [Apalache]: https://konnov.phd/portfolio/apalache/
 [Apalache License]: https://github.com/apalache-mc/apalache/blob/main/LICENSE
 [Apache 2.0]: https://www.apache.org/licenses/LICENSE-2.0
-[My Webpage]: https://konnov.phd/
+[my webpage]: https://konnov.phd/
 [CC BY 4.0]: https://creativecommons.org/licenses/by/4.0/
+[track record]: https://konnov.phd/research/
+[Thomas Pani]: https://thpani.net/
+[Andrey Kuprianov]: https://systems-made-simple.dev/about.html
+[Jure Kukovec]: https://www.linkedin.com/in/jure-kukovec/
