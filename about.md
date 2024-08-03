@@ -1,6 +1,6 @@
 ---
 layout: page
-title: Igor Konnov's blog
+title: About
 ---
 
 Keep hearing about PMF from your manager and you don't know what it is? Among
