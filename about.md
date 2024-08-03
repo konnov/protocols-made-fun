@@ -1,6 +1,6 @@
 ---
 layout: page
-title: About
+title: Igor Konnov's blog
 ---
 
 Keep hearing about PMF from your manager and you don't know what it is? Among
@@ -10,6 +10,8 @@ of PMF at you, the fun is over.
 
 This is [Igor Konnov][My Webpage]'s blog about protocol specification, testing,
 and verification. Licensed under [CC BY 4.0][] :recycle:.
+
+![Igor at Gateway'23]({{ site.baseurl }}/img/igor-gateway23.jpg)
 
 This site refers to and/or derives from small portions of code and/or examples
 from:
