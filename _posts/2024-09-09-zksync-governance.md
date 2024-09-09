@@ -30,15 +30,15 @@ researchers in the field, who reported several vulnerabilities. When writing the
 formal specification, one of our goals was to see whether we could triage some
 of these reports and reproduce the vulnerabilities with the model checker.
 Another goal was to use the legal documents (especially devoted to the
-[emergency response procedures][]) to ensure formally defined coverage of the
-contracts with state invariants.
+[emergency response procedures][emergency-response]) to ensure formally defined
+coverage of the contracts with state invariants.
 
 As a result of our work, we have written over 50 state invariants. All of them
 were tried with the randomized simulator of Quint as well as with the symbolic
-model checker Apalache. While we do not claim to have achieved a 100% accuracy
-in verifying these state invariants, since we were doing bounded model checking
-and randomized symbolic simulation, we believe that the specification and model
-checking activity was quite valuable, for the following reasons:
+model checker [Apalache][]. While we do not claim to have achieved a 100%
+accuracy in verifying these state invariants, since we were doing bounded model
+checking and randomized symbolic execution, we believe that the specification
+and model checking activity were quite valuable, for the following reasons:
 
 1. While writing the Quint specification, we have identified a few fragments of
 the Solidity code that could be improved, though they were not directly
@@ -103,7 +103,7 @@ required threshold before validating them against the list of authorized
 members. If the signatures are valid, the action is authorized, enabling secure
 collective decision-making within a decentralized environment.
 
-**Security Council**. The SecurityCouncil is a contract responsible for
+**Security Council**. The `SecurityCouncil` contract responsible for
 communication with the security experts of the ZKsync protocol. It operates as a
 multi-sig wallet with 12 members and handles critical functions such as
 approving protocol upgrades, initiating protocol freezes, and unfreezing the
@@ -128,7 +128,180 @@ Key Functions:
 Each function call is secured using EIP-712 signatures, ensuring only authorized
 members can initiate critical security functions.
 
+**Guardians**. The Guardians contract safeguards the ZKsync protocol, providing
+essential governance functions such as approving upgrades, managing L2
+proposals, and extending legal veto periods. This contract also uses a
+multi-signature mechanism, requiring a specific number of guardian approvals for
+different actions. 
 
+Key functions include:
+
+ - *Upgrade Approval*: Guardians can approve protocol upgrades with 5
+ signatures, ensuring a consensus-driven approach to critical changes.
+ 
+ - *Legal Veto Extension*: Guardians can extend the legal veto period for L1
+ upgrade proposals with just 2 signatures, adding a layer of security. 
+ 
+ - *L2 Proposal Management*: Guardians can propose and cancel L2 governance
+ proposals, requiring 5 signatures. The contract uses EIP-712 for secure and
+ verifiable signature handling, preventing unauthorized actions. Each proposal
+ or veto action is recorded with a unique nonce to protect against replay
+ attacks, ensuring that every decision is unique and intentional.
+
+**Emergency Upgrade Board**. The `EmergencyUpgradeBoard` contract
+facilitates emergency protocol upgrades through a coordinated process involving
+three critical entities: the Security Council, Guardians, and the ZK Foundation.
+Each entity must provide multi-sig approval for any emergency upgrade to
+proceed, ensuring consensus among key stakeholders. The contract leverages
+EIP-712 for secure and verifiable signature handling, defining specific type
+hashes for each group's approval process. Upon receiving the necessary
+signatures, the contract validates them against the specified type hashes. If
+all approvals are verified, the contract delegates the upgrade execution to the
+`ProtocolUpgradeHandler`.  
+
+**Protocol Upgrade Handler**. The ProtocolUpgradeHandler is a backend contract
+that manages the upgrade process for the ZKsync protocol. It holds ownership of
+all ZKsync contracts on both L1 and L2, ensuring that upgrades follow a secure
+and structured process.  The contract also manages emergency actions, such as
+protocol freezes and self-upgrades.The upgrade process involves several stages:
+proposal, legal veto, approval, pending, and execution:
+
+ - Proposal: Delegates propose a protocol upgrade by sending a special message
+ initiating the upgrade process.
+ 
+ - Legal Veto Period: Guardians can veto the upgrade within a 3-day period,
+ extendable to 7 days.
+ 
+ - Approval: Requires approval from the Security Council or Guardians. The
+ Security Council can approve immediately, while Guardians’ approval requires a
+ 30-day waiting period.
+ 
+ - Pending: A mandatory delay before execution allows for final preparations.
+ 
+ - Execution: The approved changes are executed, completing the upgrade process.
+ 
+## 3. Modeling the Protocol
+
+We use [Quint][] to produce an [executable specification][zksync-gov-spec] of
+the [ZKsync Governance contracts][zksync-gov-contracts] in Solidity, and write
+several basic tests to check that the specification doesn’t have trivial coding
+bugs and typos. Since Quint is a relatively general specification language,
+which stems from TLA+, it does not offer built-in primitives for modeling
+Solidity and EVM. Hence, to model the governance protocol, we need to create
+adequate reference models for the following primitives and mechanisms of the EVM
+smart contracts:
+
+ - Contract inheritance,
+ - Multisig,
+ - Cryptographic signatures,
+ - Hashing, e.g., Keccak256,
+ - EVM Calls.
+
+**Modeling inheritance.** In the reference implementation, two of the most
+important contracts from a modeling perspective are `SecurityCouncil` and
+`Guardians`.  They inherit from `Multisig` and `EIP712`. Since Quint does not
+support inheritance natively, we manually emulated it by calling all necessary
+
+For example, to create a new instance of `SecurityCouncil` we have to first
+directly create a new instance of `Multisig` for it:
+
+```quint
+pure def newSecurityCouncil(_members: Set[Address]): Result[SecurityCouncilState] = {
+  pure val multisig = newMultisig(_members, 9)
+  pure val empty = {
+    multisig: multisig.v, softFreezeThreshold: 0, softFreezeNonce: 0,
+    hardFreezeNonce: 0, softFreezeThresholdSettingNonce: 0, unfreezeNonce: 0
+  }
+  if (isOk(multisig)) {
+    pure val membersSize = _members.size()
+    pure val e = require(membersSize == 12,
+      "SecurityCouncil requires exactly 12 members")
+    if (e != "") {
+      err(empty, e)
+    } else {
+      ...
+    }
+  } else {
+    err(empty, multisig.err)
+  }
+}
+```
+
+**Modeling multisig mechanics.** The ZKsync Governance Protocol is based on
+2-layer multi-sig contracts: Guardians and Security Council are multi-sig
+contracts, and each their member (body) is also a multi-sig contract. We
+implemented a separate module for multi-sig that instantiates mechanics with the
+necessary thresholds and implemented three methods to check signatures. The
+implementation can be found in [multisig.qnt][]. Notably, we have simplified the
+model related to [ERC-1271][]. So, in the specification multi-sig module
+implements the method `isValidSignatureNow` which is a wrapper around the method
+`isValidSignature`.
+
+```quint
+/// @dev The function to check if the provided signatures are valid and meet predefined threshold.
+/// @param _digest The hash of the data being signed.
+/// @param _signature An array of signers and signatures to be validated ABI encoded from `address[], bytes[]` to `abi.decode(data,(address[],bytes[]))`.
+pure def isValidSignature(self: MultisigState, _digest: AbiEncoded, _signature: Set[Signature]): Bytes4 = {
+    pure val err = self.checkSignatures(_digest, _signature.map(s => s.signer), _signature, self.EIP1271_THRESHOLD)
+    if (err != "") err
+    else EIP1271_MAGICVALUE
+}
+
+/// @dev Should return whether the signature provided is valid for the provided data
+/// @param hash      Hash of the data to be signed
+/// @param signature Signature byte array associated with _data
+pure def isValidSignatureNow(self: MultisigState, _digest: AbiEncoded, _signature: Set[Signature]): bool = {
+        isValidSignature(self, _digest, _signature) == EIP1271_MAGICVALUE
+}
+```
+
+**Modeling signing and hashing.** As is typical for smart contracts in Solidity,
+the ZKsync governance contracts are extensively using the hash function
+`keccak256` to compute message digests. In particular, these digests are used in
+the EIP-721 signature verification (see above). In addition to that, the
+contracts also call `abi.encode` and `abi.decode` to pack and unpack data
+structures into/from arrays of bytes, respectively. If we were to specify the
+behavior of these functions directly, we would have to implement plenty of
+arithmetic computations in Quint.  As we use symbolic execution and
+satisfiability-modulo-theory solvers to analyze the protocol specification, we
+have to avoid heavy arithmetic computations. It is well-known that SMT solvers
+are slowing down on complex arithmetic constraints very quickly. Hence, we
+have to avoid the actual cryptographic implementations of hashing, be it the
+actual implementations or simplified ones.  Fortunately, we can draw inspiration
+from classic security research such as the [Dolev-Yao model][].
+
+In Dolev-Yao, encryption and decryption functions `encrypt` and `decrypt` are
+symbolic and uninterpreted in the sense that the main property of these
+functions is as follows: `decrypt(encrypt(M)) = M`, for an arbitrary message
+`M`. In a similar spirit, we could treat a hash function symbolically, that is,
+require that `hash(M1) = hash(M2)` if and only if `M1 = M2`. This is a cool
+idea: We don’t have to explain to the solver how real-life cryptography works
+but rely on a few simple axioms.
+
+One issue that stops us from naively implementing Dolev-Yao in Quint is the
+Quint’s type system. First, Quint does not support uninterpreted functions.
+Second, even if it did, we would have to deal with the fact that the messages
+have plenty of different types. Interestingly, this would not be an issue in an
+untyped specification language such as TLA<sup>+</sup>. Fortunately, we do not
+have to specify the behavior of hashing for arbitrary messages. We only have to
+do it for the kinds of messages that are mentioned in the ZKsync contracts.
+There are not so many, actually. As a result, we define the shape of the
+hashable messages with `AbiElem` and `AbiEncoded`:
+
+```quint
+    type AbiElem =
+      AbiStr(str) | AbiInt(int) |
+      AbiUpgradeProposal(UpgradeProposal) | AbiL2Proposal(L2GovernorProposal)
+    type AbiEncoded = List[AbiElem]
+```
+
+
+[Dolev-Yao model]: https://en.wikipedia.org/wiki/Dolev%E2%80%93Yao_model
+[multisig.qnt]: https://github.com/zksync-association/zk-governance/blob/master/spec/multisig.qnt
+[ERC-1271]: https://eips.ethereum.org/EIPS/eip-1271
+[Quint]: https://quint-lang.org
+[Apalache]: https://apalache-mc.org
+[zksync-gov-spec]: https://github.com/zksync-association/zk-governance/tree/master/spec 
 [zksync-gov-contracts]: https://github.com/zksync-association/zk-governance/tree/master/l1-contracts
 [zksync-gov]: https://docs.zknation.io/zksync-governance/zksync-governance-procedures-overview
 [emergency-response]: https://docs.zknation.io/zksync-governance/schedule-2-emergency-response-procedures
