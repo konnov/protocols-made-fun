@@ -295,6 +295,281 @@ hashable messages with `AbiElem` and `AbiEncoded`:
     type AbiEncoded = List[AbiElem]
 ```
 
+Further, we define several versions of abi.encode for a different numbers of
+arguments, and `keccak256` simply as the identity function over `AbiEncoded`:
+
+```quint
+    pure def abi_encode1(e1: AbiElem): AbiEncoded = {
+        [e1]
+    }
+    pure def abi_encode2(e1: AbiElem, e2: AbiElem): AbiEncoded = {
+        [e1, e2]
+    }
+    pure def keccak256(enc: AbiEncoded): AbiEncoded = {
+        enc
+    }
+```
+
+Consider the following Solidity expression:
+ 
+```quint
+    _hashTypedDataV4(keccak256(abi.encode(APPROVE_UPGRADE_SECURITY_COUNCIL_TYPEHASH, _id))
+```
+
+We specify the above expression as:
+
+```quint
+    [ AbiStr("SecurityCouncil"), AbiInt("1"), _id ]
+```
+
+**Modeling the history of EVM Calls.** One of our goals when writing the Quint
+specification is to enable effective reasoning about the protocol properties.
+Many expected properties of ZKsync governance require us to reason about the
+calls made when processing a specific external method. To enable reasoning about
+calls, we introduce the history of calls that are explicitly included in the EVM
+state:
+
+```quint
+    type EvmState = {
+        blockTimestamp: Uint256,
+        …
+        // the history of calls made in the last transaction
+        ghostCallHistory: EvmCallHistory,
+   }
+
+   type EvmCallHistory = {
+       lastSender: Address,
+       calls: List[{ caller: Address, callee: Address, method: Function }]
+   }
+```
+
+This approach lets us conveniently write state invariants that reason about method calls:
+
+```quint
+    val onlyGuardiansIsAllowedToCallExtendLegalVetoInv =
+        evm.ghostCallHistory.calls.indices().forall(i => {
+            val e = evm.ghostCallHistory.calls[i]
+            (e.callee == PROTOCOL_UPGRADE_HANDLER_ADDR) and (e.method == FunctionExtendLegalVeto)
+                implies (e.caller == GUARDIANS_ADDR)
+        })
+```
+
+## 4. Reproducing reports from Threat Modeling Submissions
+
+In parallel with formal verification, a threat modeling exercise was conducted
+to identify and suggest solutions for the ZKsync governance system that may be
+exploited by an attacker. The development team fixed the received
+vulnerabilities. We, in turn, used the reported vulnerabilities to test the
+specification and add more invariants. For each reported vulnerability we wrote
+the corresponding invariant that must be violated if the vulnerability exists in
+the system or it must be held if the reported vulnerability was a false
+positive. Then we changed the specification as needed to make the system hold
+all invariants. For instance, consider the following vulnerability.
+
+> Emergency upgrades can be replayed infinite times on L1
+>
+> Description:
+> The EmergencyUpgradeBoard.executeEmergencyUpgrade lacks signature replay protection.
+> So an emergency upgrade can be executed repeatedly by passing the same signatures again.
+> This can lead to ambiguous onchain state for ZKsync protocol and can also lead to
+> significant financial losses to users.
+> 
+> The ProtocolUpgradeHandler.executeEmergencyUpgrade also doesn’t prevent replaying of
+> upgrade proposals. Even after an emergency upgrade proposal has been executed,
+> the upgradeState function still returns UpgradeState.None as the state of that
+> emergency upgrade proposal. Hence replay becomes possible.
+
+We wrote the following invariant to check whether this vulnerability exists. It
+indirectly checks whether an emergency upgrade can be executed twice.
+
+```quint
+// An Emergency Upgrade cannot be executed twice: there are no two equal executed // emergency upgrades.
+val emergencyUpgradeMustBeExecutedOnce =
+    evm.emittedEvents.indices().forall(i => {
+        evm.emittedEvents.indices().forall(j => {
+            match (evm.emittedEvents[i]) {
+               | EventEmergencyUpgradeExecuted(id1) =>
+                   match (evm.emittedEvents[j]) {
+                   | EventEmergencyUpgradeExecuted(id2) =>
+                       (id1 == id2 implies i == j)
+                   | _ => true
+                   }
+
+               | _ => true   
+           }
+    })
+})
+```
+
+This invariant checks that it is not possible to make several calls to the
+`EmergencyUpgradeHandler` contract carrying the same payload, leading to a replay
+of the emergency upgrade.
+
+```quint
+// Emergency upgrades cannot be replayed.
+//
+// This invariant checks that if an external user successfully executes ExecuteEmergencyUpgrade call
+// and then make the same call with the same arguments, the second call will return an error.
+val emergencyUpgradeCannotBeReplayed = {
+    val executor = EMERGENCY_UPGRADE_BOARD_ADDR
+    CALLS.forall(calls => {
+        SALTS.forall(salt => {
+            GUARDIAN_MEMBERS.powerset().forall(guardians => {
+                SECURITY_COUNCIL_MEMBERS.powerset().forall(council => {
+                    ZK_FOUNDATION_MEMBERS.powerset().forall(foundation => {
+                        val proposal = { calls: calls, executor: executor, salt: salt }
+                        val proposalId = keccak256_UpgradeProposal(proposal)
+                        val securityCouncilDigest = _emergencyUpgradeBoardCouncilHashTypedDataV4( 
+                                keccak256(abi_encode2(EXECUTE_EMERGENCY_UPGRADE_SECURITY_COUNCIL_TYPEHASH, proposalId))
+                        )
+                        val guardiansDigest = _emergencyUpgradeBoardCouncilHashTypedDataV4(
+                                keccak256(abi_encode2(EXECUTE_EMERGENCY_UPGRADE_GUARDIANS_TYPEHASH, proposalId))
+                            )
+                        val zkFoundationDigest = _emergencyUpgradeBoardCouncilHashTypedDataV4(
+                                keccak256(abi_encode2(EXECUTE_EMERGENCY_UPGRADE_ZK_FOUNDATION_TYPEHASH, proposalId))
+                            )
+                        val securityCouncilSignatures = signDigest(council, securityCouncilDigest)
+                        val guardiansSignatures = signDigest(guardians, guardiansDigest)
+                        val zkFoundationSignatures = signDigest(foundation, zkFoundationDigest)
+
+                        val evm2 = evm.externalCall(ANY_ADDRESS, EMERGENCY_UPGRADE_BOARD_ADDR, FunctionExecuteEmergencyUpgrade)
+                        val result = emergencyUpgradeBoard::ExecuteEmergencyUpgrade(evm2, calls, salt, guardiansSignatures, securityCouncilSignatures, zkFoundationSignatures)
+                            
+                        isOk(result) implies {
+                                isErr(emergencyUpgradeBoard::ExecuteEmergencyUpgrade(result.v, calls, salt, guardiansSignatures, securityCouncilSignatures, zkFoundationSignatures))
+                        }
+                    })
+                })
+            })
+        })
+    })
+}
+```
+
+Not all reported findings were resolved as vulnerabilities. Some were
+acknowledged, and the decision was to wait to fix them immediately since there
+was no formal proof that the system could be transferred to an unsafe state. For
+instance, consider the following finding:
+
+> Signatures of governance bodies do not expire.
+> 
+> Description:
+> The signatures provided by the members of Security Council and Guardian
+> multisigs for these functions never expire:
+> 
+>  - Guardian.extendLegalVeto
+>  - Guardian.approveUpgradeGuardians
+>  - Guardian.proposeL2GovernorProposal
+>  - Guardian.cancelL2GovernorProposal
+>  - SecurityCouncil.approveUpgradeSecurityCouncil
+> 
+> Any unused signature generated for these functions can be used anytime in
+> the future (assuming that the on-chain operation wasn't executed).
+> 
+
+To investigate and validate that finding for the SecurityCouncil’s
+`approveUpgradeSecurityCouncil` method, we wrote the following invariant, which
+was reported  to hold true by the Quint simulator and the symbolic model
+checker.
+
+```quint
+// ApproveUpgradeSecurityCouncil call cannot be replayed.
+val approveUpgradeSecurityCouncilCannotBeReplayed = {
+    val IDS = getAllUpgradeIDs(evm)
+    IDS.forall(id=> {
+        ALL_SENDERS.forall(sender => {
+            ALL_MEMBERS.powerset().forall(signers => {
+                val digest = _securityCouncilHashTypedDataV4(
+                        keccak256(abi_encode2(APPROVE_UPGRADE_SECURITY_COUNCIL_TYPEHASH, id))
+                )
+                val signatures = signDigest(signers, digest)
+                val evm2 = evm.externalCall(sender, SECURITY_COUNCIL_ADDR, FunctionApproveUpgradeSecurityCouncil)
+                val result = securityCouncil::ApproveUpgradeSecurityCouncil(evm2, id, signers, signatures)
+                    
+                isOk(result) implies {
+                    isErr(securityCouncil::ApproveUpgradeSecurityCouncil(result.v, id, signers, signatures))
+                }
+            })
+        })
+    })
+}
+```
+
+## 5. Checking legal statements
+
+The [ZKsync Governance Procedures][emergency-response] can be considered as a
+structured informal English specification of how the ZKsync governance
+functions. Notably,  the document contains temporal reasoning expressed in a
+legal language. For instance:
+
+> After a Soft Freeze and/or a Hard Freeze has been initiated, the Security
+> Council may unfreeze (“Unfreeze”) the contracts at their discretion, with the
+> approval of nine (9) Signers on the Security Multisig.  Once frozen, an
+> Emergency Upgrade may be executed in order to remove the freeze and/or initiate
+> a subsequent freeze.  An Emergency Upgrade during a freeze may include a message
+> executed solely for the purpose of allowing the Security Council to initiate a
+> subsequent freeze.
+> 
+
+We have produced several invariants to capture the above paragraph.  For
+instance, an invariant for the first statement above can be written in Quint as
+follows:
+
+```quint
+// After a Soft Freeze and a Hard Freeze have been initiated,
+// an Emergency Upgrade must be passed before any subsequent freezes may be
+// initiated.
+val freezesRequireEmergencyUpgradeInv =
+    def hasEmergencyUpgrade(eventIndices) = {
+        eventIndices.exists(k => {
+            match (evm.emittedEvents[k]) {
+            | EventEmergencyUpgradeExecuted(_) => true
+            | _ => false
+            }
+        })
+    }
+   evm.emittedEvents.indices().forall(i => {
+       evm.emittedEvents.indices().forall(j => or {
+           j <= i,
+            match (evm.emittedEvents[i]) {
+            | EventHardFreeze(id1) =>
+                match (evm.emittedEvents[j]) {
+                    | EventSoftFreeze(id2) =>
+                        hasEmergencyUpgrade(evm.emittedEvents.indices().filter(k => i < k and k < j))
+                    | EventHardFreeze(id2) =>
+                       hasEmergencyUpgrade(evm.emittedEvents.indices().filter(k => i < k and k < j))
+                    | _ => true
+                }
+            | _ => true    
+            }
+    })
+})
+```
+
+Note that we are not using temporal logic of Quint in the above property. We
+found that it is much easier to write down those properties as state invariants
+over the history of events. We store this history in the state of the EVM state
+machine.
+
+## 6. Experimental setup
+
+## 7. Conclusions
+
+It may seem non-obvious that we chose Quint for this task, instead of using
+fuzzers or formal verification tools specifically designed for Solidity.
+Interestingly, translating Solidity to Quint was not as much of a bottleneck in
+this project, as one could have expected. Most of our time went into formulating
+key invariants and understanding whether we had specified sufficiently many
+invariants. In general, we had a very fast feedback loop from writing an
+invariant to finding a counterexample, if there was one. In addition to that,
+we used both the randomized simulator of Quint, which is conceptually close to
+the fuzzer in Foundry. After running the randomized simulator, to increase our
+confidence, we were running the symbolic model checker Apalache, which is closer
+to symbolic execution tools that are backed by SMT solvers. This required
+literally *zero boilerplate code*, as the Quint tools are built on the concept
+of state machines, invariants, and the temporal logic of TLA<sup>+</sup>.
+
+
 
 [Dolev-Yao model]: https://en.wikipedia.org/wiki/Dolev%E2%80%93Yao_model
 [multisig.qnt]: https://github.com/zksync-association/zk-governance/blob/master/spec/multisig.qnt
