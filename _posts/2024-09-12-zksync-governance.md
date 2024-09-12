@@ -648,6 +648,8 @@ of up to 5 transactions:
 ```sh
 $ quint verify --max-steps=5 \
   --invariant=emergencyUpgradeUnfreezesStateInv main.qnt
+...
+[ok] No violation found (2015939ms).
 ```
 
 :warning:
