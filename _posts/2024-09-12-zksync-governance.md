@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "Specification and Model-checking of the ZKsync Governance Protocol"
-date: 2024-09-09
+date: 2024-09-12
 categories: zksync matterlabs quint specification modelchecking
 quint: true
 math: true
