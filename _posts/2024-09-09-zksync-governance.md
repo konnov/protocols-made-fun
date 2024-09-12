@@ -553,6 +553,151 @@ machine.
 
 ## 6. Experimental setup
 
+**Hardware**. We have been running experiments on a benchmark server that
+is equipped with two AMD EPYC 7401P 24-Core Processors and 256G of RAM.  This
+configuration allowed us to check dozens of invariants in parallel.
+
+**Techniques**. To evaluate the invariants against the protocol specification,
+we have used three techniques that are offered by the Quint tools. These
+techniques are summarized in the table below.
+
+| Technique                     | Choice of transactions | Choice of data | Quint command                              |
+|-------------------------------|------------------------|----------------|--------------------------------------------|
+| Random simulation             | random                 | random         | `quint run`                                |
+| Randomized symbolic execution | random                 | symbolic       | `quint verify --random-transitions=true`   |
+| Bounded model checking        | symbolic               | symbolic       | `quint verify`                             |
+
+All three techniques perform stateful exploration in the execution space of the
+state state machine up to a given number of steps. In our case, a single step
+corresponds to execution of a single transaction from an externally-owned
+address (EOA), which are modeled as Quint actions. In a nutshell, the techniques
+are working as follows:
+
+ - *Random simulation* picks one transaction at random at each step and then it
+ randomly picks the transaction arguments from the predefined sets of values.
+ For example, the simulator may randomly select the transactions
+ `SecurityCouncil::SoftFreeze`, `SecurityCouncil::HardFreeze`,
+ `SecurityCouncil::Unfreeze`. It also generates random inputs for these
+ transactions, e.g., it generates a validity period in the range $[0, 1024]$ and
+ it generates the sender address from the set `Set(SECURITY_COUNCIL_ADDR,
+ PROTOCOL_UPGRADE_HANDLER_ADDR, GUARDIANS_ADDR, EMERGENCY_UPGRADE_BOARD_ADDR,
+ ANY_ADDRESS)`. The random simulator evaluates the invariant at every step.
+ This technique is conceptually the same as [Invariant Testing in Foundry][],
+ though it works at the protocol level instead of evaluation Solidity contracts.
+ 
+ - *Randomized symbolic execution* picks a sequence of transactions at random
+ and delegates the choice of transaction payloads to the constraint solver
+ [z3][], whose goal is to break the given invariant by following the
+ transaction sequence. For example, the symbolic executor may randomly select
+ the transactions `SecurityCouncil::SoftFreeze`, `SecurityCouncil::HardFreeze`,
+ `SecurityCouncil::Unfreeze`. Then, it evaluates the invariant for *all
+ possible* payloads from the predefined sets of payloads *at once*.
+
+ - *Bounded model checking* delegates to the constraint solver both the choice
+ of the transaction sequence and the transaction payload. As a result, it
+ evaluates the invariant for *all possible* sequences of transactions (up to $k$
+ transactions) and *all possible* payloads the predefined sets of payloads *at
+ once*.
+
+## 7. Experiments
+
+As we were writing the protocol specification, we were mainly running the random
+simulator and randomized symbolic execution. These two techniques provided us
+with a fast feedback loop, when the specification had invariant violations that
+were relatively easy to detect. Once the specification and the invariants
+stabilized, we ran full scale bounded model checking experiments for $k=6$ and
+$k=10$. To our surprise, these experiments found five more invariant violations.
+All of them were due to imprecision in the invariants and modeling, which we
+have fixed.
+
+**Individual experiments.** As running all experiments at once is time
+consuming, we were running experiments for individual invariants, as were were
+developing them. For example, the following command runs the random simulator
+to check the invariant `emergencyUpgradeUnfreezesStateInv` against 10,000
+randomly generated sequences of transactions, each sequence having up to 10
+transactions:
+
+```sh
+$ quint run --max-steps=10 --max-runs=10000 \
+  --invariant=emergencyUpgradeUnfreezesStateInv main.qnt
+...
+[ok] No violation found (327024ms).
+Use --seed=0x14360563a7e48f to reproduce.
+```
+
+Similarly, the following command runs randomized symbolic execution to check the
+invariant `emergencyUpgradeUnfreezesStateInv` against 100 randomly selected
+sequences of symbolic transactions, each sequence having up to 10 transactions:
+
+```sh
+$ quint verify --random-transitions=true --max-steps=10 \
+  --invariant=emergencyUpgradeUnfreezesStateInv main.qnt
+...
+[ok] No violation found (750601ms).
+```
+
+:warning:
+Even though we check only 100 symbolic runs instead of 10,000 concrete runs,
+these 100 symbolic executions potentially cover a much larger subset of the
+execution space than 10,000 concrete runs.
+
+Finally, the following command runs the bounded model checker to check
+the invariant `emergencyUpgradeUnfreezesStateInv` against all sequences
+of up to 5 transactions:
+
+```sh
+$ quint verify --max-steps=5 \
+  --invariant=emergencyUpgradeUnfreezesStateInv main.qnt
+```
+
+:warning:
+Unlike random simulation and randomized symbolic execution, we ran the bounded
+model checker for only 5 steps in the above example, as it takes over six days
+to explore all executions with the bounded model checker. Higher confidence
+comes at the cost of longer computation times.
+
+**Full scale experiments**. The plot below shows the time required to run the
+bounded model checker for all executions of up to 6 transactions, to verify the
+45 invariants in parallel. The plot shows the time in seconds that was required
+to check each invariant, from the fastest one to the slowest one. As we can see,
+the fastest experiment required about 3 hours, whereas the slowest experiment
+required about 11 hours.
+
+![Model checking results]({{ site.baseurl }}/img/zkgov-fast6.png)
+
+**Degrees of confidence**.
+As can be seen from the short overview of Quint techniques, random simulation is
+the most straightforward and the fastest technique among the three. However, it
+provides us with the lowest degree of confidence. For instance, the probability
+of just choosing three specific transactions (e.g., `SecurityCouncil::SoftFreeze`,
+`SecurityCouncil::HardFreeze`, and `SecurityCouncil::Unfreeze`) out of 20
+available transaction types in that order would be $\frac{1}{20^3} =
+\frac{1}{8000}$.  If we multiply this probability by the probability of choosing
+the right payloads, we will see that the chance of producing a right sequence of
+transactions is quite low. The imprecision of this technique is compensated by
+the speed of executing a single transaction sequence. In our experiments, this
+technique has indeed missed multiple invariant violations.
+
+Randomized symbolic execution provides us with much better guarantees. As in the
+case of random simulation, this technique may miss an invariant violation, when
+it does not generate the right sequence of transaction types, e.g., the
+probability of generating the sequence of three transactions is
+$\frac{1}{8000}$, as we discussed above. However, once the right sequence has
+been selected, the choice of right payloads is done by the constraint solver. As
+a result, this technique has much better chances of hitting invariant
+violations. In our experiments, this technique found multiple invariant
+violations, but still missed a few. Since it runs the constraint solver in the
+background, this technique is slower than random simulation, but it covers
+significantly more executions.
+
+Bounded model checking is the most complete technique among the three. If it
+does not find an invariant violation for $k$ steps, it guarantees that there is
+no sequence of up to $k$ transactions that draws values from the set of
+predefined values and violates the invariant. In our experiments, this technique
+found five invariant violations that were missed by the other two techniques.
+However, it may take several days to analyze all executions, say, of up to 10
+transactions.
+
 ## 7. Conclusions
 
 It may seem non-obvious that we chose Quint for this task, instead of using
@@ -583,3 +728,5 @@ of state machines, invariants, and the temporal logic of TLA<sup>+</sup>.
 [chonky-quint]: https://protocols-made-fun.com/consensus/matterlabs/quint/specification/modelchecking/2024/07/29/chonkybft.html
 [Igor Konnov]: https://konnov.phd
 [Matter Labs]: https://matter-labs.io/
+[z3]: https://www.microsoft.com/en-us/research/project/z3-3/
+[Invariant Testing in Foundry]: https://book.getfoundry.sh/forge/invariant-testing
