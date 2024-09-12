@@ -10,7 +10,7 @@ math: true
 **Authors: Denis Kolegov ([Matter Labs][]), [Igor Konnov][]**
 
 After our success in [specification and model checking of the ChonkyBFT
-consensus][chonky-quint] in Quint, we have decided to apply Quint and its tools
+consensus][chonky-quint] in [Quint][], we have decided to apply Quint and its tools
 to a slightly different domain: governance contracts in Solidity. This blogpost
 summarizes our experience and highlights the important modeling decisions we
 made.
@@ -68,15 +68,16 @@ SMT solvers.
 The ZKsync Governance Protocol is structured around a governance system with
 four distinct voting classes:
 
- - Token Assembly: Comprised of ZK tokenholders, who delegate the voting power
+ - **Token Assembly**: Comprised of ZK tokenholders, who delegate the voting power
  of ZK tokens they hold to ZKsync addresses in order to (indirectly) participate
  in the ZKsync governance system.
  
- - ZK Foundation: A privileged supporting entity.
+ - **ZK Foundation**: A privileged supporting entity.
 
- - Guardians: A group of 5 to 8 actors with administrative privileges.
+ - **Guardians**: A group of 5 to 8 actors with administrative privileges.
  
- - Security Council: A group of 9 to 12 actors with administrative privileges.
+ - **Security Council**: A group of 9 to 12 actors with administrative
+ privileges.
  
 The key characteristics of this governance system include:
 
@@ -166,30 +167,30 @@ and structured process.  The contract also manages emergency actions, such as
 protocol freezes and self-upgrades.The upgrade process involves several stages:
 proposal, legal veto, approval, pending, and execution:
 
- - Proposal: Delegates propose a protocol upgrade by sending a special message
+ - *Proposal*: Delegates propose a protocol upgrade by sending a special message
  initiating the upgrade process.
  
- - Legal Veto Period: Guardians can veto the upgrade within a 3-day period,
+ - *Legal Veto Period*: Guardians can veto the upgrade within a 3-day period,
  extendable to 7 days.
  
- - Approval: Requires approval from the Security Council or Guardians. The
+ - *Approval*: Requires approval from the Security Council or Guardians. The
  Security Council can approve immediately, while Guardians’ approval requires a
  30-day waiting period.
  
- - Pending: A mandatory delay before execution allows for final preparations.
+ - *Pending*: A mandatory delay before execution allows for final preparations.
  
- - Execution: The approved changes are executed, completing the upgrade process.
+ - *Execution*: The approved changes are executed, completing the upgrade process.
  
 ## 3. Modeling the Protocol
 
-We use [Quint][] to produce an [executable specification][zksync-gov-spec] of
-the [ZKsync Governance contracts][zksync-gov-contracts] in Solidity, and write
-several basic tests to check that the specification doesn’t have trivial coding
-bugs and typos. Since Quint is a relatively general specification language,
-which stems from TLA+, it does not offer built-in primitives for modeling
-Solidity and EVM. Hence, to model the governance protocol, we need to create
-adequate reference models for the following primitives and mechanisms of the EVM
-smart contracts:
+We used [Quint][] to produce an [executable specification][zksync-gov-spec] of
+the [ZKsync Governance contracts][zksync-gov-contracts], which are written in
+Solidity, and wrote several basic tests to check that the specification does not
+have trivial coding bugs and typos. Since Quint is a relatively general
+specification language, which stems from TLA<sup>+</sup>, it does not offer
+built-in primitives for modeling Solidity and EVM. Hence, to model the
+governance protocol, we need to create adequate reference models for the
+following primitives and mechanisms of the EVM smart contracts:
 
  - Contract inheritance,
  - Multisig,
@@ -238,20 +239,28 @@ implements the method `isValidSignatureNow` which is a wrapper around the method
 `isValidSignature`.
 
 ```quint
-/// @dev The function to check if the provided signatures are valid and meet predefined threshold.
+/// @dev The function to check if the provided signatures are valid and
+///      meet predefined threshold.
 /// @param _digest The hash of the data being signed.
-/// @param _signature An array of signers and signatures to be validated ABI encoded from `address[], bytes[]` to `abi.decode(data,(address[],bytes[]))`.
-pure def isValidSignature(self: MultisigState, _digest: AbiEncoded, _signature: Set[Signature]): Bytes4 = {
-    pure val err = self.checkSignatures(_digest, _signature.map(s => s.signer), _signature, self.EIP1271_THRESHOLD)
-    if (err != "") err
-    else EIP1271_MAGICVALUE
+/// @param _signature An array of signers and signatures to be validated
+///        ABI encoded from
+///        `address[], bytes[]` to `abi.decode(data,(address[],bytes[]))`.
+pure def isValidSignature(self: MultisigState, _digest: AbiEncoded,
+                          _signature: Set[Signature]): Bytes4 = {
+  pure val err =
+    self.checkSignatures(_digest, _signature.map(s => s.signer),
+                         _signature, self.EIP1271_THRESHOLD)
+  if (err != "") err
+  else EIP1271_MAGICVALUE
 }
 
-/// @dev Should return whether the signature provided is valid for the provided data
+/// @dev Should return whether the signature provided is valid for
+///      the provided data
 /// @param hash      Hash of the data to be signed
 /// @param signature Signature byte array associated with _data
-pure def isValidSignatureNow(self: MultisigState, _digest: AbiEncoded, _signature: Set[Signature]): bool = {
-        isValidSignature(self, _digest, _signature) == EIP1271_MAGICVALUE
+pure def isValidSignatureNow(self: MultisigState, _digest: AbiEncoded,
+                             _signature: Set[Signature]): bool = {
+  isValidSignature(self, _digest, _signature) == EIP1271_MAGICVALUE
 }
 ```
 
@@ -285,41 +294,37 @@ have plenty of different types. Interestingly, this would not be an issue in an
 untyped specification language such as TLA<sup>+</sup>. Fortunately, we do not
 have to specify the behavior of hashing for arbitrary messages. We only have to
 do it for the kinds of messages that are mentioned in the ZKsync contracts.
-There are not so many, actually. As a result, we define the shape of the
+Luckily, there are not so many of them. As a result, we define the shape of the
 hashable messages with `AbiElem` and `AbiEncoded`:
 
 ```quint
-    type AbiElem =
-      AbiStr(str) | AbiInt(int) |
-      AbiUpgradeProposal(UpgradeProposal) | AbiL2Proposal(L2GovernorProposal)
-    type AbiEncoded = List[AbiElem]
+type AbiElem =
+  AbiStr(str) | AbiInt(int) |
+  AbiUpgradeProposal(UpgradeProposal) | AbiL2Proposal(L2GovernorProposal)
+type AbiEncoded = List[AbiElem]
 ```
 
-Further, we define several versions of abi.encode for a different numbers of
+Further, we define several versions of `abi.encode` for a different numbers of
 arguments, and `keccak256` simply as the identity function over `AbiEncoded`:
 
 ```quint
-    pure def abi_encode1(e1: AbiElem): AbiEncoded = {
-        [e1]
-    }
-    pure def abi_encode2(e1: AbiElem, e2: AbiElem): AbiEncoded = {
-        [e1, e2]
-    }
-    pure def keccak256(enc: AbiEncoded): AbiEncoded = {
-        enc
-    }
+pure def abi_encode1(e1: AbiElem): AbiEncoded = [e1]
+pure def abi_encode2(e1: AbiElem, e2: AbiElem): AbiEncoded = [e1, e2]
+pure def keccak256(enc: AbiEncoded): AbiEncoded = enc
 ```
 
 Consider the following Solidity expression:
  
 ```quint
-    _hashTypedDataV4(keccak256(abi.encode(APPROVE_UPGRADE_SECURITY_COUNCIL_TYPEHASH, _id))
+_hashTypedDataV4(keccak256(
+  abi.encode(APPROVE_UPGRADE_SECURITY_COUNCIL_TYPEHASH, _id)
+))
 ```
 
 We specify the above expression as:
 
 ```quint
-    [ AbiStr("SecurityCouncil"), AbiInt("1"), _id ]
+[ AbiStr("SecurityCouncil"), AbiInt("1"), _id ]
 ```
 
 **Modeling the history of EVM Calls.** One of our goals when writing the Quint
@@ -330,28 +335,30 @@ calls, we introduce the history of calls that are explicitly included in the EVM
 state:
 
 ```quint
-    type EvmState = {
-        blockTimestamp: Uint256,
-        …
-        // the history of calls made in the last transaction
-        ghostCallHistory: EvmCallHistory,
-   }
+type EvmState = {
+  blockTimestamp: Uint256,
+  …
+  // the history of calls made in the last transaction
+  ghostCallHistory: EvmCallHistory,
+}
 
-   type EvmCallHistory = {
-       lastSender: Address,
-       calls: List[{ caller: Address, callee: Address, method: Function }]
-   }
+type EvmCallHistory = {
+  lastSender: Address,
+  calls: List[{ caller: Address, callee: Address, method: Function }]
+}
 ```
 
 This approach lets us conveniently write state invariants that reason about method calls:
 
 ```quint
-    val onlyGuardiansIsAllowedToCallExtendLegalVetoInv =
-        evm.ghostCallHistory.calls.indices().forall(i => {
-            val e = evm.ghostCallHistory.calls[i]
-            (e.callee == PROTOCOL_UPGRADE_HANDLER_ADDR) and (e.method == FunctionExtendLegalVeto)
-                implies (e.caller == GUARDIANS_ADDR)
-        })
+val onlyGuardiansIsAllowedToCallExtendLegalVetoInv =
+  evm.ghostCallHistory.calls.indices().forall(i => {
+    val e = evm.ghostCallHistory.calls[i]
+    and {
+      e.callee == PROTOCOL_UPGRADE_HANDLER_ADDR,
+      e.method == FunctionExtendLegalVeto
+    } implies (e.caller == GUARDIANS_ADDR)
+  })
 ```
 
 ## 4. Reproducing reports from Threat Modeling Submissions
@@ -364,7 +371,7 @@ specification and add more invariants. For each reported vulnerability we wrote
 the corresponding invariant that must be violated if the vulnerability exists in
 the system or it must be held if the reported vulnerability was a false
 positive. Then we changed the specification as needed to make the system hold
-all invariants. For instance, consider the following vulnerability.
+all invariants. For instance, consider the following report:
 
 > Emergency upgrades can be replayed infinite times on L1
 >
@@ -383,21 +390,22 @@ We wrote the following invariant to check whether this vulnerability exists. It
 indirectly checks whether an emergency upgrade can be executed twice.
 
 ```quint
-// An Emergency Upgrade cannot be executed twice: there are no two equal executed // emergency upgrades.
+// An Emergency Upgrade cannot be executed twice:
+// there are no two equal executed emergency upgrades.
 val emergencyUpgradeMustBeExecutedOnce =
-    evm.emittedEvents.indices().forall(i => {
-        evm.emittedEvents.indices().forall(j => {
-            match (evm.emittedEvents[i]) {
-               | EventEmergencyUpgradeExecuted(id1) =>
-                   match (evm.emittedEvents[j]) {
-                   | EventEmergencyUpgradeExecuted(id2) =>
-                       (id1 == id2 implies i == j)
-                   | _ => true
-                   }
+  evm.emittedEvents.indices().forall(i => {
+    evm.emittedEvents.indices().forall(j => {
+      match (evm.emittedEvents[i]) {
+      | EventEmergencyUpgradeExecuted(id1) =>
+        match (evm.emittedEvents[j]) {
+        | EventEmergencyUpgradeExecuted(id2) =>
+          (id1 == id2 implies i == j)
+        | _ => true
+        }
 
-               | _ => true   
-           }
-    })
+      | _ => true   
+    }
+  })
 })
 ```
 
@@ -408,48 +416,64 @@ of the emergency upgrade.
 ```quint
 // Emergency upgrades cannot be replayed.
 //
-// This invariant checks that if an external user successfully executes ExecuteEmergencyUpgrade call
-// and then make the same call with the same arguments, the second call will return an error.
+// This invariant checks that if an external user successfully
+// executes ExecuteEmergencyUpgrade call and then make the same
+// call with the same arguments, the second call will return an error.
 val emergencyUpgradeCannotBeReplayed = {
-    val executor = EMERGENCY_UPGRADE_BOARD_ADDR
-    CALLS.forall(calls => {
-        SALTS.forall(salt => {
-            GUARDIAN_MEMBERS.powerset().forall(guardians => {
-                SECURITY_COUNCIL_MEMBERS.powerset().forall(council => {
-                    ZK_FOUNDATION_MEMBERS.powerset().forall(foundation => {
-                        val proposal = { calls: calls, executor: executor, salt: salt }
-                        val proposalId = keccak256_UpgradeProposal(proposal)
-                        val securityCouncilDigest = _emergencyUpgradeBoardCouncilHashTypedDataV4( 
-                                keccak256(abi_encode2(EXECUTE_EMERGENCY_UPGRADE_SECURITY_COUNCIL_TYPEHASH, proposalId))
-                        )
-                        val guardiansDigest = _emergencyUpgradeBoardCouncilHashTypedDataV4(
-                                keccak256(abi_encode2(EXECUTE_EMERGENCY_UPGRADE_GUARDIANS_TYPEHASH, proposalId))
-                            )
-                        val zkFoundationDigest = _emergencyUpgradeBoardCouncilHashTypedDataV4(
-                                keccak256(abi_encode2(EXECUTE_EMERGENCY_UPGRADE_ZK_FOUNDATION_TYPEHASH, proposalId))
-                            )
-                        val securityCouncilSignatures = signDigest(council, securityCouncilDigest)
-                        val guardiansSignatures = signDigest(guardians, guardiansDigest)
-                        val zkFoundationSignatures = signDigest(foundation, zkFoundationDigest)
+  val executor = EMERGENCY_UPGRADE_BOARD_ADDR
+  CALLS.forall(calls => {
+    SALTS.forall(salt => {
+      GUARDIAN_MEMBERS.powerset().forall(guardians => {
+        SECURITY_COUNCIL_MEMBERS.powerset().forall(council => {
+          ZK_FOUNDATION_MEMBERS.powerset().forall(foundation => {
+            val proposal = { calls: calls, executor: executor, salt: salt }
+            val proposalId = keccak256_UpgradeProposal(proposal)
+            val securityCouncilDigest =
+              _emergencyUpgradeBoardCouncilHashTypedDataV4( 
+                keccak256(abi_encode2(
+                  EXECUTE_EMERGENCY_UPGRADE_SECURITY_COUNCIL_TYPEHASH, proposalId
+                ))
+            )
+            val guardiansDigest = _emergencyUpgradeBoardCouncilHashTypedDataV4(
+              keccak256(abi_encode2(
+                EXECUTE_EMERGENCY_UPGRADE_GUARDIANS_TYPEHASH, proposalId
+              ))
+            )
+            val zkFoundationDigest = _emergencyUpgradeBoardCouncilHashTypedDataV4(
+              keccak256(abi_encode2(
+                EXECUTE_EMERGENCY_UPGRADE_ZK_FOUNDATION_TYPEHASH, proposalId
+              ))
+            )
+            val securityCouncilSignatures =
+              signDigest(council, securityCouncilDigest)
+            val guardiansSignatures = signDigest(guardians, guardiansDigest)
+            val zkFoundationSignatures = signDigest(foundation, zkFoundationDigest)
 
-                        val evm2 = evm.externalCall(ANY_ADDRESS, EMERGENCY_UPGRADE_BOARD_ADDR, FunctionExecuteEmergencyUpgrade)
-                        val result = emergencyUpgradeBoard::ExecuteEmergencyUpgrade(evm2, calls, salt, guardiansSignatures, securityCouncilSignatures, zkFoundationSignatures)
-                            
-                        isOk(result) implies {
-                                isErr(emergencyUpgradeBoard::ExecuteEmergencyUpgrade(result.v, calls, salt, guardiansSignatures, securityCouncilSignatures, zkFoundationSignatures))
-                        }
-                    })
-                })
-            })
+            val evm2 =
+              evm.externalCall(ANY_ADDRESS,
+                EMERGENCY_UPGRADE_BOARD_ADDR, FunctionExecuteEmergencyUpgrade)
+            val result =
+              emergencyUpgradeBoard::ExecuteEmergencyUpgrade(evm2,
+                calls, salt, guardiansSignatures,
+                securityCouncilSignatures, zkFoundationSignatures)
+                      
+            isOk(result) implies {
+              isErr(emergencyUpgradeBoard::ExecuteEmergencyUpgrade(result.v,
+                calls, salt, guardiansSignatures,
+                securityCouncilSignatures, zkFoundationSignatures))
+            }
+          })
         })
+      })
     })
+  })
 }
 ```
 
 Not all reported findings were resolved as vulnerabilities. Some were
-acknowledged, and the decision was to wait to fix them immediately since there
-was no formal proof that the system could be transferred to an unsafe state. For
-instance, consider the following finding:
+acknowledged, and the decision was to wait with fixing them immediately since
+there was no formal proof that the system could be transferred to an unsafe
+state. For instance, consider the following finding:
 
 > Signatures of governance bodies do not expire.
 > 
@@ -475,23 +499,28 @@ checker.
 ```quint
 // ApproveUpgradeSecurityCouncil call cannot be replayed.
 val approveUpgradeSecurityCouncilCannotBeReplayed = {
-    val IDS = getAllUpgradeIDs(evm)
-    IDS.forall(id=> {
-        ALL_SENDERS.forall(sender => {
-            ALL_MEMBERS.powerset().forall(signers => {
-                val digest = _securityCouncilHashTypedDataV4(
-                        keccak256(abi_encode2(APPROVE_UPGRADE_SECURITY_COUNCIL_TYPEHASH, id))
-                )
-                val signatures = signDigest(signers, digest)
-                val evm2 = evm.externalCall(sender, SECURITY_COUNCIL_ADDR, FunctionApproveUpgradeSecurityCouncil)
-                val result = securityCouncil::ApproveUpgradeSecurityCouncil(evm2, id, signers, signatures)
-                    
-                isOk(result) implies {
-                    isErr(securityCouncil::ApproveUpgradeSecurityCouncil(result.v, id, signers, signatures))
-                }
-            })
-        })
+  val IDS = getAllUpgradeIDs(evm)
+  IDS.forall(id=> {
+    ALL_SENDERS.forall(sender => {
+      ALL_MEMBERS.powerset().forall(signers => {
+        val digest = _securityCouncilHashTypedDataV4(
+          keccak256(abi_encode2(APPROVE_UPGRADE_SECURITY_COUNCIL_TYPEHASH, id))
+        )
+        val signatures = signDigest(signers, digest)
+        val evm2 =
+          evm.externalCall(sender,
+            SECURITY_COUNCIL_ADDR, FunctionApproveUpgradeSecurityCouncil)
+        val result = securityCouncil::ApproveUpgradeSecurityCouncil(
+          evm2, id, signers, signatures)
+            
+        isOk(result) implies {
+          isErr(securityCouncil::ApproveUpgradeSecurityCouncil(
+            result.v, id, signers, signatures
+          ))
+        }
+      })
     })
+  })
 }
 ```
 
@@ -520,29 +549,31 @@ follows:
 // an Emergency Upgrade must be passed before any subsequent freezes may be
 // initiated.
 val freezesRequireEmergencyUpgradeInv =
-    def hasEmergencyUpgrade(eventIndices) = {
-        eventIndices.exists(k => {
-            match (evm.emittedEvents[k]) {
-            | EventEmergencyUpgradeExecuted(_) => true
-            | _ => false
-            }
-        })
-    }
-   evm.emittedEvents.indices().forall(i => {
-       evm.emittedEvents.indices().forall(j => or {
-           j <= i,
-            match (evm.emittedEvents[i]) {
-            | EventHardFreeze(id1) =>
-                match (evm.emittedEvents[j]) {
-                    | EventSoftFreeze(id2) =>
-                        hasEmergencyUpgrade(evm.emittedEvents.indices().filter(k => i < k and k < j))
-                    | EventHardFreeze(id2) =>
-                       hasEmergencyUpgrade(evm.emittedEvents.indices().filter(k => i < k and k < j))
-                    | _ => true
-                }
-            | _ => true    
-            }
+  def hasEmergencyUpgrade(eventIndices) = {
+    eventIndices.exists(k => {
+      match (evm.emittedEvents[k]) {
+      | EventEmergencyUpgradeExecuted(_) => true
+      | _ => false
+      }
     })
+  }
+  evm.emittedEvents.indices().forall(i => {
+    evm.emittedEvents.indices().forall(j => or {
+      j <= i,
+      match (evm.emittedEvents[i]) {
+      | EventHardFreeze(id1) =>
+        match (evm.emittedEvents[j]) {
+        | EventSoftFreeze(id2) =>
+            hasEmergencyUpgrade(evm.emittedEvents
+              .indices().filter(k => i < k and k < j))
+        | EventHardFreeze(id2) =>
+            hasEmergencyUpgrade(evm.emittedEvents
+              .indices().filter(k => i < k and k < j))
+        | _ => true
+        }
+      | _ => true    
+    }
+  })
 })
 ```
 
@@ -553,7 +584,7 @@ machine.
 
 ## 6. Experimental setup
 
-**Hardware**. We have been running experiments on a benchmark server that
+**Hardware**. We have been running experiments on a benchmarking server that
 is equipped with two AMD EPYC 7401P 24-Core Processors and 256G of RAM.  This
 configuration allowed us to check dozens of invariants in parallel.
 
@@ -583,7 +614,7 @@ are working as follows:
  PROTOCOL_UPGRADE_HANDLER_ADDR, GUARDIANS_ADDR, EMERGENCY_UPGRADE_BOARD_ADDR,
  ANY_ADDRESS)`. The random simulator evaluates the invariant at every step.
  This technique is conceptually the same as [Invariant Testing in Foundry][],
- though it works at the protocol level instead of evaluation Solidity contracts.
+ though it works at the protocol level instead of executing Solidity contracts.
  
  - *Randomized symbolic execution* picks a sequence of transactions at random
  and delegates the choice of transaction payloads to the constraint solver
@@ -668,17 +699,18 @@ required about 11 hours.
 ![Model checking results]({{ site.baseurl }}/img/zkgov-fast6.png)
 
 **Degrees of confidence**.
-As can be seen from the short overview of Quint techniques, random simulation is
-the most straightforward and the fastest technique among the three. However, it
-provides us with the lowest degree of confidence. For instance, the probability
-of just choosing three specific transactions (e.g., `SecurityCouncil::SoftFreeze`,
-`SecurityCouncil::HardFreeze`, and `SecurityCouncil::Unfreeze`) out of 20
-available transaction types in that order would be $\frac{1}{20^3} =
-\frac{1}{8000}$.  If we multiply this probability by the probability of choosing
-the right payloads, we will see that the chance of producing a right sequence of
-transactions is quite low. The imprecision of this technique is compensated by
-the speed of executing a single transaction sequence. In our experiments, this
-technique has indeed missed multiple invariant violations.
+As can be seen from the short overview of the Quint techniques, random
+simulation is the most straightforward and the fastest technique among the
+three. However, it provides us with the lowest degree of confidence. For
+instance, the probability of just choosing three specific transactions (e.g.,
+`SecurityCouncil::SoftFreeze`, `SecurityCouncil::HardFreeze`, and
+`SecurityCouncil::Unfreeze`) out of 20 available transaction types in that order
+would be $\frac{1}{20^3} = \frac{1}{8000}$.  If we multiply this probability by
+the probability of choosing the right payloads, we will see that the chance of
+producing a right sequence of transactions is quite low. The imprecision of this
+technique is compensated by the speed of executing a single transaction
+sequence. In our experiments, this technique has indeed missed multiple
+invariant violations.
 
 Randomized symbolic execution provides us with much better guarantees. As in the
 case of random simulation, this technique may miss an invariant violation, when
@@ -707,14 +739,16 @@ fuzzers or formal verification tools specifically designed for Solidity.
 Interestingly, translating Solidity to Quint was not as much of a bottleneck in
 this project, as one could have expected. Most of our time went into formulating
 key invariants and understanding whether we had specified sufficiently many
-invariants. In general, we had a very fast feedback loop from writing an
-invariant to finding a counterexample, if there was one. In addition to that,
-we used both the randomized simulator of Quint, which is conceptually close to
-the fuzzer in Foundry. After running the randomized simulator, to increase our
-confidence, we were running the symbolic model checker Apalache, which is closer
-to symbolic execution tools that are backed by SMT solvers. This required
-literally *zero boilerplate code*, as the Quint tools are built on the concept
-of state machines, invariants, and the temporal logic of TLA<sup>+</sup>.
+invariants.
+
+In general, we had a very fast feedback loop from writing an invariant to
+finding a counterexample, if there was one. In addition to that, we used both
+the randomized simulator of Quint, which is conceptually close to the fuzzer in
+Foundry. After running the randomized simulator, to increase our confidence, we
+were running the symbolic model checker Apalache, which is closer to symbolic
+execution tools that are backed by SMT solvers. This required literally *zero
+boilerplate code*, as the Quint tools are built on the concept of state
+machines, invariants, and the temporal logic of TLA<sup>+</sup>.
 
 
 
