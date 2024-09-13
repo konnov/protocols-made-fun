@@ -19,26 +19,28 @@ made.
 
 [ZKsync Governance][zksync-gov] is a protocol that allows governance bodies
 (members), such as the ZKsync Security Council and Guardians, to manage ZKsync
-through regular and emergency procedures. The ZK token serves as the
-governance token for voting. The ZKsync Governance Procedures are maintained by
-the ZKsync Association and are updated to reflect any changes to the underlying
-smart contracts and on-chain mechanisms. They are intended as a
+through regular and emergency procedures. The ZK token serves as the governance
+token for voting. The [ZKsync Governance Procedures][zksync-gov-procedures] are
+maintained by the ZKsync Association and are updated to reflect any changes to
+the underlying smart contracts and on-chain mechanisms. They are intended as a
 high-level overview rather than a comprehensive guide.
 
-The ZKsync governance smart contracts have been previously tried by well-known
-researchers in the field, who reported several vulnerabilities. When writing the
-formal specification, one of our goals was to see whether we could triage some
-of these reports and reproduce the vulnerabilities with the model checker.
-Another goal was to use the legal documents (especially devoted to the
-[emergency response procedures][emergency-response]) to ensure formally defined
-coverage of the contracts with state invariants.
+The [ZKsync governance smart contracts][zksync-gov-contracts] have been
+previously tried by well-known researchers in the field, who reported several
+vulnerabilities. When writing the formal specification, one of our goals was to
+see whether we could triage some of these reports and reproduce the
+vulnerabilities with the model checker.  Another goal was to use the legal
+documents (especially devoted to the [emergency response
+procedures][emergency-response]) to ensure formally defined coverage of the
+contracts with state invariants.
 
-As a result of our work, we have written over 50 state invariants. All of them
-were tried with the randomized simulator of Quint as well as with the symbolic
-model checker [Apalache][]. While we do not claim to have achieved a 100%
-accuracy in verifying these state invariants, since we were doing bounded model
-checking and randomized symbolic execution, we believe that the specification
-and model checking activity were quite valuable, for the following reasons:
+As a result of our work, we have developed a [protocol specification in
+Quint][zksync-gov-spec] and over 50 invariants. All of them were tried
+with the randomized simulator of [Quint][] as well as with the symbolic model
+checker [Apalache][]. While we do not claim to have achieved a 100% accuracy in
+verifying these state invariants, since we were doing bounded model checking and
+randomized symbolic execution, we believe that the specification and model
+checking activity were quite valuable, for the following reasons:
 
 1. While writing the Quint specification, we have identified a few fragments of
 the Solidity code that could be improved, though they were not directly
@@ -759,7 +761,8 @@ machines, invariants, and the temporal logic of TLA<sup>+</sup>.
 [Apalache]: https://apalache-mc.org
 [zksync-gov-spec]: https://github.com/zksync-association/zk-governance/tree/master/spec 
 [zksync-gov-contracts]: https://github.com/zksync-association/zk-governance/tree/master/l1-contracts
-[zksync-gov]: https://docs.zknation.io/zksync-governance/zksync-governance-procedures-overview
+[zksync-gov]: https://blog.zknation.io/zksync-governance-system/
+[zksync-gov-procedures]: https://docs.zknation.io/zksync-governance/zksync-governance-procedures-overview
 [emergency-response]: https://docs.zknation.io/zksync-governance/schedule-2-emergency-response-procedures
 [chonky-quint]: https://protocols-made-fun.com/consensus/matterlabs/quint/specification/modelchecking/2024/07/29/chonkybft.html
 [Igor Konnov]: https://konnov.phd
