@@ -1,0 +1,28 @@
+---
+# Only the main Sass file needs front matter (the dashes are enough)
+---
+
+$content-width: 80%;
+
+@import
+  "minima/skins/{{ site.minima.skin | default: 'classic' }}",
+  "minima/initialize";
+
+// add a floating div style that aligns to the right
+.sidebar {
+  float: right;
+  margin-left: 50px;
+  margin-bottom: 10px;
+  width: 200px;
+}
+
+.my-wrapper {
+    display: flex;
+    justify-content: space-between;
+}
+
+.photo {
+    border: 2px;
+    border-style: solid;
+    border-color: #99bbff;
+}
