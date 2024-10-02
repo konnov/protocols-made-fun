@@ -29,7 +29,8 @@ TLA<sup>+</sup>, not to start a flame war.
 **Disclaimer:**  All opinions are of my own. I resigned from Informal Systems on
 December 31, 2023 and have not been receiving any funding from them since then.
 Even though I still have some equity there, not knowing its current value, I do
-not feel financially motivated to promote their work or products.
+not feel financially motivated to promote their work or products. I am fixing
+small issues in Quint, when my customers ask me to do that.
 
 ## 1. Why I am using TLA+
 
@@ -37,6 +38,8 @@ I am using TLA<sup>+</sup> in the new projects for fun and [profit][konnov.phd],
 mainly, by running the [Apalache][] model checker. However, it is up to the
 customer to decide whether they want to use TLA<sup>+</sup> or another syntax
 like [Quint][], or something else.
+
+![I love TLA+]({{ site.baseurl }}/assets/images/heart-tlaplus.png)
 
 **TLA<sup>+</sup> is consistent with my prior knowledge on model checking.**
 Before I started to learn TLA<sup>+</sup>, I spent some time learning model
@@ -71,8 +74,8 @@ languages.
 
 **TLA<sup>+</sup> offers a convenient set of primitives.** We don't have to
 reinvent everything from scratch. Additionally, it provides a practical set of
-primitives. Few engineers and protocol designers are interested in Peano
-arithmetic or similar concepts.
+primitives. Few engineers and protocol designers are interested in using Peano
+arithmetic or effectively-propositional logic.
 
 **The logic of TLA<sup>+</sup> is extremely flexible.** It is very easy
 to switch between different levels of abstraction. This is extremely important
@@ -93,7 +96,69 @@ would rather like computers to disprove my hypotheses.
 
 ## 2. Lessons from Informal Systems and the Cosmos ecosystem
 
+We were actively using TLA<sup>+</sup> and Apalache in 2020-2022. As a result,
+we wrote specifications of Tendermint, its light client, and IBC, see
+[Tendermint TLA+ Spec][], [Light client TLA+ Spec][], [IBC TLA+ Specs][]. For
+more details, see [Informal Q2 2020 Update][]. We used both TLC and Apalache.
+Back then, Apalache had a lot of usability issues. For instance, its type
+checker was very fragile and hard to use. We completely rewrote the type checker
+in 2021 and further improved it in 2022. Perhaps, the most interesting
+observation for me was that in 2021 we were finding issues in Apalache every
+time we were writing a new specification. We stopped finding new issues in 2022.
+People are still submitting issues every now and then, but the current
+implementation is significantly more stable.
+
+Thanks to that work, I had plenty of conversations with engineers at Informal
+Systems as well as in the more global Cosmos ecosystem.
+
+![Kind of Cosmos]({{ site.baseurl }}/assets/images/01-bang.png)
+
+There were three recurrent themes in these conversations:
+
+ 1. Every time I was showing a TLA<sup>+</sup> specification to an engineer,
+ they were asking about `/\`, `\/`, `\E`, `\A`, `=>`, and other operators.  Back
+ then, the Unicode support in TLA<sup>+</sup> was not even a thing. When I was
+ explaining the meaning of these operators, everything was clear. However, we
+ were losing time in a meeting with every new person. We could use this time to
+ discuss the specification itself. Instead, we were discussing the syntax of
+ TLA<sup>+</sup>. There was no single engineer who said that they liked this
+ part. Interestingly, these people did not want to write a specification, they
+ just wanted to read it.
+
+ 1. An engineer would get excited about TLA<sup>+</sup> and literally write a
+ program in every single detail, following good programming practices, but
+ completely overdoing it. We all have seen that and all have done that.
+ Surprisingly, the mantra "TLA<sup>+</sup> is not a programming language" did
+ not stop them. They just treated TLA<sup>+</sup> as a programming language with
+ strange syntax. There are plenty of languages with strange syntaxes around.  If
+ they liked imperative languages, they wanted assignments are returns
+ everywhere. If they liked functional languages, they wanted to wrap everything
+ into Either and Option. The Rust engineers... they wanted to do both of these
+ things.
+
+ 1. Perhaps, related to the previous point, everybody was asking whether it was
+ possible to translate Rust, Golang, TypeScript, Python, whatever to
+ TLA<sup>+</sup>, or the other way around. Every time, I had to explain that,
+ yes, to some extent, it should be possible, but the outcome would be completely
+ unusable in the both directions. People still keep asking these questions.
+
 ## 3. Conceptual models
+
+On the surface, it looked like people were only asking about the syntax, but
+their frustration was deeper. I think I started understanding it a bit better
+after reading [The Design of Everyday Things][]. Here are just two sentences
+from the book that introduce conceptual models (p. 25):
+
+> A conceptual model is an explanation, usually highly simplified, of how
+ something works. It doesn't have to be complete or even accurate as long as it
+ is useful.
+
+Basically, when you buy a computer, nobody gives you a book that starts with:
+"Welcome to the magical world of transistors!" Or, when you buy a fridge, nobody
+explains you electricity or the Carnot cycle. I am afraid we are doing something
+like that all the time, when we try to explain TLA<sup>+</sup> to newbies.
+
+![The Design of Everyday Things](https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1697900485i/164316035.jpg)
 
 ## 4. How do people learn to program?
 
@@ -117,3 +182,8 @@ would rather like computers to disprove my hypotheses.
 [The Future of TLA+]: https://groups.google.com/g/tlaplus/c/1tz1sYs2hxM
 [Hacker News]: https://news.ycombinator.com/
 [Handbook of Model Checking]: https://link.springer.com/book/10.1007/978-3-319-10575-8
+[Tendermint TLA+ Spec]: https://github.com/cometbft/cometbft/blob/main/spec/light-client/accountability/TendermintAcc_004_draft.tla
+[Light client TLA+ Spec]: https://github.com/cometbft/cometbft/blob/main/spec/light-client/verification/Lightclient_003_draft.tla
+[IBC TLA+ Specs]: https://github.com/informalsystems/hermes/tree/master/docs/spec
+[Informal Q2 2020 Update]: https://informal.systems/blog/q2-tech-update
+[The Design of Everyday Things]: https://www.goodreads.com/book/show/164316035-the-design-of-everyday-things-design-of-everyday-thing-rev-e-paperback
