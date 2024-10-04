@@ -8,6 +8,8 @@ tlaplus: true
 math: true
 ---
 
+**Author**: Igor Konnov
+
 Recently, we have seen several interesting write-ups in the
 [TLA<sup>+</sup>][TLA+] ecosystem:
 
@@ -19,12 +21,12 @@ Recently, we have seen several interesting write-ups in the
  1. prestonph asked about [Opinions on Quint][].
 
 These three posts made me think about the TLA<sup>+</sup>-related work I have
-been doing since 2016. There was also a bunch of discussions on [Hacker News][],
-but those seem to have saturated to saying that there are also Lean, Coq, and
+been doing since 2016. There were numerous discussions on [Hacker News][], but
+those seem to have saturated to saying that there are also Lean, Coq, and
 dependent types. With this blogpost, I would like to summarize my experience
 with [TLA<sup>+</sup>][TLA+], [TLC][TLA+ Tools], [Apalache][], and [Quint][].  I
-share these learnings to spark new ideas about improving the tooling for
-TLA<sup>+</sup>.
+share these learnings in the hope to spark new ideas about improving the tooling
+for TLA<sup>+</sup>.
 
 **Disclaimer:**  All opinions are of my own. I resigned from Informal Systems on
 December 31, 2023 and have not been receiving any funding from them since then.
@@ -137,22 +139,21 @@ VARIABLES
     y
 ```
 
-In practice, the type checker requires type annotations for constants and
-variables.  Given that, it tries to infer types for everything else using a
-modified version of the type inference algorithm by [Damas and
-Milner][Damas-Milner]. In some cases, type inference cannot distinguish between
-functions, sequences, tuples, and records. In those cases, it requires
-additional type annotations.
+The type checker requires type annotations for constants and variables. Given
+those, it tries to infer types for everything else using a modified version of
+the type inference algorithm by [Damas and Milner][Damas-Milner]. In some cases,
+type inference cannot distinguish between functions, sequences, tuples, and
+records. In those cases, the type checker requires additional type annotations.
 
 **Randomized symbolic execution.** At some point, we started to check properties
 of the specifications that were too hard for bounded model checking. Of course,
 one approach to the issue was to raise the level of abstraction. However, it was
-not always possible. Hence, we have introduced the command `apalache-mc
-simulate` that randomly picks symbolic transitions instead of
-non-deterministically choosing from the set of all enabled transitions. This
+not always possible without losing the engineers. Hence, we have introduced the
+command `apalache-mc simulate` that randomly picks symbolic transitions instead
+of non-deterministically choosing from the set of all enabled transitions. This
 command is quite efficient for finding bugs, though it sacrifices completeness.
-I will write a separate blog post on the efficiency of [simulate][]. The command
-name may be misleading; it does random+symbolic execution (randolic?).
+I will write a separate blog post on comparing `check` vs. [simulate][]. The
+command name may be misleading; it does random+symbolic (randolic?) execution.
 
 As a teaser, these are statistics from finding an agreement violation with
 `apalache-mc check` on [Ben-Or's consensus][Ben_or83] for the case of too many
@@ -277,9 +278,8 @@ that all the time, when we try to explain TLA<sup>+</sup> to newbies.
 
 What are conceptual models in the world of TLA<sup>+</sup>? The canonical
 conceptual models are given in the book on [Specifying Systems][] and [The TLA+
-Video Course][] by Leslie Lamport. Hillel Wayne also presents a conceptual model
-in his [Learn TLA+][]
--- though it is more focused on [PlusCal][] -- but
+Video Course][] by Leslie Lamport. Hillel Wayne also presents another conceptual
+model in his [Learn TLA+][] -- though it is more focused on [PlusCal][] -- but
 exercises there are oriented towards another concept from the design book. When
 the readers do exercises they start building their own *mental models* (p. 26):
 
