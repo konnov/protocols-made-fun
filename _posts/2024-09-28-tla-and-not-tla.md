@@ -36,15 +36,15 @@ small issues in Quint, when my customers ask me to do that.
 
 ## 1. Why I am using TLA+
 
+<img src="{{ site.baseurl }}/assets/images/heart-tlaplus.png"
+  style="float: right; padding: 20pt;">
+
 I am using TLA<sup>+</sup> in the new projects for [fun][protocols-made-fun.com]
 and [profit][konnov.phd], mainly, by running the [Apalache][] model checker.
 However, it is up to the customer to decide whether they want to use
 TLA<sup>+</sup> or another syntax like [Quint][], or something else.  So far, I
 have not found a replacement for TLA<sup>+</sup> that would allow me to easily
 switch between different as easily, as it can be done in TLA<sup>+</sup>.
-
-<img src="{{ site.baseurl }}/assets/images/heart-tlaplus.png"
-  style="float: right; padding: 20pt;">
 
 **TLA<sup>+</sup> is consistent with my prior knowledge on model checking.**
 Before I started to learn TLA<sup>+</sup>, I spent some time learning model
