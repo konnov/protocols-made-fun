@@ -44,7 +44,8 @@ and [profit][konnov.phd], mainly, by running the [Apalache][] model checker.
 However, it is up to the customer to decide whether they want to use
 TLA<sup>+</sup> or another syntax like [Quint][], or something else.  So far, I
 have not found a replacement for TLA<sup>+</sup> that would allow me to easily
-switch between different as easily, as it can be done in TLA<sup>+</sup>.
+switch between different computational models and abstractions as easily, as it
+can be done in TLA<sup>+</sup>.
 
 **TLA<sup>+</sup> is consistent with my prior knowledge on model checking.**
 Before I started to learn TLA<sup>+</sup>, I spent some time learning model
@@ -235,7 +236,7 @@ Interchain/Cosmos ecosystem.
 <img src="{{ site.baseurl }}/assets/images/01-bang.png"
   style="float: right; padding: 20pt;">
 
-There were three recurrent themes in these conversations:
+There were four recurrent themes in these conversations:
 
  1. Every time I was showing a TLA<sup>+</sup> specification to an engineer,
  they were asking about `/\`, `\/`, `\E`, `\A`, `=>`, and other operators.  Back
