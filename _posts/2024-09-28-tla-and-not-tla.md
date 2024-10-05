@@ -1,7 +1,7 @@
 ---
 layout: post
-title: "Why I use TLA+ and not(TLA+): Part 1"
-date: 2024-10-04
+title: "Why I use TLA+ and not(TLA+): Episode 1"
+date: 2024-10-05
 categories: specification modelchecking tlaplus quint
 quint: true
 tlaplus: true
@@ -39,7 +39,9 @@ small issues in Quint, when my customers ask me to do that.
 I am using TLA<sup>+</sup> in the new projects for [fun][protocols-made-fun.com]
 and [profit][konnov.phd], mainly, by running the [Apalache][] model checker.
 However, it is up to the customer to decide whether they want to use
-TLA<sup>+</sup> or another syntax like [Quint][], or something else.
+TLA<sup>+</sup> or another syntax like [Quint][], or something else.  So far, I
+have not found a replacement for TLA<sup>+</sup> that would allow me to easily
+switch between different as easily, as it can be done in TLA<sup>+</sup>.
 
 <img src="{{ site.baseurl }}/assets/images/heart-tlaplus.png"
   style="float: right; padding: 20pt;">
@@ -75,13 +77,24 @@ languages.
 
 **TLA<sup>+</sup> offers a convenient set of primitives.** We don't have to
 reinvent everything from scratch. Additionally, it provides a practical set of
-primitives. Few engineers and protocol designers are interested in using Peano
-arithmetic or effectively-propositional logic.
+primitives. Few engineers and protocol designers are interested in expressing
+their thoughts in Peano arithmetic, effectively-propositional logic, or Petri
+nets.
 
 **The logic of TLA<sup>+</sup> is extremely flexible.** It is very easy
 to switch between different levels of abstraction. This is extremely important
 when modeling distributed systems. This is probably why some people keep
 talking about refinement.
+
+I can easily express concurrent algorithms, smart contracts, cross-blockchain
+protocols, and fault-tolerant consensus algorithms. Sure, it requires more
+effort than using a domain-specific language. However, when somebody comes to me
+with a new consensus algorithm or a conglomerate of smart contracts, like
+[ChonkyBFT][] and [ZKsync governance][] by Matter Labs, I know that it should be
+possible to express it in the logic of TLA<sup>+</sup>. At the same time,
+expressing distributed systems in TLA<sup>+</sup> is not as difficult as it is
+in a verification language designed for sequential algorithms. It's a bit of
+magic.
 
 This is in contrast to verification tools that are tuned towards a specific
 programming language. There, anything above the core abstractions requires
@@ -175,27 +188,27 @@ And these are statistics for the same specification and the same invariant using
 As we see, this random+symbolic execution is not the great on average. However,
 there are cases, where it finds a counterexample way faster than bounded model
 checking. Especially, when we run this search on multiple CPU cores, it is
-finding counterexamples really fast. TODO: do that!
+finding counterexamples much faster than I expected.
 
-**Folds instead of recursion.** Recursive operators were introduced in
+**Fold/reduce instead of recursion.** Recursive operators were introduced in
 [TLA+ Version 2][], which appeared after [Specifying Systems][]. For example,
 set cardinality (for finite sets) can be defined with a recursive operator:
 
 ```tla
-RECURSIVE Cardinality(_)
-Cardinality(S) ≜
+RECURSIVE CardinalityRec(_)
+CardinalityRec(S) ≜
   IF S = {}
   THEN 0
-  ELSE 1 + Cardinality(S \ { CHOOSE y ∈ S })
+  ELSE 1 + CardinalityRec(S \ { CHOOSE y ∈ S })
 ```
 
-Unfortunately, recursion (and loops) are a pain point of bounded model
-checking.  First, a recursive operator does not have to terminate. Second, even
-if it does terminate, it is impossible to predict the number of its iterations
-in the general case. Obviously, the above operator has $|S|$ iterations.
-Fortunately, many programming languages support bounded iteration called
-`reduce` or `fold`, see the [Fold][] page on Wikipedia. We refactored Apalache
-to work with folds instead of recursive operators:
+Unfortunately, recursion (and loops) are a pain point of bounded model checking.
+First, a recursive operator does not have to terminate. Second, even if it does
+terminate, it is impossible to predict the number of its iterations in the
+general case. Obviously, the above operator has $|S|$ iterations.  Fortunately,
+many programming languages support bounded iteration called `reduce` or `fold`,
+see the [Fold][] page on Wikipedia. Even Java has `reduce` since version 8! We
+refactored Apalache to work with folds instead of recursive operators:
 
 ```tla
 EXTENDS Apalache
@@ -274,7 +287,8 @@ sentences from the book that introduce *conceptual models* (p. 25):
 When you buy a computer, nobody gives you a book that starts with: "Welcome to
 the magical world of transistors!" Or, when you buy a fridge, nobody explains
 you electricity or the Carnot cycle. I am afraid we are doing something like
-that all the time, when we try to explain TLA<sup>+</sup> to newbies.
+that all the time, when we try to explain TLA<sup>+</sup> to newbies. To be
+fair, Coq tutorials were also like that.
 
 What are conceptual models in the world of TLA<sup>+</sup>? The canonical
 conceptual models are given in the book on [Specifying Systems][] and [The TLA+
@@ -290,7 +304,7 @@ aspect of its operation: the models can even be in conflict.
 
 I believe that these two concepts explain a lot. They explain why different
 people like different aspects of TLA<sup>+</sup>: Like with a good book, we
-interpret the message in various ways, building mental models of our own.
+interpret the message in our own way, building mental models of our own.
 Moreover, as Andrew Helwer noticed in [TLA+ is more than a DSL for breadth-first
 search][], many users of TLC believe that TLA<sup>+</sup> and TLC are exactly
 the same thing. The explanation is very simple (not really a quote, just using
@@ -311,8 +325,10 @@ actually complained about the lack of a fast feedback loop, so they could keep
 learning. With a programming language, you can just write some code and execute
 it. However, "executable" is a taboo word in the TLA<sup>+</sup> community for
 some reason, despite a large fragment of TLA<sup>+</sup> over finite sets being
-executable. The closest thing to this feedback loop is actually TLC. There is
-also [TLC REPL][], but it is probably not that well-known.
+executable, even if the complexity of this execution is not great. This is
+actually the reason for why TLC exists at all. The closest thing to such a
+feedback loop is actually TLC. There is also [TLC REPL][], but it is probably
+not that well-known.
 
 This also probably explains why so few people manage to pick up symbolic tools
 (the stability issues aside). It is much harder to build a mental model there,
@@ -370,3 +386,5 @@ Part 2.
 [A Tour of Go]: https://go.dev/tour/welcome/1
 [TLC REPL]: https://www.reddit.com/r/tlaplus/comments/hpvkcw/demo_of_the_new_tlc_repl/
 [Ben_or83]: https://github.com/konnov/apalache-examples/blob/main/ben-or83/Ben_or83.tla
+[ChonkyBFT]: https://protocols-made-fun.com/consensus/matterlabs/quint/specification/modelchecking/2024/07/29/chonkybft.html
+[ZKsync governance]: https://protocols-made-fun.com/zksync/matterlabs/quint/specification/modelchecking/2024/09/12/zksync-governance.html
