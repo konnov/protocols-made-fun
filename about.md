@@ -3,8 +3,6 @@ layout: page
 title: About
 ---
 
-I am [borken-link](http://this-is-a-broken-link-for-sure.com).
-
 Keep hearing about PMF from your manager and you don't know what it is? Among
 other things, PMF is Protocols Made Fun. Of course, your manager will tell you
 that PMF means "Product-Market Fit", but when someone starts throwing that kind
