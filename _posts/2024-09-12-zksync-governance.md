@@ -204,6 +204,7 @@ following primitives and mechanisms of the EVM smart contracts:
 important contracts from a modeling perspective are `SecurityCouncil` and
 `Guardians`.  They inherit from `Multisig` and `EIP712`. Since Quint does not
 support inheritance natively, we manually emulated it by calling all necessary
+constructors.
 
 For example, to create a new instance of `SecurityCouncil` we have to first
 directly create a new instance of `Multisig` for it:
