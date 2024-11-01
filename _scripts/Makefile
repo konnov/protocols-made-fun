@@ -2,7 +2,7 @@
 # Most of it is generated with ChatGPT.
 
 # Variables
-CSV_FILES = zkgov-fast6.csv
+CSV_FILES = zkgov-fast6.csv zkgov-fast9.csv
 OUTPUT_PNGS = $(CSV_FILES:.csv=.png)
 GNUPLOT_SCRIPT = cactus.plt
 
