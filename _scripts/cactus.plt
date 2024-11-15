@@ -17,5 +17,8 @@ set style data linespoints
 # Set the data separator (if CSV, usually comma, but in this case no separator is needed since it's just one column)
 set datafile separator ','
 
+# change the lines and markers
+set style line 1 lt 1 pt 7 ps 1.5 lc rgb "orange"
+
 # Sort the data first and then use cumulative numbering for solved instances
-plot input_name using ($0):($1+1) with linespoints title "Time per instance"
+plot input_name using ($0):($1+1) with linespoints linestyle 1 title "Time per instance"
