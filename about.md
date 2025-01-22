@@ -3,10 +3,9 @@ layout: page
 title: About
 ---
 
-Keep hearing about PMF from your manager and you don't know what it is? Among
-other things, PMF is Protocols Made Fun. Of course, your manager will tell you
-that PMF means "Product-Market Fit", but when someone starts throwing that kind
-of PMF at you, the fun is over.
+Keep hearing about PMF from your manager and you don't know what it is? In this
+blog, PMF is about protocols and fun, even if your manager tells you
+that PMF means "Product-Market Fit".
 
 This is [Igor Konnov][my website]'s blog about protocol specification, testing,
 and verification. Licensed under [CC BY 4.0][] :recycle:. I am an independent
