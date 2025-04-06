@@ -9,7 +9,9 @@
         <div>verification</div>
         <div>proofs</div>
     </div>
-    <a href="/contact" class="contact-link-button">Discuss Your Needs</a>
+    <div class="kw-button">
+        <a href="/contact" class="contact-link-button">Discuss Your Needs</a>
+    </div>
 </div>
 <hr>
 

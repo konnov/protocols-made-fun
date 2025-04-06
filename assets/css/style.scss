@@ -56,22 +56,24 @@ body {
   align-items: flex-start;
   gap: 2em;
   width: 100%; /* optional: full width */
-  max-width: 800px; /* optional: limit width */
   margin: 0 auto; /* center the container on the page */
 }
 
 .kw-grid {
-  font-family: Arial, Helvetica, sans-serif;
-  font-size: 0.8em;
-  display: flex;
-  justify-content: left;
-  margin-top: 5px;
-  margin-left: 10px;
   display: grid;
-  grid-template-columns: auto auto auto;
-  gap: 0.5em 2em;
+  grid-auto-flow: row;
+  grid-template-columns: repeat(auto-fit, minmax(10em, 1fr));
+  gap: 0.5em 1em;
+  font-family: Arial, Helvetica, sans-serif;
   font-size: 1.1em;
   color: #4a4a4a;
+  margin-top: 5px;
+  margin-left: 10px;
+  width: 80%;
+}
+
+.kw-button {
+  width: 20%;
 }
 
 .contact-link-button {
@@ -88,4 +90,15 @@ body {
 .contact-link-button:hover {
   background-color: #0056b3;
   color: #ffffff;
+}
+
+/* Hide photo on small screens */
+@media (max-width: 600px) {
+  .float-photo {
+    display: none;
+  }
+  .kw-grid {
+    font-size: 0.95em;
+    gap: 0.5em 1em;
+  }
 }
