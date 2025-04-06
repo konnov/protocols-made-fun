@@ -15,6 +15,7 @@ baseurl:
 twitter_username: k0nn0v
 github_username:  konnov
 minima:
+  skin: auto
   nav_pages:
     - about.md
 plugins:

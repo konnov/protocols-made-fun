@@ -7,7 +7,7 @@ Keep hearing about PMF from your manager and you don't know what it is? In this
 blog, PMF is about protocols and fun, even if your manager tells you
 that PMF means "Product-Market Fit".
 
-This is [Igor Konnov][my website]'s blog about protocol specification, testing,
+This is [Igor Konnov][website]'s blog about protocol specification, testing,
 and verification. Licensed under [CC BY 4.0][] :recycle:. I am an independent
 security and formal methods researcher, having a [track record][] in academia
 and the blockchain industry.
