@@ -5,7 +5,8 @@ title: Discuss Your Needs
 
 <div>
     <div class="float-photo">
-        <img src="{{ site.baseurl }}/assets/images/igor-devcon24-tiny.png" alt="Igor Konnov" style="width:100%;">
+        <img src="{{ site.baseurl }}/assets/images/igor-devcon24-tiny.png"
+             alt="Igor Konnov" style="width:100%;">
     </div>
     <div>
         <p>Why contact me instead of a big-name company like XYZ? Here’s why:</p>

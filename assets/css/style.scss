@@ -30,8 +30,8 @@ $content-width: 80%;
 .float-photo {
   float: right;
   margin: 0 0 1em 1.5em; /* top right bottom left */
-  min-width: 250px;
-  max-width: 25%;
+  min-width: 150px;
+  max-width: 15%;
   height: auto;
   border-radius: 8px;
   border: 2px;
@@ -76,6 +76,12 @@ body {
   width: 20%;
 }
 
+.button-container {
+  display: flex;
+  justify-content: center;
+  margin: 2em 0; /* optional: adds vertical spacing */
+}
+
 .contact-link-button {
   display: inline-block;
   background-color: #007BFF;
@@ -89,6 +95,11 @@ body {
 
 .contact-link-button:hover {
   background-color: #0056b3;
+  color: #ffffff;
+}
+
+.contact-link-button:visited {
+  background-color: #008b17;
   color: #ffffff;
 }
 

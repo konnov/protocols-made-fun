@@ -12,8 +12,12 @@ and verification. Licensed under [CC BY 4.0][] :recycle:. I am an independent
 security and formal methods researcher, having a [track record][] in academia
 and the blockchain industry.
 
-Not sure your distributed protocol or smart contracts are solid?
-[Check out my website][] to get expert analysis and confidence in your code.
+Not sure your distributed protocol or smart contracts are solid?  [Check out my
+website][website] to get expert analysis and confidence in your code.
+
+<div class="button-container">
+  <a href="/contact" class="contact-link-button">Discuss Your Needs</a>
+</div>
 
 
 [Quint]: https://konnov.phd/portfolio/quint/
@@ -21,7 +25,7 @@ Not sure your distributed protocol or smart contracts are solid?
 [Apalache]: https://konnov.phd/portfolio/apalache/
 [Apalache License]: https://github.com/apalache-mc/apalache/blob/main/LICENSE
 [Apache 2.0]: https://www.apache.org/licenses/LICENSE-2.0
-[my website]: https://konnov.phd/
+[website]: https://konnov.phd/
 [CC BY 4.0]: https://creativecommons.org/licenses/by/4.0/
 [track record]: https://konnov.phd/research/
 [Thomas Pani]: https://thpani.net/
