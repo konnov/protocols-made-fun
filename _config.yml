@@ -14,6 +14,9 @@ url: https://protocols-made-fun.com
 baseurl:
 twitter_username: k0nn0v
 github_username:  konnov
+minima:
+  nav_pages:
+    - about.md
 plugins:
   - jekyll-feed
   - jemoji
