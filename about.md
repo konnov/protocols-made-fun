@@ -10,10 +10,10 @@ that PMF means "Product-Market Fit".
 This is [Igor Konnov][my website]'s blog about protocol specification, testing,
 and verification. Licensed under [CC BY 4.0][] :recycle:. I am an independent
 security and formal methods researcher, having a [track record][] in academia
-and the blockchain industry. If you need help with your distributed protocols or
-smart contracts, check [my website][]. In case you need more than a soloist for
-your task, we can easily build a research team with [Andrey Kuprianov][],
-[Thomas Pani][], and [Jure Kukovec][], as we did in the past.
+and the blockchain industry.
+
+Not sure your distributed protocol or smart contracts are solid?
+[Check out my website][] to get expert analysis and confidence in your code.
 
 
 [Quint]: https://konnov.phd/portfolio/quint/

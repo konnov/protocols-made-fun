@@ -26,3 +26,38 @@ $content-width: 80%;
     border-style: solid;
     border-color: #99bbff;
 }
+
+body {
+  font-family: sans-serif;
+  display: flex;
+  justify-content: center;
+  margin-top: 50px;
+}
+
+.kw-grid {
+  font-family: sans-serif;
+  display: flex;
+  justify-content: center;
+  margin-top: 50px;
+  display: grid;
+  grid-template-columns: auto auto;
+  gap: 0.5em 2em;
+  font-size: 1.1em;
+  color: #4a4a4a;
+}
+
+.contact-link-button {
+  display: inline-block;
+  background-color: #007BFF;
+  color: white;
+  text-decoration: none;
+  padding: 1em .5em;
+  font-size: 1.2rem;
+  border-radius: 8px;
+  transition: background-color 0.3s ease;
+}
+
+.contact-link-button:hover {
+  background-color: #0056b3;
+  color: #ffffff;
+}
