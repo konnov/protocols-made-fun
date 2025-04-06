@@ -1,11 +1,9 @@
 remote_theme: jekyll/minima
-plugins:
-- jekyll-remote-theme
 author:
   name: Igor Konnov
   email: "igor@konnov.phd"
 title: Protocols Made Fun
-description: All things about protocol specification, testing, and verification. Subject to the Creative Commons Attribution 4.0 International License.
+description: All things about protocol specification, testing, and verification. Creative Commons Attribution 4.0 International License.
 show_downloads: false
 github.is_project_page: false
 google_analytics: G-98E1SLS4S5
@@ -19,6 +17,7 @@ minima:
   nav_pages:
     - about.md
 plugins:
+  - jekyll-remote-theme
   - jekyll-feed
   - jemoji
 # https://docs.github.com/en/enterprise-cloud@latest/pages/setting-up-a-github-pages-site-with-jekyll/about-github-pages-and-jekyll#syntax-highlighting
