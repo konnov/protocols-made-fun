@@ -11,6 +11,9 @@ math: true
 
 **Author: [Igor Konnov][]. Joint work with [MatterLabs][] (Bruno França, Denis Firsov, Denis Kolegov, Grzegorz Prusak)**
 
+**Update:** We have published an arXiv paper about ChonkyBFT. Check the
+details [here](https://konnov.phd/posts/chonkybft-paper/).
+
 ## 1. Introduction
 
 Earlier this year, I was engaged by the Security Team at [MatterLabs][]. They

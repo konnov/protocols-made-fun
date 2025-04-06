@@ -9,6 +9,9 @@ math: true
 
 **Authors: Denis Kolegov ([Matter Labs][]), [Igor Konnov][]**
 
+**Update:** We have also given a talk at DeFi Security Summit 2024.
+Check the details [here](https://konnov.phd/posts/dss2024/).
+
 After our success in [specification and model checking of the ChonkyBFT
 consensus][chonky-quint] in [Quint][], we have decided to apply Quint and its tools
 to a slightly different domain: governance contracts in Solidity. This blogpost
