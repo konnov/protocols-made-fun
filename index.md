@@ -1,3 +1,7 @@
+---
+layout: home
+---
+
 <div class="kw-container">
     <div class="kw-grid">
         <div>specification</div>
@@ -8,6 +12,7 @@
         <div>model checking</div>
         <div>verification</div>
         <div>proofs</div>
+        <div>Lean4</div>
     </div>
     <div class="kw-button">
         <a href="/contact" class="contact-link-button">Discuss Your Needs</a>
