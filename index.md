@@ -1,3 +1,7 @@
+---
+layout: home
+---
+
 <div class="kw-container">
     <div class="kw-grid">
         <div>specification</div>
