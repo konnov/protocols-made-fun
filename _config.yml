@@ -12,6 +12,8 @@ url: https://protocols-made-fun.com
 baseurl:
 twitter_username: k0nn0v
 github_username:  konnov
+disqus:
+  shortname: protocols-made-fun
 minima:
   skin: auto
   nav_pages:
