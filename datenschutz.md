@@ -5,6 +5,11 @@ title: Privacy Policy / Datenschutz
 
 **Die deutsche Version befindet sich weiter [unten](#de).**
 
+## Use of Disqus
+
+Our website uses Disqus (ads disabled). See the [Disqus privacy
+policy][disqus-policy].
+
 ## Use of Google Analytics
 
 Our website uses Google Analytics, a web analytics service provided by Google
@@ -59,6 +64,11 @@ For more information about how Google handles your data, please see:
 {: .prompt-tip }
 
 <span id="de"></span>
+
+## Verwendung von Disqus
+
+Unsere Website verwendet Disqus (ohne Werbung). Sehen Sie [Disqus privacy
+policy][disqus-policy].
 
 ## Verwendung von Google Analytics
 
@@ -117,3 +127,6 @@ Weitere Informationen zur Datennutzung durch Google finden Sie hier:
 
   - https://policies.google.com/privacy?hl=de
   - https://support.google.com/analytics/answer/6004245?hl=de
+
+
+[disqus-policy]: https://disqus.com/privacy-policy
