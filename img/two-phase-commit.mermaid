@@ -1,0 +1,20 @@
+%% mmdc -t neutral -i two-phase-commit.mermaid -o two-phase-commit.png
+sequenceDiagram
+    participant RM1
+    participant RM2
+    participant RM3
+    participant RM4
+    participant TM
+
+    RM1->>TM: RMPrepare
+    RM4->>TM: RMPrepare
+    RM3->>TM: RMPrepare
+    TM-->>TM: TMRcvPrepared (RM3)
+    TM-->>TM: TMRcvPrepared (RM1)
+    TM-->>TM: TMRcvPrepared (RM4)
+    RM2->>TM: RMPrepare
+    TM-->>TM: TMRcvPrepared (RM2)
+    TM->>RM1: Commit
+    TM->>RM2: Commit
+    TM->>RM3: Commit
+    TM->>RM4: Commit

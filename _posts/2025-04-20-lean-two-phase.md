@@ -4,6 +4,7 @@ title: "Specifying and simulating two-phase commit in Lean4"
 date: 2025-04-20
 categories: lean
 tlaplus: true
+math: true
 lean: true
 ---
 
@@ -30,14 +31,14 @@ the following reasons:
  simply follow the same level of abstraction as in the TLA<sup>+</sup>
  specification.
 
-It took me about *three hours* to translate the TLA<sup>+</sup> specification into
-[Lean spec][two-phase-lean], occasionally debating syntax and best practices
-with ChatGPT and Copilot along the way. See the [Functional
+It took me about *three hours* to translate the TLA<sup>+</sup> specification
+into [Lean spec][two-phase-lean], occasionally debating syntax and best
+practices with ChatGPT and Copilot along the way. See the [Functional
 specification][fun-spec] and [System-level specification][sys-spec]. I had to
 invent several patterns on the way, as specifying distributed algorithms in Lean
 looks like terra incognita :dragon:. Importantly, I tried to stay close to the
-original TLA<sup>+</sup> specification in spirit, but not in the philosophy.  My
-goal was to specify the protocol in a way that look naturals in Lean, instead of
+original TLA<sup>+</sup> specification in spirit, but not in the dogmas.  My
+goal was to specify the protocol in a way that looks natural in Lean, instead of
 literally replicating the TLA<sup>+</sup> idioms.
 
 What is intriguing is that the resulting specification had the necessary
@@ -93,17 +94,40 @@ specification language. I will definitely add it to my set of available tools.
 If someone wants to write protocol specs in Lean, say, instead of TLA<sup>+</sup>,
 Quint, or Python, I would be [happy to help][].
 
-## 1. Two-phase commit in a nutshell
+The rest of the blogpost goes into details. If you are interested, keep reading.
+If not, you are free to stop here.
 
+## 1. A brief intro to Two-phase commit and the TLA<sup>+</sup> specification
 
-## 2. Two-phase commit in TLA<sup>+</sup>
+I am giving only a very brief introduction in two-phase commit. It is quite a
+famous protocol. [Gray & Lamport'04][Gray-Lamport04] (Sec. 3) explain the
+protocol nicely and by using the same vocabulary, as in the TLA<sup>+</sup>
+specification. Moreover, Leslie Lamport explains the protocol idea and the
+specification in his [Lecture 6][lamport-2phase] of the TLA<sup>+</sup> Course
+on YouTube.
+
+Here is the elevator pitch of two-phase commit: One transaction manager and $N$
+resource managers have to agree on whether to commit or abort a transaction,
+e.g., a database transaction. If they all decide to commit the transaction,
+including the transaction manager, they all commit it. If at least one of them,
+decides to abort, none of them commits the transaction.
+
+The sequence diagram below shows the happy path: Everyone decides to commit
+the transaction, and everybody does so:
+
+![A happy path where TM commits][happy-path]
+
+The following diagram shows an unhappy scenario, when the transaction manager
+declines the transaction, even though all resources managers were ready to commit:
+
+![An unhappy path where TM aborts][unhappy-path]
+
+## 3. Functional specification in Lean
 
 {% github_embed
   https://raw.githubusercontent.com/konnov/leanda/a00be5d914b9c7e11494a8f174f7d1a79c00bdd4/twophase/Twophase/Functional.lean
   lean 10-12
  %}
-
-## 3. Functional specification in Lean
 
 ## 4. System-level specification in Lean
 
@@ -136,3 +160,5 @@ Quint, or Python, I would be [happy to help][].
 [QuickCheck]: https://hackage.haskell.org/package/QuickCheck
 [TLC]: https://github.com/tlaplus/tlaplus
 [happy to help]: {{ 'contact/' | relative_url }}
+[happy-path]: {{ site.baseurl }}/img/two-phase-commit.png
+[unhappy-path]: {{ site.baseurl }}/img/two-phase-abort.png
