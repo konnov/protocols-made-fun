@@ -188,16 +188,162 @@ together with the next-state predicate:
 
 ## 3. Specification in Lean
 
-### 3.1. Functional specification in Lean
+You can find the whole [specification in Lean][two-phase-lean] on GitHub. I am
+presenting it in small pieces, to demonstrate the decisions that had to be made.
+
+## 3.1. Data structures
+
+Let's start with the data structures. Since Lean is typed, we have to understand
+how to represent the parameter `RM` and the state variables `rmState`,
+`tmState`, `tmPrepared`, and `msgs`.
+
+When it comes to the parameter `RM`, which was declared with `CONSTANT RM` in
+TLA<sup>+</sup>, we simply declare `RM` to be a type variable:
 
 {% github_embed
-  https://raw.githubusercontent.com/konnov/leanda/a00be5d914b9c7e11494a8f174f7d1a79c00bdd4/twophase/Twophase/Functional.lean
-  lean 10-12
+  https://raw.githubusercontent.com/konnov/leanda/2b0c9202753b19d731fffb3ae23df65da118d9dd/twophase/Twophase/Functional.lean
+  lean 21-22
  %}
 
-### 3.2. System-level specification in Lean
+Since Lean does not make default assumptions about types, we also specify
+what is required from the type `RM`:
 
-### 3.3. Propositional specification in Lean
+ - `RM` must have decidable equality, that is, we should be able to check `rm1 = rm2`
+    for two instances `rm1: RM` and `rm2: RM`. We have `[DecidableEq RM]`.
+ - `RM` must be usable as a key in a hash table, that is, we have `[Hashable RM]`.
+ - `RM` must be convertible to a string, that is, we have `[Repr RM]`.
+
+Now we have to understand how to deal with the types of the resource manager
+state and the transaction manager state, which are simply written in
+TLA<sup>+</sup> as `"init"`, `"working"`, `"prepared"`, etc. To this end, we
+declare two types `RMState` and `TMState`, which are similar to `enum` types,
+e.g., in Rust:
+
+{% github_embed
+  https://raw.githubusercontent.com/konnov/leanda/2b0c9202753b19d731fffb3ae23df65da118d9dd/twophase/Twophase/Functional.lean
+  lean 24-37
+ %}
+
+Further, we should understand the type of messages, which are written in
+TLA<sup>+</sup> like `[ type |-> "Prepared", rm |-> rm ]`. Again, Lean's
+inductive types fit in very nicely:
+
+{% github_embed
+  https://raw.githubusercontent.com/konnov/leanda/2b0c9202753b19d731fffb3ae23df65da118d9dd/twophase/Twophase/Functional.lean
+  lean 39-44
+ %}
+
+Finally, how shall we represent the state variables `rmState`, `tmState`,
+`tmPrepared`, and `msgs`? To this end, we simply declare the structure
+`ProtocolState`:
+
+{% github_embed
+  https://raw.githubusercontent.com/konnov/leanda/2b0c9202753b19d731fffb3ae23df65da118d9dd/twophase/Twophase/Functional.lean
+  lean 46-54
+ %}
+
+As you can see, `ProtocolState` is the place where we had to make a number of
+decisions:
+
+ - The state carries the set `all` of all resource managers. We need this set
+   to define the behavior, which is defined below. Perhaps, there is some Lean
+   magic that would do that automatically.
+
+ - `rmState` is a *hash map* from the resource managers to `RMState`.
+   Recall that it was simply defined as a function in TLA<sup>+</sup>.
+
+ - `tmPrepared` is a *finite set* of resource managers.
+
+ - `msgs` is a *finite set* of messages.
+
+{% include tip.html content="Deciding on the field types of `ProtocolState`
+affects the rest of the specification. We could use `AssocList` or `RBMap`
+instead of `HashMap`, or `HashSet` instead of `Finset`. In the case of sets,
+I've settled on `Finset`, to avoid leaking the abstraction. However, in case of
+`rmState`, I found `HashMap` a bit more convenient. In any case, it would be
+good to avoid the implementation details at this level."
+%}
+
+### 3.2. Functional specification in Lean
+
+Now that we have chosen our data structures, we can specify the behavior of the
+two-phase commit. We do this in the [functional specification][fun-spec]. For
+example, this is how we specify the behavior of the transaction manager on
+receiving the message `Prepared rm`, for a resource manager `rm`:
+
+{% github_embed
+  https://raw.githubusercontent.com/konnov/leanda/2b0c9202753b19d731fffb3ae23df65da118d9dd/twophase/Twophase/Functional.lean
+  lean 61-65
+ %}
+
+The above definition is very simple, but let's go over it, just in case:
+
+ - We check, whether the input state `s` (more on that below) has the field
+ `tmState` set to `TMState.Init`.
+ 
+ - Further, we check, whether the set of messages contains the message
+ `Message.Prepared rm`. The operator `∧` is simply "and", whereas the operator
+ `∈` is set membership.
+
+ - If the both of the above conditions hold true, then we produce a new state
+ that is like the state `s` but its field `tmPrepared` is set to `s.tmPrepared ∪
+ { rm }`, that is, the set `s.tmPrepared` with the value `rm` added to it. Note
+ that we return "some" value in this case, using the constructor `some` of the
+ option type `Option ProtocolState`.
+
+ - If at least one of the conditions does not hold true, we return the value of
+ type `none`, to indicate that the function parameter `rm` is not applicable in
+ this case.
+
+Where does the parameter `s` come from? It is not declared in `tmRcvPrepared` at
+all. This is an interesting feature of Lean. The parameter `s` is implicitly
+added as a parameter of `tmRcvPrepared`. To achieve this, we wrap the
+definitions in the section `defs` and declare `s` as a section variable there:
+
+```lean
+section defs
+-- The state `s` is a state of the protocol, explicitly added to all the functions.
+variable (s: ProtocolState RM)
+
+def tmRcvPrepared (rm: RM) :=
+  ...
+
+def tmCommit :=
+  ...
+
+...
+end defs
+```
+
+Here is another example of `rmPrepare`:
+
+{% github_embed
+  https://raw.githubusercontent.com/konnov/leanda/2b0c9202753b19d731fffb3ae23df65da118d9dd/twophase/Twophase/Functional.lean
+  lean 86-92
+ %}
+
+{% include tip.html content="We could translate the actions to more closely
+match the original specification."
+%}
+
+If you’ve written TLA<sup>+</sup> in the past, you probably expected the
+definition of `tmRcvPrepared` to look like this:
+
+{% github_embed
+  https://raw.githubusercontent.com/konnov/leanda/2b0c9202753b19d731fffb3ae23df65da118d9dd/twophase/Twophase/Propositional.lean
+  lean 25-29
+ %}
+
+See the discussion about these two definitions in the [Propositional
+specification][prop-spec].
+
+{% include tip.html content="If you looked at Quint, our functional definitions
+in Lean are quite similar to the `pure def` definitions of Quint."
+%}
+
+### 3.3. System-level specification in Lean
+
+### 3.4. Propositional specification in Lean
 
 ## 5. Randomised simulation in Lean
 
@@ -216,9 +362,9 @@ together with the next-state predicate:
 [two-phase-typed]: https://github.com/apalache-mc/apalache/blob/main/test/tla/TwoPhaseTyped.tla
 [Gray-Lamport04]: https://www.microsoft.com/en-us/research/publication/consensus-on-transaction-commit/
 [two-phase-lean]: https://github.com/konnov/leanda/tree/main/twophase/Twophase
-[fun-spec]: #31-functional-specification-in-lean
-[sys-spec]: #32-system-level-specification-in-lean
-[prop-spec]: #33-propositional-specification-in-lean
+[fun-spec]: #32-functional-specification-in-lean
+[sys-spec]: #33-system-level-specification-in-lean
+[prop-spec]: #34-propositional-specification-in-lean
 [spec-sim]: #4-randomised-simulation-in-lean
 [spec-pbt]: #5-property-based-testing-in-lean
 [lean monads]: https://lean-lang.org/functional_programming_in_lean/monads.html

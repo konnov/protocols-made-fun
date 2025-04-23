@@ -103,6 +103,18 @@ body {
   color: #ffffff;
 }
 
+.tip-header {
+  float: left;
+  padding: .5em .5em 1em 1.5em;
+}
+
+.tip {
+  background-color: #99ffa821;
+  border-radius: 10px;
+  padding: .5em 1em .5em 1em;
+  margin: 0em 1em 0em 1em;
+}
+
 /* Hide photo on small screens */
 @media (max-width: 600px) {
   .float-photo {

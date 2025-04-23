@@ -34,7 +34,7 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
   </script>
 {%- endif -%}
 
-{%- if page.go or page.typescript or page.tlaplus or page.quint or page.rust -%}
+{%- if page.go or page.typescript or page.tlaplus or page.quint or page.rust or page.lean -%}
   <!-- load highlightjs -->
   <link rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/isbl-editor-light.css"></link>
@@ -52,6 +52,9 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
   <script
     src="https://cdn.jsdelivr.net/gh/konnov/tlaplus-highlightjs/tlaplus-minified.js">
   </script>
+  {%- endif -%}
+  {%- if page.lean -%}
+  <script type="text/javascript" src="https://unpkg.com/highlightjs-lean/dist/lean.min.js"></script>
   {%- endif -%}
   {%- if page.quint -%}
     <!-- minified:
