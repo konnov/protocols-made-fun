@@ -407,6 +407,40 @@ This all we have in [System.lean][sys-spec].
 
 ## 5. Randomised simulation in Lean
 
+We have a formal specification in Lean. What is next? Obviously, our ultimate
+goal is to **verify** protocol correctness. In particular, we would like to
+verify consistency across the resource managers, for every intermediate state of
+the protocol:
+
+{% github_embed
+  https://raw.githubusercontent.com/konnov/leanda/2b0c9202753b19d731fffb3ae23df65da118d9dd/twophase/Twophase4_run.lean
+  lean 58-64
+ %}
+
+Basically, we want to show that it is impossible to find a protocol state, which
+has a resource manager in the `Committed` state and a resource manager in the
+`Aborted` state. Well, Lean offers us a lot of machinery for proving such
+properties. However, this machinery requires someone to write the proofs. Even
+though there is hope for large language models generating repetitive proofs,
+there is little hope for automatically proving properties of completely
+arbitrary algorithms.
+
+Before going into a long-term effort of proving protocol properties, it is
+usually a good idea to try to **falsify** the protocol properties. This is what
+randomized simulations and model checkers can help us with. Even though such
+tools would not be able to give us a complete guarantee of correctness, they are
+quite useful in producing **counterexamples**. After all, if we want to prove a
+property $p$ and an automatic tool gives us a proof of $\neg p$, that is, a
+counterexample to $p$, we immediately know that the goal of proving $p$ is
+hopeless. Sometimes, model checkers can give us slightly better guarantees, see
+my recent blog post on [value of model checking][].
+
+In contrast to TLA<sup>+</sup>, which has two model checkers [TLC][] and
+[Apalache][], there is no model checker for Lean. Hence, the easiest approach to
+falsify a property in Lean is by using randomized techniques. In this section,
+we discuss **randomized simulation**. In [Property-based testing][spec-pbt], we
+discuss [Plausible][] &mdash; a PBT framework for Lean.
+
 ## 6. Property-based testing in Lean
 
 ## 7. Propositional specification in Lean
@@ -442,3 +476,4 @@ This all we have in [System.lean][sys-spec].
 [unhappy-path]: {{ site.baseurl }}/img/two-phase-abort.png
 [IVy]: https://kenmcmil.github.io/ivy
 [pbt]: https://en.wikipedia.org/wiki/Software_testing#Property_testing
+[value of model checking]: {% link _posts/2025-04-08-value.md %}
