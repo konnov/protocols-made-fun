@@ -322,6 +322,8 @@ Here is another example of `rmPrepare`:
   lean 86-92
  %}
 
+Check the remaining definitions in [`Functional.lean`][fun-spec].
+
 {% include tip.html content="We could translate the actions to more closely
 match the original specification."
 %}
@@ -343,11 +345,71 @@ in Lean are quite similar to the `pure def` definitions of Quint."
 
 ### 3.3. System-level specification in Lean
 
-### 3.4. Propositional specification in Lean
+Now we have the functional definitions of the resource managers and the
+transaction manager. How do we put these things together, to capture the
+behavior of the distributed system? We do this [System.lean][sys-spec].
+
+Recall that the TLA<sup>+</sup> specification does this via the predicates
+`TPInit` and `TPNext`:
+
+{% github_embed
+  https://raw.githubusercontent.com/tlaplus/Examples/refs/heads/master/specifications/transaction_commit/TwoPhase.tla
+  tlaplus 62-69
+ %}
+
+{% github_embed
+  https://raw.githubusercontent.com/tlaplus/Examples/refs/heads/master/specifications/transaction_commit/TwoPhase.tla
+  tlaplus 138-142
+ %}
+
+Initializing the system does not look hard. We do it like this:
+
+{% github_embed
+  https://raw.githubusercontent.com/konnov/leanda/2b0c9202753b19d731fffb3ae23df65da118d9dd/twophase/Twophase/System.lean
+  lean 29-42
+ %}
+
+The definition of `init_rm_state` definitely looks less elegant than the
+function constructor in TLA<sup>+</sup>, but it does its job: We iterate over
+the resource managers `rm` and add pairs `(rm, RMState.Working)` to the hash
+map.
+
+What can we do about `TPNext`? This looks tricky: In every state, it should be
+possible to select one out of seven actions, as well as the parameter `rm`.
+This corresponds to control and data **non-determinism**, which poses a
+challenge to a functional definition, which is **deterministic**.
+
+Luckily, the literature on distributed computing can help us with this problem.
+It is not unusual to define a system execution as a function of a **schedule**,
+or as a function of an **adversary**. Basically, we imagine that there is an
+external entity that tells us which steps to take.
+
+Once we understand this trick, it becomes easy to use. We simply declare the
+type `Action` like this:
+
+{% github_embed
+  https://raw.githubusercontent.com/konnov/leanda/2b0c9202753b19d731fffb3ae23df65da118d9dd/twophase/Twophase/System.lean
+  lean 13-27
+ %}
+
+Having defined the `Action` type, we define the function `next` of a protocol
+state `s` and an action `a`:
+
+{% github_embed
+  https://raw.githubusercontent.com/konnov/leanda/2b0c9202753b19d731fffb3ae23df65da118d9dd/twophase/Twophase/System.lean
+  lean 44-54
+ %}
+
+It looks simple and clean. I would argue that this definition of `next` is more
+elegant than the definition of `TPNext` in TLA<sup>+</sup>.
+
+This all we have in [System.lean][sys-spec].
 
 ## 5. Randomised simulation in Lean
 
 ## 6. Property-based testing in Lean
+
+## 7. Propositional specification in Lean
 
 [Igor Konnov]: https://konnov.phd
 [Lean]: https://github.com/leanprover/lean4
@@ -364,7 +426,7 @@ in Lean are quite similar to the `pure def` definitions of Quint."
 [two-phase-lean]: https://github.com/konnov/leanda/tree/main/twophase/Twophase
 [fun-spec]: #32-functional-specification-in-lean
 [sys-spec]: #33-system-level-specification-in-lean
-[prop-spec]: #34-propositional-specification-in-lean
+[prop-spec]: #7-propositional-specification-in-lean
 [spec-sim]: #4-randomised-simulation-in-lean
 [spec-pbt]: #5-property-based-testing-in-lean
 [lean monads]: https://lean-lang.org/functional_programming_in_lean/monads.html
