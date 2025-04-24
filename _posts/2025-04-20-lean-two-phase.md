@@ -4,8 +4,10 @@ title: "Specifying and simulating two-phase commit in Lean4"
 date: 2025-04-20
 categories: lean
 tlaplus: true
+quint: true
 math: true
 lean: true
+shell: true
 ---
 
 **Author:** [Igor Konnov][]
@@ -64,6 +66,7 @@ simulator a couple of years ago. Or maybe it is because Lean does not shy away
 from the occasional need for imperative code. Of course, this is all done
 through ["monads"][lean monads], but they are relatively easy to use in Lean
 &mdash; even if you are not quite ready to buy into the FP propaganda.
+As a bonus point, [this simulator is really fast][sim-is-fast].
 
 Of course, if you have been reading the [orange website][hn], you should tell me
 that writing a simulator by hand is not the way to go. Instead, we should use
@@ -245,10 +248,11 @@ Finally, how shall we represent the state variables `rmState`, `tmState`,
 As you can see, `ProtocolState` is the place where we had to make a number of
 decisions:
 
- - The state carries the set `all` of all resource managers. We need this set
-   to define the behavior, which is defined below. Perhaps, there is some Lean
-   magic that would do that automatically.
-
+ - The state carries the set `all` of all resource managers. The transaction
+ manager needs this set to decided whether it had received the messages from all
+ resource managers, see below. Perhaps, there is some Lean magic that would do
+ that automatically.
+ 
  - `rmState` is a *hash map* from the resource managers to `RMState`.
    Recall that it was simply defined as a function in TLA<sup>+</sup>.
 
@@ -267,9 +271,9 @@ good to avoid the implementation details at this level."
 ### 3.2. Functional specification in Lean
 
 Now that we have chosen our data structures, we can specify the behavior of the
-two-phase commit. We do this in the [functional specification][fun-spec]. For
-example, this is how we specify the behavior of the transaction manager on
-receiving the message `Prepared rm`, for a resource manager `rm`:
+two-phase commit. We do this in the module [Functional.lean][]. For example,
+this is how we specify the behavior of the transaction manager on receiving the
+message `Prepared rm`, for a resource manager `rm`:
 
 {% github_embed
   https://raw.githubusercontent.com/konnov/leanda/2b0c9202753b19d731fffb3ae23df65da118d9dd/twophase/Twophase/Functional.lean
@@ -322,7 +326,7 @@ Here is another example of `rmPrepare`:
   lean 86-92
  %}
 
-Check the remaining definitions in [`Functional.lean`][fun-spec].
+Check the remaining definitions in [Functional.lean][].
 
 {% include tip.html content="We could translate the actions to more closely
 match the original specification."
@@ -347,7 +351,7 @@ in Lean are quite similar to the `pure def` definitions of Quint."
 
 Now we have the functional definitions of the resource managers and the
 transaction manager. How do we put these things together, to capture the
-behavior of the distributed system? We do this [System.lean][sys-spec].
+behavior of the distributed system? We do this in the module [System.lean][].
 
 Recall that the TLA<sup>+</sup> specification does this via the predicates
 `TPInit` and `TPNext`:
@@ -403,9 +407,11 @@ state `s` and an action `a`:
 It looks simple and clean. I would argue that this definition of `next` is more
 elegant than the definition of `TPNext` in TLA<sup>+</sup>.
 
-This all we have in [System.lean][sys-spec].
+This is all we have in [System.lean][].
 
-## 5. Randomised simulation in Lean
+## 5. Randomised simulator in Lean
+
+### 5.1. Why?
 
 We have a formal specification in Lean. What is next? Obviously, our ultimate
 goal is to **verify** protocol correctness. In particular, we would like to
@@ -428,7 +434,7 @@ arbitrary algorithms.
 Before going into a long-term effort of proving protocol properties, it is
 usually a good idea to try to **falsify** the protocol properties. This is what
 randomized simulations and model checkers can help us with. Even though such
-tools would not be able to give us a complete guarantee of correctness, they are
+tools would not be able to give us a complete proof of correctness, they are
 quite useful in producing **counterexamples**. After all, if we want to prove a
 property $p$ and an automatic tool gives us a proof of $\neg p$, that is, a
 counterexample to $p$, we immediately know that the goal of proving $p$ is
@@ -438,8 +444,210 @@ my recent blog post on [value of model checking][].
 In contrast to TLA<sup>+</sup>, which has two model checkers [TLC][] and
 [Apalache][], there is no model checker for Lean. Hence, the easiest approach to
 falsify a property in Lean is by using randomized techniques. In this section,
-we discuss **randomized simulation**. In [Property-based testing][spec-pbt], we
-discuss [Plausible][] &mdash; a PBT framework for Lean.
+we discuss **randomized simulation**. In the next section on [Property-based
+testing][spec-pbt], we discuss [Plausible][] &mdash; a PBT framework for Lean.
+
+### 5.2. What?
+
+Our goal in this section is to quickly turn our Lean specification into a simulator
+that runs as follows:
+
+```sh
+$ lake exec RunTwophase4 100000 20 consistentInv 123
+```
+
+The above command runs the simulator `RunTwophase4` that executes 100000 random
+runs, each having up to 20 steps. In each run, the simulator checks the state
+invariant `consistentInv` for each intermediate state. Since our simulator is
+randomized, we have to supply the seed. In our example, we give 123 as the seed.
+We could also supply the current time in seconds since Unix epoch by replacing
+`123` with `$(date +%s)`.
+
+Since the property `consistentInv` is not supposed to break, we also introduce
+"falsy invariants" that should actually break. By checking these invariants,
+we may convince ourselves that our specification is doing something useful.
+Here are the interesting invariants that we define right in the simulator:
+
+{% github_embed
+  https://raw.githubusercontent.com/konnov/leanda/2b0c9202753b19d731fffb3ae23df65da118d9dd/twophase/Twophase4_run.lean
+  lean 45-56
+ %}
+
+For example, this is how we find a schedule that makes the transaction manager
+commit:
+
+```sh
+$ /usr/bin/time -h lake exec RunTwophase4 1000000 20 noCommitEx 1745505753
+❌ Counterexample found after 403736 trials
+#0: Action.RMPrepare (RM.RM3)
+#1: Action.RMPrepare (RM.RM4)
+#2: Action.TMRcvPrepared (RM.RM3)
+#3: Action.RMPrepare (RM.RM2)
+#4: Action.TMRcvPrepared (RM.RM3)
+#5: Action.TMRcvPrepared (RM.RM2)
+#6: Action.TMRcvPrepared (RM.RM3)
+#7: Action.RMPrepare (RM.RM1)
+#8: Action.TMRcvPrepared (RM.RM4)
+#9: Action.TMRcvPrepared (RM.RM1)
+#10: Action.TMCommit
+	2.06s real		1.88s user		0.53s sys
+```
+
+The simulator also finds an example, in which all resource managers were ready
+to commit a transaction, but the transaction manager decided to abort it:
+
+```sh
+$ /usr/bin/time -h lake exec RunTwophase4 1000000 20 noAbortOnAllPreparedEx 1745505754
+❌ Counterexample found after 97860 trials
+#0: Action.RMPrepare (RM.RM3)
+#1: Action.RMPrepare (RM.RM4)
+#2: Action.RMPrepare (RM.RM2)
+#3: Action.TMRcvPrepared (RM.RM2)
+#4: Action.TMRcvPrepared (RM.RM4)
+#5: Action.TMRcvPrepared (RM.RM3)
+#6: Action.RMPrepare (RM.RM1)
+#7: Action.TMRcvPrepared (RM.RM1)
+#8: Action.TMAbort
+	1.21s real		0.67s user		0.32s sys
+```
+
+Actually, the diagrams in the [Brief introduction][brief-intro] are generated
+from the examples that are found by our simulator. As you can see the
+counterexamples are found in a few seconds, even though the simulator has to
+enumerate hundreds of thousands of schedules.
+
+### 5.3. How?
+
+You can find the whole simulator in [Twophase4_run.lean][run.lean].  The core of
+our simulator is the following loop, written right in the entry point:
+
+```lean
+def main (args: List String): IO UInt32 := do
+  -- parse the arguments
+  -- ...
+  -- run a loop of `maxSamples`
+  for trial in [0:maxSamples] do
+    let mut state := /- initial_state (...) -/ 
+    -- run a loop of `maxSteps` steps
+    for _ in [0:maxSteps] do
+      -- ...
+      let action := mkAction -- (random parameters)
+      match next state action with
+      | some new_state =>
+        --- add to trace
+      | none => -- do nothing
+      -- check our invariant
+      if ¬inv state then
+        -- print the trace
+        return 1
+```
+
+Before going into the details of the simulator loop, we have to introduce a bit
+of boilerplate code. First, we have to define the type of the resource managers
+`RM`. We do it by simply enumerating four constructors `RM1`, ..., `RM4`:
+
+{% github_embed
+  https://raw.githubusercontent.com/konnov/leanda/2b0c9202753b19d731fffb3ae23df65da118d9dd/twophase/Twophase4_run.lean
+  lean 14-20
+ %}
+
+Second, since our simulator is randomized, we have to understand how to randomly
+produce schedules. To this end, we write the definition `mkAction`:
+
+{% github_embed
+  https://raw.githubusercontent.com/konnov/leanda/2b0c9202753b19d731fffb3ae23df65da118d9dd/twophase/Twophase4_run.lean
+  lean 22-35
+ %}
+
+Having defined `mkAction`, we simply generate two random numbers via Lean's
+`randNat` that we supply to `mkAction`. Now we are ready to see the full
+implementation of the simulator loop:
+
+{% github_embed
+  https://raw.githubusercontent.com/konnov/leanda/2b0c9202753b19d731fffb3ae23df65da118d9dd/twophase/Twophase4_run.lean
+  lean 90-112
+ %}
+
+As you can see, the simulator is extremely simple! There is really not much to
+explain here.  The large body of work is done by Lean itself. Our job was to
+simply produce schedules, that is, lists of `Action` values.
+
+### 5.4. Our simulator is really fast!
+
+We have seen that in the cases when the invariant was violated &mdash; e.g.,
+when checking `noAbortEx`, `noCommitEx`, or `noAbortOnAllPreparedEx` &mdash; our
+simulator was finding examples in a few seconds. However, we do not know the
+number of samples that is sufficiently large to convince ourselves that the
+invariant is not violated. Hence, our simulator should be fast enough to crunch
+plenty of runs.
+
+Let us run the simulator on 1 million runs up to 30 steps each:
+
+```sh
+$ /usr/bin/time -h -l lake exec RunTwophase4 1000000 30 consistentInv 1745505754
+	10.93s real		10.34s user		0.39s sys
+           422985728  maximum resident set size
+...
+```
+
+Nice! The simulator came back in 11 seconds and it consumed up to 434 MB of
+memory. We can also run it for a larger number of samples. As we can see, the
+simulator is quite robust. As expected, the running times are growing linearly,
+and there are no visible memory leaks:
+
+| Number of samples   | Real Time | Max RSS (MB)    |
+|---------------------|-----------|-----------------|
+| 1M                  | 10.93s    | 422             |
+| 10M                 | 1m43.42s  | 423             |
+| 100M                | 18m7.72s  | 423             |
+
+Is it actually fast? I think it is really damn fast! What can we use as the
+baseline? We can compare it with the Quint simulator. All we have to do is to
+get the [Quint spec of two-phase commit][two-phase-quint], which is also a
+translation of the same TLA<sup>+</sup> spec that we used as the original
+source. To make the comparison faithful, we have to add the instance of four
+resource managers like this:
+
+```quint
+module two_phase_commit_4 {
+  import two_phase_commit(resourceManagers = Set("rm1", "rm2", "rm3", "rm4")).*
+}
+```
+
+Now we can run the Quint simulator like this:
+
+```sh
+$ /usr/bin/time -l -h quint run --max-samples 1000000 --max-steps=30 \
+  --invariant=consistencyInv \
+  examples/classic/distributed/TwoPhaseCommit/two_phase_commit.qnt --main two_phase_commit_4
+...
+	27m57.62s real		28m20.04s user		21.03s sys
+           217235456  maximum resident set size
+```
+
+This is quite interesting. Although the Quint simulator uses half as much
+memory, it is 168 times slower when running one million samples. I believe there
+are several reasons for this. First, Quint is essentially a JavaScript
+interpreter, while our Lean simulator is transpiled to C and compiled with full
+optimization for the target architecture. Second, the Quint simulator makes a
+slightly greater effort to find satisfying assignments randomly. Nevertheless,
+the performance gap is substantial.
+
+Quint also has a new backend in Rust. Let's try it, too:
+
+```sh
+/usr/bin/time -l -h quint run --max-samples 1000000 --max-steps=30 \
+  --invariant=consistencyInv examples/classic/distributed/TwoPhaseCommit/two_phase_commit.qnt \
+  --main two_phase_commit_4 --backend=rust
+...
+	9m27.57s real		9m24.46s user		1.53s sys
+           120913920  maximum resident set size
+```
+
+Nice! The rust backend is three times faster and uses half as much memory as the
+JavaScript backend. Still, 10 minutes is nowhere close to the 10 seconds by our
+simulator in Lean. Apparently, it's really hard to compete with a transpiler to C,
+even if the interpreter is written in :crab:
 
 ## 6. Property-based testing in Lean
 
@@ -456,13 +664,19 @@ discuss [Plausible][] &mdash; a PBT framework for Lean.
 [lamport-2phase]: https://youtu.be/U4mlGqXjtoA?t=117
 [two-phase-tla]: https://github.com/tlaplus/Examples/blob/master/specifications/transaction_commit/TwoPhase.tla
 [two-phase-typed]: https://github.com/apalache-mc/apalache/blob/main/test/tla/TwoPhaseTyped.tla
+[two-phase-quint]: https://github.com/informalsystems/quint/blob/main/examples/classic/distributed/TwoPhaseCommit/two_phase_commit.qnt
 [Gray-Lamport04]: https://www.microsoft.com/en-us/research/publication/consensus-on-transaction-commit/
 [two-phase-lean]: https://github.com/konnov/leanda/tree/main/twophase/Twophase
+[brief-intro]: #1-a-brief-intro-to-two-phase-commit-and-the-tla-specification
 [fun-spec]: #32-functional-specification-in-lean
 [sys-spec]: #33-system-level-specification-in-lean
 [prop-spec]: #7-propositional-specification-in-lean
-[spec-sim]: #4-randomised-simulation-in-lean
-[spec-pbt]: #5-property-based-testing-in-lean
+[spec-sim]: #5-randomised-simulator-in-lean
+[spec-pbt]: #6-property-based-testing-in-lean
+[Functional.lean]: https://github.com/konnov/leanda/blob/main/twophase/Twophase/Functional.lean
+[System.lean]: https://github.com/konnov/leanda/blob/main/twophase/Twophase/System.lean
+[run.lean]: https://github.com/konnov/leanda/blob/main/twophase/Twophase4_run.lean
+[sim-is-fast]: #54-our-simulator-is-really-fast
 [lean monads]: https://lean-lang.org/functional_programming_in_lean/monads.html
 [Quint]: https://konnov.phd/quint
 [hn]: https://news.ycombinator.com/
