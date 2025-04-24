@@ -765,11 +765,59 @@ Finally, we define the property `consistentInv`, which should not be violated:
 
 So PBT seems to work and looks fine! The only thing that I could not figure out
 is how to increase the number of samples to large values, e.g., millions of
-samples, as we did not in the simulator. Unfortunately, Plausible produces a
-stack overflow even for 10 thousand examples, even when run via `lake test`.
-This needs more debugging.
+samples, as we did in the simulator. Unfortunately, Plausible produces a stack
+overflow even on 10K examples, even when run via `lake test`. This needs more
+debugging.
 
 ## 7. Propositional specification in Lean
+
+Finally, let's discuss, whether our specification style is the most natural one
+when translating TLA<sup>+</sup> specifications. We used the functional approach
+to define individual behavior of resource managers and transition managers in
+[Functional.lean][] and [System.lean][]. When we did a similar trick in Quint,
+some people were telling me that it's not TLA<sup>+</sup>. I think it is easier
+to see what they meant by this in Lean!
+
+Instead of defining functions, we can write the specification as propositions.
+As before, we define two variables: `s` for the current state, and `s'` for the
+next state.
+
+{% github_embed
+  https://raw.githubusercontent.com/konnov/leanda/2b0c9202753b19d731fffb3ae23df65da118d9dd/twophase/Twophase/Propositional.lean
+  lean 20-23
+ %}
+
+Now we can translate TLA<sup>+</sup>'s action `TMRcvPrepared` as a proposition:
+
+{% github_embed
+  https://raw.githubusercontent.com/konnov/leanda/2b0c9202753b19d731fffb3ae23df65da118d9dd/twophase/Twophase/Propositional.lean
+  lean 25-29
+ %}
+
+This looks very similar to TLA<sup>+</sup>! Moreover, we should be able to use
+some definitions that do not have an executable implementation. For instance, we
+can use quantifiers over sets, instead of filtering sets. I also suspect that it
+would be easier to write proofs over such propositions rather than over
+functional code.
+
+Can we find a connection between the functional definitions and the
+propositions? Well, in Lean we can just write simple theorems like
+`tm_rcv_prepared_correct`:
+
+{% github_embed
+  https://raw.githubusercontent.com/konnov/leanda/2b0c9202753b19d731fffb3ae23df65da118d9dd/twophase/Twophase/Propositional.lean
+  lean 68-71
+ %}
+
+I do not know how to write a Lean proof of the above theorem yet. In principle,
+it should be quite easy to write for someone proficient with Lean proofs.
+Indeed, the functional definition and the proposition are very close in their
+syntactic structure.
+
+I find this connection especially appealing. This would let us stop arguing
+about which level is the right one. We could simply write both functional and
+propositional definitions and connect them via (hopefully!) simple proofs.
+
 
 [Igor Konnov]: https://konnov.phd
 [Lean]: https://github.com/leanprover/lean4
