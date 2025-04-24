@@ -651,6 +651,124 @@ even if the interpreter is written in :crab:
 
 ## 6. Property-based testing in Lean
 
+Instead of writing our own simulator &mdash; even though it happened to be easy
+in the case of two-phase commit &mdash; we employ [Plausible][] in this section.
+Plausible also applies randomization to check properties, but it does it in a
+slightly different way. Basically, it generates data structures of a given type
+at random up to some predefined bound and checks the property. What is
+interesting about property-based testing is that, once the framework finds a
+property violation, it tries to minimize the failing input.
+
+You can find the whole PBT setup in [Twophase4_pbt.lean][pbt.lean]. If you are
+using only the standard types, using Plausible looks pretty simple: Just write a
+quantified property, and Plausible will check it. In our case, we have two
+user-defined data types, namely, `RM` and `Action`. This is not unusual. In my
+experience, writing generators is the hardest and the most time-consuming part
+of using PBT. Here is how we are defining the custom type for `RM` and its
+generator:
+
+{% github_embed
+  https://raw.githubusercontent.com/konnov/leanda/2b0c9202753b19d731fffb3ae23df65da118d9dd/twophase/Twophase4_pbt.lean
+  lean 15-30
+ %}
+
+Basically, we define the generator `genRm` that randomly selects one of the four
+values `RM1`, ..., `RM4`. Since we do not know how to further minimize a value
+of type `RM`, we simply define the instance of `Shrinkable` as returning the
+empty list.
+
+Similar to that, we define a generator for `Action RM`. This time, we delegate
+the choice of `RM` values to `genRm`:
+
+{% github_embed
+  https://raw.githubusercontent.com/konnov/leanda/2b0c9202753b19d731fffb3ae23df65da118d9dd/twophase/Twophase4_pbt.lean
+  lean 34-50
+ %}
+
+Once we have defined the generator for actions, it is very easy to define a
+generator of schedules, by simply applying a standard generator in Plausible:
+
+{% github_embed
+  https://raw.githubusercontent.com/konnov/leanda/2b0c9202753b19d731fffb3ae23df65da118d9dd/twophase/Twophase4_pbt.lean
+  lean 54-55
+ %}
+
+The good news is that defining the generators was the hardest part. At least,
+it was the hardest part for me. Now, since Lean does not have any idea about
+how our specification should be executed, we define two simple functions
+`applySchedule` and `checkInvariant`:
+
+{% github_embed
+  https://raw.githubusercontent.com/konnov/leanda/2b0c9202753b19d731fffb3ae23df65da118d9dd/twophase/Twophase4_pbt.lean
+  lean 57-66
+ %}
+
+Now we are ready to write our first property to be checked by Plausible. This
+is how we check, whether it's possible to reach a state where the transaction
+manager goes into `TMState.Aborted`:
+
+{% github_embed
+  https://raw.githubusercontent.com/konnov/leanda/2b0c9202753b19d731fffb3ae23df65da118d9dd/twophase/Twophase4_pbt.lean
+  lean 68-73
+ %}
+
+In the above definition we say that whatever the schedule we generate,
+`checkInvariant` does not return `false`. We configure Plausible to produce 3000
+instances with the data structures bounded to 100. Comparing it to our
+simulator, this would mean 3000 random schedules of up to 100 steps.
+
+In this case, Plausible finds a counterexample and minimizes it:
+
+```
+===================
+Found a counter-example!
+schedule := [Action.TMAbort]
+issue: false does not hold
+(1 shrinks)
+-------------------
+```
+
+Similar to `noAbortEx`, we define two other properties:
+
+{% github_embed
+  https://raw.githubusercontent.com/konnov/leanda/2b0c9202753b19d731fffb3ae23df65da118d9dd/twophase/Twophase4_pbt.lean
+  lean 75-87
+ %}
+
+If we are lucky, both properties are violated, because they do not hold true.
+In my case, Plausible does not find a counterexample to `noCommitEx`, and it
+finds a counterexample to `noAbortOnAllPreparedEx`:
+
+```
+===================
+Found a counter-example!
+schedule := [Action.RMPrepare (RM.RM3),
+ Action.RMPrepare (RM.RM4),
+ Action.TMRcvPrepared (RM.RM3),
+ Action.RMPrepare (RM.RM1),
+ Action.RMPrepare (RM.RM2),
+ Action.TMRcvPrepared (RM.RM1),
+ Action.TMRcvPrepared (RM.RM4),
+ Action.TMRcvPrepared (RM.RM2),
+ Action.TMAbort]
+issue: false does not hold
+(23 shrinks)
+-------------------
+```
+
+Finally, we define the property `consistentInv`, which should not be violated:
+
+{% github_embed
+  https://raw.githubusercontent.com/konnov/leanda/2b0c9202753b19d731fffb3ae23df65da118d9dd/twophase/Twophase4_pbt.lean
+  lean 89-97
+ %}
+
+So PBT seems to work and looks fine! The only thing that I could not figure out
+is how to increase the number of samples to large values, e.g., millions of
+samples, as we did not in the simulator. Unfortunately, Plausible produces a
+stack overflow even for 10 thousand examples, even when run via `lake test`.
+This needs more debugging.
+
 ## 7. Propositional specification in Lean
 
 [Igor Konnov]: https://konnov.phd
@@ -676,6 +794,7 @@ even if the interpreter is written in :crab:
 [Functional.lean]: https://github.com/konnov/leanda/blob/main/twophase/Twophase/Functional.lean
 [System.lean]: https://github.com/konnov/leanda/blob/main/twophase/Twophase/System.lean
 [run.lean]: https://github.com/konnov/leanda/blob/main/twophase/Twophase4_run.lean
+[pbt.lean]: https://github.com/konnov/leanda/blob/main/twophase/Twophase4_pbt.lean
 [sim-is-fast]: #54-our-simulator-is-really-fast
 [lean monads]: https://lean-lang.org/functional_programming_in_lean/monads.html
 [Quint]: https://konnov.phd/quint
