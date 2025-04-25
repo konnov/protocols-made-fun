@@ -1,12 +1,28 @@
 {% if site.disqus.shortname -%}
-  <div id="disqus_thread"></div>
-  <script>
-     (function() { // DON'T EDIT BELOW THIS LINE
-    var d = document, s = d.createElement('script');
-    s.src = 'https://protocols-made-fun.disqus.com/embed.js';
-    s.setAttribute('data-timestamp', +new Date());
-    (d.head || d.body).appendChild(s);
-    })();
+  <div class="giscus-notice">
+
+    <p>The comments below are powered by GitHub discussions via <a
+    href="https://giscus.app/">Giscus</a>. To leave a comment, either authorize
+    Giscus, or leave a comment in the <a
+    href="https://github.com/konnov/protocols-made-fun/discussions">GitHub
+    discussions</a> directly.</p>
+
+  </div>
+  <script src="https://giscus.app/client.js"
+    data-repo="konnov/protocols-made-fun"
+    data-repo-id="R_kgDOK3F_mg"
+    data-category="Comments on the blog posts"
+    data-category-id="DIC_kwDOK3F_ms4CcJHn"
+    data-mapping="title"
+    data-strict="0"
+    data-reactions-enabled="1"
+    data-emit-metadata="0"
+    data-input-position="bottom"
+    data-theme="preferred_color_scheme"
+    data-lang="en"
+    data-loading="lazy"
+    crossorigin="anonymous"
+    async>
   </script>
   <noscript>
     Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
