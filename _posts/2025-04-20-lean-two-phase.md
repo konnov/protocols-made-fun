@@ -659,13 +659,13 @@ at random up to some predefined bound and checks the property. What is
 interesting about property-based testing is that, once the framework finds a
 property violation, it tries to minimize the failing input.
 
-You can find the whole PBT setup in [Twophase4_pbt.lean][pbt.lean]. If you are
-using only the standard types, using Plausible looks pretty simple: Just write a
-quantified property, and Plausible will check it. In our case, we have two
-user-defined data types, namely, `RM` and `Action`. This is not unusual. In my
-experience, writing generators is the hardest and the most time-consuming part
-of using PBT. Here is how we are defining the custom type for `RM` and its
-generator:
+You can find the whole PBT setup in [Twophase4_pbt.lean][] and
+[Twophase4_pbt_failing.lean][]. If you are using only the standard types, using
+Plausible looks pretty simple: Just write a quantified property, and Plausible
+will check it. In our case, we have two user-defined data types, namely, `RM`
+and `Action`. This is not unusual. In my experience, writing generators is the
+hardest and the most time-consuming part of using PBT. Here is how we are
+defining the custom type for `RM` and its generator:
 
 {% github_embed
   https://raw.githubusercontent.com/konnov/leanda/2b0c9202753b19d731fffb3ae23df65da118d9dd/twophase/Twophase4_pbt.lean
@@ -842,7 +842,8 @@ propositional definitions and connect them via (hopefully!) simple proofs.
 [Functional.lean]: https://github.com/konnov/leanda/blob/main/twophase/Twophase/Functional.lean
 [System.lean]: https://github.com/konnov/leanda/blob/main/twophase/Twophase/System.lean
 [run.lean]: https://github.com/konnov/leanda/blob/main/twophase/Twophase4_run.lean
-[pbt.lean]: https://github.com/konnov/leanda/blob/main/twophase/Twophase4_pbt.lean
+[Twophase4_pbt.lean]: https://github.com/konnov/leanda/blob/main/twophase/Twophase4_pbt.lean
+[Twophase4_pbt_failing.lean]: https://github.com/konnov/leanda/blob/main/twophase/Twophase4_pbt_failing.lean
 [sim-is-fast]: #54-our-simulator-is-really-fast
 [lean monads]: https://lean-lang.org/functional_programming_in_lean/monads.html
 [Quint]: https://konnov.phd/quint
