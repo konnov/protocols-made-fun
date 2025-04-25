@@ -12,6 +12,8 @@ shell: true
 
 **Author:** [Igor Konnov][]
 
+**Reviewers:** [Thomas Pani][]
+
 **Tags:** specification lean distributed simulation pbt tlaplus
 
 More and more people mention the [Lean] theorem prover in my bubble. Just the
@@ -93,7 +95,8 @@ prove its inductiveness and show that the inductive invariant implies the state
 invariants of the protocol. I must have an inductive invariant for the
 TLA<sup>+</sup> spec of two-phase commit lying somewhere. Even if the inductive
 invariant is lost, I am pretty sure that it is relatively easy to find it again
-by iteratively running [Apalache][]. Even [TLC][] should work for the two-phase
+by iteratively running [Apalache][]. We have seen that this is doable
+with [Ben-Or's Byzantine consensus][ben-or-mc]. Even [TLC][] should work for the two-phase
 commit. At the lower levels, it is hard to predict how much effort it would take
 to write complete proofs with Lean tactics. This is definitely something to do
 in another sprint.
@@ -859,3 +862,5 @@ propositional definitions and connect them via (hopefully!) simple proofs.
 [IVy]: https://kenmcmil.github.io/ivy
 [pbt]: https://en.wikipedia.org/wiki/Software_testing#Property_testing
 [value of model checking]: {% link _posts/2025-04-08-value.md %}
+[ben-or-mc]: {% link _posts/2024-11-03-ben-or.md %}
+[Thomas Pani]: https://thpani.net/
