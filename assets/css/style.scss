@@ -8,6 +8,11 @@ $content-width: 80%;
   "minima/skins/{{ site.minima.skin | default: 'classic' }}",
   "minima/initialize";
 
+// TLA+ does not occupy extract height
+sup {
+  line-height: 0;
+}
+
 // add a floating div style that aligns to the right
 .sidebar {
   float: right;
