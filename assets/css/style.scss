@@ -103,6 +103,12 @@ body {
   color: #ffffff;
 }
 
+.giscus-notice {
+  color:gainsboro;
+  font-size: small;
+  font-style: italic;
+}
+
 /* Hide photo on small screens */
 @media (max-width: 600px) {
   .float-photo {
