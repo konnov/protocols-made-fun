@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "Specifying and simulating two-phase commit in Lean4"
-date: 2025-04-20
+date: 2025-04-25
 categories: lean
 tlaplus: true
 quint: true
