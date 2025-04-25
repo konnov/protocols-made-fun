@@ -1,0 +1,20 @@
+%% mmdc -t neutral -i two-phase-abort.mermaid -o two-phase-abort.png
+sequenceDiagram
+    participant RM1
+    participant RM2
+    participant RM3
+    participant RM4
+    participant TM
+
+    RM2->>TM: RMPrepare
+    RM4->>TM: RMPrepare
+    RM1->>TM: RMPrepare
+    RM3->>TM: RMPrepare
+    TM-->>TM: TMRcvPrepared (RM1)
+    TM-->>TM: TMRcvPrepared (RM4)
+    TM-->>TM: TMRcvPrepared (RM2)
+    TM-->>TM: TMRcvPrepared (RM3)
+    TM->>RM1: Abort
+    TM->>RM2: Abort
+    TM->>RM3: Abort
+    TM->>RM4: Abort

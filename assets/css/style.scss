@@ -103,6 +103,18 @@ body {
   color: #ffffff;
 }
 
+.tip-header {
+  float: left;
+  padding: .5em .5em 1em 1.5em;
+}
+
+.tip {
+  background-color: #99ffa821;
+  border-radius: 10px;
+  padding: .5em 1em .5em 1em;
+  margin: 0em 1em 0em 1em;
+}  
+
 .giscus-notice {
   color:darkgray;
   font-size: 90%;
