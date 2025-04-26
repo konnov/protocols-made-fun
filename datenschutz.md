@@ -5,10 +5,15 @@ title: Privacy Policy / Datenschutz
 
 **Die deutsche Version befindet sich weiter [unten](#de).**
 
-## Use of Disqus
+## Use of Giscus
 
-Our website uses Disqus (ads disabled). See the [Disqus privacy
-policy][disqus-policy].
+Our website uses [Giscus][] to load and store comments. This requires user's
+action to sign in into [Github.com][].
+
+## Use of Simpleanalytics
+
+Our website uses [simpleanalytics.com][], which is compliant with GDPR, PECR,
+CCPA and more. No cookies stored.
 
 ## Use of Google Analytics
 
@@ -65,10 +70,16 @@ For more information about how Google handles your data, please see:
 
 <span id="de"></span>
 
-## Verwendung von Disqus
+## Verwendung von Giscus
 
-Unsere Website verwendet Disqus (ohne Werbung). Sehen Sie [Disqus privacy
-policy][disqus-policy].
+Unsere Website verwendet [Giscus][], um Kommentare zu laden und zu speichern.
+Dafür ist es erforderlich, dass Nutzer sich bei [Github.com][] anmelden.
+
+## Verwendung von Simpleanalytics
+
+Diese Website verwendet [simpleanalytics.com][], das mit der DSGVO, PECR, CCPA
+und weiteren Vorschriften konform ist. Es werden keine Cookies gespeichert.
+
 
 ## Verwendung von Google Analytics
 
@@ -129,4 +140,6 @@ Weitere Informationen zur Datennutzung durch Google finden Sie hier:
   - https://support.google.com/analytics/answer/6004245?hl=de
 
 
-[disqus-policy]: https://disqus.com/privacy-policy
+[simpleanalytics.com]: https://simpleanalytics.com
+[Giscus]: https://giscus.app
+[Github.com]: https://github.com
