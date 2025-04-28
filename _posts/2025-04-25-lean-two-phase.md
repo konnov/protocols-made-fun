@@ -279,7 +279,7 @@ this is how we specify the behavior of the transaction manager on receiving the
 message `Prepared rm`, for a resource manager `rm`:
 
 {% github_embed
-  https://raw.githubusercontent.com/konnov/leanda/2b0c9202753b19d731fffb3ae23df65da118d9dd/twophase/Twophase/Functional.lean
+  https://raw.githubusercontent.com/konnov/leanda/3bf2ec93640c5f7650f17cf909a0b9ae4978b8d9/twophase/Twophase/Functional.lean
   lean 61-65
  %}
 
@@ -289,8 +289,8 @@ The above definition is very simple, but let's go over it, just in case:
  `tmState` set to `TMState.Init`.
  
  - Further, we check, whether the set of messages contains the message
- `Message.Prepared rm`. The operator `∧` is simply "and", whereas the operator
- `∈` is set membership.
+ `Message.Prepared rm`. The operator $x ∈ S$ is set membership, which returns
+ `True`, if and only if the set $S$ contains $x$ as its element.
 
  - If the both of the above conditions hold true, then we produce a new state
  that is like the state `s` but its field `tmPrepared` is set to `s.tmPrepared ∪
