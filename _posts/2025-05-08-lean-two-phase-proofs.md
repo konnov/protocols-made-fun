@@ -141,9 +141,9 @@ For the remainder of this post, we will use only the propositional specification
 
 ## 3. Finding an inductive invariant
 
-To follow the methodology, we have to find $IndInv$. We could try to use our
-goal invariant `consistency` as a candidate for the invariant. However, safety
-properties rarely work as inductive invariants. Intuitively, an inductive
+To follow the proof methodology, we have to find $IndInv$. We could try to use
+our goal invariant `consistency` as a candidate for the invariant. However,
+safety properties rarely work as inductive invariants. Intuitively, an inductive
 invariant should generalize all reachable states, and `consistency` is too weak
 for that role.
 
@@ -153,11 +153,11 @@ add constraints. Repeat. In theory, this approach could work. In practice, it is
 too hard, as we have to write proofs by hand. It may happen that we finish 90%
 of a proof just to find that our candidate for $IndInv$ was not good enough.
 
-We don't have to go the hard way. Instead, we can just use a model checker for
+We do not have to go the hard way. Instead, we can just use a model checker for
 TLA<sup>+</sup> to quickly iterate on a candidate for an inductive invariant for
 a small set of resource managers. This is exactly what we did for our [paper at
 OOPSLA19][oopsla19] at some point in 2018. I guess, it should be available in
-the [artifact][oopsla19-artifact]. In the modern version of Apalache, the
+the [artifact][oopsla19-artifact]. In the modern version of [Apalache][], the
 inductive invariant looks like this:
 
 {% github_embed
@@ -209,8 +209,8 @@ complain. This constraint is redundant. It is actually great that we have
 removed this redundant constraint, as it would take us much longer to write
 interactive proofs with this constraint in place.
 
-We translate `IndInv` to a conjunction of six lemmas in Lean, as it is easier
-to reason about the invariant this way:
+We `IndInv` as a conjunction of six lemmas in Lean, as it is easier to reason
+about the invariant this way:
 
 {% github_embed
   https://raw.githubusercontent.com/konnov/leanda/199b26cb022dfa05c3e7c1576384dcea8a0bd648/twophase/Twophase/InductiveProofs.lean
@@ -265,10 +265,9 @@ the proof for the action `tm_commit` and `lemma1`:
  %}
 
 As you can see, this was an easy one. It took me just 10 minutes to write it.
-Actually, closer to the end of the proof, I was writing proofs like the proof of
-`invariant_is_inductive_tm_commit_lemma1` in 1-2 minutes. You can find the other
-41 proofs in [InductiveProofs.lean][]. The plot below shows the total proof
-efforts:
+Actually, closer to the end of the proof, I was writing similar proofs in 1-2
+minutes. You can find the remaining 41 proofs in [InductiveProofs.lean][]. The
+plot below shows the total proof efforts:
 
 {% include webp.html
     src="two-phase-inductive-proof.png"
@@ -343,11 +342,11 @@ is just the header of the theorem:
 
 Initially, I thought that the proof would not be harder than the proof of the
 inductive step, since there are fewer conditions to prove. Essentially, we have
-to prove 6 lemmas for the initial states. In total, I think it took me about three hours
-to finish the proofs.
+to prove six lemmas for the initial states. In total, I think it took me about
+three hours to finish the proofs.
 
 This proof had an unexpected complication. I had to show that the initialization
-of the hash map `rmState` sets all resource managers to the `Working` State.
+of the hash map `rmState` sets all resource managers to the state `Working`.
 Here is the header of this lemma:
 
 {% github_embed
@@ -355,8 +354,8 @@ Here is the header of this lemma:
   lean 138-141
  %}
 
-I had similar complications when going through Isabelle tutorials many years
-ago, so I remember that sometimes one had to generalize the proof goal. This is
+I observed similar issues when going through Isabelle tutorials many years ago,
+so I remember that sometimes one had to generalize the proof goal. This is
 exactly what happened here. In the end, the proof required this additional
 lemma:
 
@@ -373,22 +372,24 @@ have convenient primitives such as the function constructor.  In
 TLA<sup>+</sup>, we would just use:
 
 ```tlaplus
-  [ rm \in RM \rightarrow "working"]
+  [ rm ∈ RM |-> "working"]
 ```
 
 The function constructor does not introduce explicit iteration and actually has
-the semantics of what I had to prove with the lemma `init_rm_state_post`.
-Perhaps, we could introduce higher-level primitives in Lean 4 to deal with this.
-If you know of a better solution to using `HashMap`, please let me know in the
+the semantics of what I had to prove with the lemma `init_rm_state_post`.  (To
+be precise, it also specifies the function domain.) Perhaps, we could introduce
+higher-level primitives in Lean 4 to deal with this.  If you know of a better
+alternative to using `HashMap`, please let me know in the
 [comments][leave-comment].
 
 ## 7. Conclusions
 
 We have managed to write full proofs of consistency in Lean 4, starting with a
-functional specification. Except for a few moments, it was clear how to proceed.
-In total, it took me 29 hours to write the proofs, excluding the time that was
-needed to read the Lean manuals. Together with specification and simulation from
-the previous [blog post][lean-two-phase], the whole effort required 45 hours.
+functional specification. Except for a few moments, it was clear how to proceed,
+though interactive proofs are tedious. In total, it took me 29 hours to write
+the proofs, excluding the time that was needed to read the Lean manuals.
+Together with specification and simulation from the previous [blog
+post][lean-two-phase], the whole effort required 45 hours.
 
 I believe the proofs went quickly because the inductive invariant was already
 correct. In fact, I could probably reduce the proof times even further if I
@@ -409,6 +410,8 @@ The ratio of proofs (propositional and inductive) to the system code
 verification, where the proofs are 10-20 longer than the source code.
 
 TODO: Veil
+
+TODO: related work
 
 <a name="end"></a>
 
