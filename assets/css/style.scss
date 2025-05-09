@@ -8,6 +8,11 @@ $content-width: 80%;
   "minima/skins/{{ site.minima.skin | default: 'classic' }}",
   "minima/initialize";
 
+// smooth scrolling
+html {
+  scroll-behavior: smooth;
+}
+
 // TLA+ does not occupy extract height
 sup {
   line-height: 0;
@@ -134,5 +139,17 @@ body {
   .kw-grid {
     font-size: 0.95em;
     gap: 0.5em 1em;
+  }
+}
+
+.responsive-img {
+  width: 100%;
+}
+
+@media (min-width: 1024px) {
+  .responsive-img {
+    margin-left: 25%;
+    margin-right: auto;
+    width: 50%;
   }
 }
