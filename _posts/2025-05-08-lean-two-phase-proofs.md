@@ -17,14 +17,53 @@ shell: true
 In the previous [blog post][lean-two-phase], we discussed specification,
 randomized simulation, and property-based testing of Two-phase commit in [Lean
 4][Lean]. The obvious question is whether we can use Lean for what it was
-designed for, namely, proving correctness of the protocol. The short answer is:
-Yes, we can!
-
-Below is our proof plan:
+designed for, namely, proving correctness of the protocol. Yes, we can!
+Here is our proof plan:
 
 {% include webp.html
     src="two-phase-proof-schema.png"
     alt="Our proof schema" %}
+
+In short, I have managed to write full proofs of consistency in Lean 4, starting
+with a functional specification. Except for a few moments, it was clear how to
+proceed, though interactive proofs are tedious. In total, it took me 29 hours to
+write the proofs, excluding the time that was needed to read the Lean manuals.
+Together with specification and simulation from the previous [blog
+post][lean-two-phase], the whole effort required 45 hours.
+
+I believe the proofs went quickly because the inductive invariant was already
+correct, since we have found it with the model checker [Apalache][]. In fact, I
+could probably reduce the proof times even further if I focused on minimizing
+the inductive invariant. If the invariant had not been correct, though, the
+process likely would not have gone as smoothly.
+
+Let us have a look at the statistics in the table below.
+
+| Files                         | LOC (excluding comments & whitespace) |
+|-------------------------------|--------------------------------------:|
+| Functional.lean + System.lean | 139                                   |
+| Propositional.lean            | 90                                    |
+| PropositionalProofs.lean      | 275                                   |
+| InductiveProofs.lean          | 1077                                  |
+
+The ratio of proofs (propositional and inductive) to the system code
+(propositional) is about 15. This fits into the empirical ratio of software
+verification, where the proofs are 10-20 longer than the source code.
+
+In this blog post, we have explored a "traditional" path of interactive theorem
+proving, though we have [cut corners](#3-finding-an-inductive-invariant) by
+finding the inductive invariant with the model checker.
+
+Another route to explore is to prove equivalence between our specification in
+[Propositional.lean] and the [Veil][] specification. The Veil examples already
+contain a [version of two-phase commit][2pc-ivy], though it is slightly
+different from the [two-phase commit in TLA<sup>+</sup>](two-phase-tla) and our
+specification in Lean. Perhaps, this is a good topic for another exercise.
+
+Certainly, this is not the first exercise in using interactive theorem provers
+to verify safety of a distributed algorithms. To name a few examples, there were
+larger-scale efforts such as [IronFleet][], [Verdi][], [Disel][], and
+[Bythos][].
 
 ## 1. What to prove?
 
@@ -382,37 +421,6 @@ higher-level primitives in Lean 4 to deal with this.  If you know of a better
 alternative to using `HashMap`, please let me know in the
 [comments][leave-comment].
 
-## 7. Conclusions
-
-We have managed to write full proofs of consistency in Lean 4, starting with a
-functional specification. Except for a few moments, it was clear how to proceed,
-though interactive proofs are tedious. In total, it took me 29 hours to write
-the proofs, excluding the time that was needed to read the Lean manuals.
-Together with specification and simulation from the previous [blog
-post][lean-two-phase], the whole effort required 45 hours.
-
-I believe the proofs went quickly because the inductive invariant was already
-correct. In fact, I could probably reduce the proof times even further if I
-focused on minimizing the inductive invariant. If the invariant had not been
-correct, though, the process likely would not have gone as smoothly.
-
-Let us have a look at the statistics in the table below.
-
-| Files                         | LOC (excluding comments & whitespace) |
-|-------------------------------|--------------------------------------:|
-| Functional.lean + System.lean | 139                                   |
-| Propositional.lean            | 90                                    |
-| PropositionalProofs.lean      | 275                                   |
-| InductiveProofs.lean          | 1077                                  |
-
-The ratio of proofs (propositional and inductive) to the system code
-(propositional) is about 15. This fits into the empirical ratio of software
-verification, where the proofs are 10-20 longer than the source code.
-
-TODO: Veil
-
-TODO: related work
-
 <a name="end"></a>
 
 [Igor Konnov]: https://konnov.phd
@@ -445,4 +453,9 @@ TODO: related work
 [inductive-proof-effort]: {{ site.baseurl }}/img/two-phase-inductive-proof.png
 [proof-schema]: {{ site.baseurl }}/img/two-phase-proof-schema.png
 [invariant_is_inductive_tm_commit_lemma2]: https://github.com/konnov/leanda/blob/199b26cb022dfa05c3e7c1576384dcea8a0bd648/twophase/Twophase/InductiveProofs.lean#L394-L429
+[2pc-ivy]: https://github.com/verse-lab/veil/blob/main/Examples/IvyBench/TwoPhaseCommit.lean
+[IronFleet]: https://dl.acm.org/doi/10.1145/2815400.2815428
+[Verdi]: https://github.com/uwplse/verdi
+[Disel]: https://ilyasergey.net/papers/disel-popl18.pdf
 [leave-comment]: #end
+[Bythos]: https://github.com/verse-lab/bythos
