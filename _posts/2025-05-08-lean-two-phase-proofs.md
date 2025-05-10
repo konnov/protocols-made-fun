@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Proving consistency of two-phase commit in Lean 4"
+title: "Proving consistency of two-phase commit in Lean4"
 date: 2025-05-08
 categories: lean
 tlaplus: true
@@ -39,12 +39,12 @@ process likely would not have gone as smoothly.
 
 Let us have a look at the statistics in the table below.
 
-| Files                         | LOC (excluding comments & whitespace) |
-|-------------------------------|--------------------------------------:|
-| Functional.lean + System.lean | 139                                   |
-| Propositional.lean            | 90                                    |
-| PropositionalProofs.lean      | 275                                   |
-| InductiveProofs.lean          | 1077                                  |
+| Files                                 | LOC (excluding comments & whitespace) |
+|---------------------------------------|--------------------------------------:|
+| [Functional.lean][] + [System.lean][] | 139                                   |
+| [Propositional.lean][]                | 90                                    |
+| [PropositionalProofs.lean][]          | 275                                   |
+| [InductiveProofs.lean][]              | 1077                                  |
 
 The ratio of proofs (propositional and inductive) to the system code
 (propositional) is about 15. This fits into the empirical ratio of software
@@ -64,6 +64,15 @@ Certainly, this is not the first exercise in using interactive theorem provers
 to verify safety of a distributed algorithms. To name a few examples, there were
 larger-scale efforts such as [IronFleet][], [Verdi][], [Disel][], and
 [Bythos][].
+
+## Table of contents
+
+1. [What to prove?](#1-what-to-prove)
+1. [Connecting functional and propositional specs](#2-connecting-functional-and-propositional-specs)
+1. [Finding an inductive invariant](#3-finding-an-inductive-invariant)
+1. [Proving the inductive step in Lean 4](#4-proving-the-inductive-step-in-lean-4)
+1. [Proving consistency with the inductive invariant](#5-proving-consistency-with-the-inductive-invariant)
+1. [Proving the inductive base](#6-proving-the-inductive-base)
 
 ## 1. What to prove?
 
@@ -438,13 +447,13 @@ alternative to using `HashMap`, please let me know in the
 [Functional.lean]: https://github.com/konnov/leanda/blob/main/twophase/Twophase/Functional.lean
 [System.lean]: https://github.com/konnov/leanda/blob/main/twophase/Twophase/System.lean
 [Propositional.lean]: https://github.com/konnov/leanda/blob/main/twophase/Twophase/Propositional.lean
-[Apalache]: https://github.com/apalache-mc/apalache
+[Apalache]: https://apalache-mc.org/
 [happy to help]: {{ 'contact/' | relative_url }}
 [ben-or-mc]: {% link _posts/2024-11-03-ben-or.md %}
 [lean-two-phase]: {% link _posts/2025-04-25-lean-two-phase.md %}
 [tla-consistency]: https://github.com/tlaplus/Examples/blob/37236893f14527b4fc9f3963891eb2316c3de62e/specifications/transaction_commit/TCommit.tla#L54-L60
-[PropositionalProofs.lean]: https://github.com/konnov/leanda/blob/199b26cb022dfa05c3e7c1576384dcea8a0bd648/twophase/Twophase/PropositionalProofs.lean
-[InductiveProofs.lean]: https://github.com/konnov/leanda/blob/199b26cb022dfa05c3e7c1576384dcea8a0bd648/twophase/Twophase/InductiveProofs.lean
+[PropositionalProofs.lean]: https://github.com/konnov/leanda/blob/main/twophase/Twophase/PropositionalProofs.lean
+[InductiveProofs.lean]: https://github.com/konnov/leanda/blob/main/twophase/Twophase/InductiveProofs.lean
 [oopsla19-artifact]: https://zenodo.org/records/3370071
 [oopsla19]: https://2019.splashcon.org/details/splash-2019-oopsla/7/TLA-Model-Checking-Made-Symbolic
 [TwoPhaseTypedInv.tla]: https://github.com/apalache-mc/apalache/blob/main/test/tla/TwoPhaseTypedInv.tla

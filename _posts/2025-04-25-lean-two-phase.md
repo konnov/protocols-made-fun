@@ -109,6 +109,22 @@ TLA<sup>+</sup>, Quint, or Python, I would be [happy to help][].
 The rest of the blogpost goes into details. If you are interested, keep reading.
 If not, you are free to stop here.
 
+Table of Contents
+=================
+
+1. [A brief intro to Two\-phase commit and the TLA<sup>\+</sup> specification](#1-a-brief-intro-to-two-phase-commit-and-the-tla-specification)
+1. [Specification in Lean](#2-specification-in-lean)
+   1. [Data structures](#21-data-structures)
+   1. [Functional specification in Lean](#22-functional-specification-in-lean)
+   1. [System\-level specification in Lean](#23-system-level-specification-in-lean)
+1. [Randomised simulator in Lean](#3-randomised-simulator-in-lean)
+   1. [Why?](#31-why)
+   1. [What?](#32-what)
+   1. [How?](#33-how)
+   1. [Our simulator is really fast\!](#34-our-simulator-is-really-fast)
+1. [Property\-based testing in Lean](#4-property-based-testing-in-lean)
+1. [Propositional specification in Lean](#5-propositional-specification-in-lean)
+
 ## 1. A brief intro to Two-phase commit and the TLA<sup>+</sup> specification
 
 I am giving only a very brief introduction in two-phase commit. It is quite a
@@ -192,12 +208,12 @@ together with the next-state predicate:
   tlaplus 138-142
  %}
 
-## 3. Specification in Lean
+## 2. Specification in Lean
 
 You can find the whole [specification in Lean][two-phase-lean] on GitHub. I am
 presenting it in small pieces, to demonstrate the decisions that had to be made.
 
-## 3.1. Data structures
+## 2.1. Data structures
 
 Let's start with the data structures. Since Lean is typed, we have to understand
 how to represent the parameter `RM` and the state variables `rmState`,
@@ -271,7 +287,7 @@ I've settled on `Finset`, to avoid leaking the abstraction. However, in case of
 good to avoid the implementation details at this level."
 %}
 
-### 3.2. Functional specification in Lean
+### 2.2. Functional specification in Lean
 
 Now that we have chosen our data structures, we can specify the behavior of the
 two-phase commit. We do this in the module [Functional.lean][]. For example,
@@ -350,7 +366,7 @@ specification][prop-spec].
 in Lean are quite similar to the `pure def` definitions of Quint."
 %}
 
-### 3.3. System-level specification in Lean
+### 2.3. System-level specification in Lean
 
 Now we have the functional definitions of the resource managers and the
 transaction manager. How do we put these things together, to capture the
@@ -412,9 +428,9 @@ elegant than the definition of `TPNext` in TLA<sup>+</sup>.
 
 This is all we have in [System.lean][].
 
-## 5. Randomised simulator in Lean
+## 3. Randomised simulator in Lean
 
-### 5.1. Why?
+### 3.1. Why?
 
 We have a formal specification in Lean. What is next? Obviously, our ultimate
 goal is to **verify** protocol correctness. In particular, we would like to
@@ -450,7 +466,7 @@ falsify a property in Lean is by using randomized techniques. In this section,
 we discuss **randomized simulation**. In the next section on [Property-based
 testing][spec-pbt], we discuss [Plausible][] &mdash; a PBT framework for Lean.
 
-### 5.2. What?
+### 3.2. What?
 
 Our goal in this section is to quickly turn our Lean specification into a simulator
 that runs as follows:
@@ -519,7 +535,7 @@ from the examples that are found by our simulator. As you can see the
 counterexamples are found in a few seconds, even though the simulator has to
 enumerate hundreds of thousands of schedules.
 
-### 5.3. How?
+### 3.3. How?
 
 You can find the whole simulator in [Twophase4_run.lean][run.lean].  The core of
 our simulator is the following loop, written right in the entry point:
@@ -575,7 +591,7 @@ As you can see, the simulator is extremely simple! There is really not much to
 explain here.  The large body of work is done by Lean itself. Our job was to
 simply produce schedules, that is, lists of `Action` values.
 
-### 5.4. Our simulator is really fast!
+### 3.4. Our simulator is really fast!
 
 We have seen that in the cases when the invariant was violated &mdash; e.g.,
 when checking `noAbortEx`, `noCommitEx`, or `noAbortOnAllPreparedEx` &mdash; our
@@ -652,7 +668,7 @@ JavaScript backend. Still, 10 minutes is nowhere close to the 10 seconds by our
 simulator in Lean. Apparently, it's really hard to compete with a transpiler to C,
 even if the interpreter is written in :crab:
 
-## 6. Property-based testing in Lean
+## 4. Property-based testing in Lean
 
 Instead of writing our own simulator &mdash; even though it happened to be easy
 in the case of two-phase commit &mdash; we employ [Plausible][] in this section.
@@ -772,7 +788,7 @@ samples, as we did in the simulator. Unfortunately, Plausible produces a stack
 overflow even on 10K examples, even when run via `lake test`. This needs more
 debugging.
 
-## 7. Propositional specification in Lean
+## 5. Propositional specification in Lean
 
 Finally, let's discuss, whether our specification style is the most natural one
 when translating TLA<sup>+</sup> specifications. We used the functional approach
@@ -837,22 +853,22 @@ propositional definitions and connect them via (hopefully!) simple proofs.
 [Gray-Lamport04]: https://www.microsoft.com/en-us/research/publication/consensus-on-transaction-commit/
 [two-phase-lean]: https://github.com/konnov/leanda/tree/main/twophase/Twophase
 [brief-intro]: #1-a-brief-intro-to-two-phase-commit-and-the-tla-specification
-[fun-spec]: #32-functional-specification-in-lean
-[sys-spec]: #33-system-level-specification-in-lean
-[prop-spec]: #7-propositional-specification-in-lean
-[spec-sim]: #5-randomised-simulator-in-lean
-[spec-pbt]: #6-property-based-testing-in-lean
+[fun-spec]: #22-functional-specification-in-lean
+[sys-spec]: #23-system-level-specification-in-lean
+[prop-spec]: #5-propositional-specification-in-lean
+[spec-sim]: #3-randomised-simulator-in-lean
+[spec-pbt]: #4-property-based-testing-in-lean
 [Functional.lean]: https://github.com/konnov/leanda/blob/main/twophase/Twophase/Functional.lean
 [System.lean]: https://github.com/konnov/leanda/blob/main/twophase/Twophase/System.lean
 [run.lean]: https://github.com/konnov/leanda/blob/main/twophase/Twophase4_run.lean
 [Twophase4_pbt.lean]: https://github.com/konnov/leanda/blob/main/twophase/Twophase4_pbt.lean
 [Twophase4_pbt_failing.lean]: https://github.com/konnov/leanda/blob/main/twophase/Twophase4_pbt_failing.lean
-[sim-is-fast]: #54-our-simulator-is-really-fast
+[sim-is-fast]: #34-our-simulator-is-really-fast
 [lean monads]: https://lean-lang.org/functional_programming_in_lean/monads.html
 [Quint]: https://konnov.phd/quint
 [hn]: https://news.ycombinator.com/
 [Plausible]: https://github.com/leanprover-community/plausible
-[Apalache]: https://github.com/apalache-mc/apalache
+[Apalache]: https://apalache-mc.org/
 [ScalaCheck]: https://scalacheck.org/
 [QuickCheck]: https://hackage.haskell.org/package/QuickCheck
 [TLC]: https://github.com/tlaplus/tlaplus
