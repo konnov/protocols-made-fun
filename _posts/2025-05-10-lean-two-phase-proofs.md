@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "Proving consistency of two-phase commit in Lean4"
-date: 2025-05-08
+date: 2025-05-10
 categories: lean
 tlaplus: true
 quint: true
