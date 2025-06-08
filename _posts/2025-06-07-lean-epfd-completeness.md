@@ -25,10 +25,10 @@ does not seem to be particularly interesting, as it mostly depends on fairness
 of the resource managers and the transaction manager. (A real implementation may
 be much trickier though.) I was looking for something a bit more challenging
 but, at the same time, something that would not take months to reason about.
-Since many Byzantine-fault tolerance algorithms work under partial synchrony, it
-looked natural to find a protocol that required partial synchrony. [Failure
-detectors][fd-wikipedia] seemed to be a good fit. These algorithms are
-relatively small, but require plenty of reasoning about time.
+Since many Byzantine-fault tolerance algorithms work under partial synchrony, a
+natural thing to do was to find a protocol that required partial synchrony.
+[Failure detectors][fd-wikipedia] seemed to be a good fit to me. These
+algorithms are relatively small, but require plenty of reasoning about time.
 
 Hence, I opened the [book][DP2011] on Reliable and Secure Distributed
 Programming by Christian Cachin, Rachid Guerraoui, and Luís Rodrigues and found
@@ -133,11 +133,11 @@ to the set of alive processes.
 The algorithm looks deceivingly simple. However, the pseudo-code is missing
 another piece of information, namely, how the distributed system behaves as a
 whole. What does it mean for processes to crash? When messages are received, if
-at all? It's not even clear how to properly capture this in pseudo-code.
+at all? It's not even clear how to properly write this in pseudo-code.
 Normally, academic papers leave this part to math definitions. Since we want to
-write proofs of correctness, we cannot avoid reasoning about the whole system.
-Instead of appealing to intuition, we will capture both the process behavior and
-the system behavior in Lean.
+prove correctness, we cannot avoid reasoning about the whole system. Instead of
+appealing to intuition, we capture both the process behavior and the system
+behavior in Lean.
 
 ## 2. Eventually perfect failure detector in Lean
 
@@ -207,8 +207,181 @@ field `crashed`.
 
 ### 2.2. Partial synchrony
 
-TBD
+The algorithm is designed to work under partial synchrony. Unfortunately, [the
+book][DP2011] does not give us a precise definition of what it means. So we go
+back to the paper [Dwork, Lynch, and Stockmeyer][DLS88] who introduced partial
+synchrony. There are several kinds of partial synchrony in the paper. We choose
+the one that is probably the most commonly used nowadays: There is a period of
+time called global stabilization time (GST), after which every correct process
+$p$ receives a message from a correct process $q$ no later than
+$\mathit{MsgDelay}$ time units after it was sent by $q$. Both $\mathit{GST}$ and
+$\mathit{GST}$ are unknown to the processes, and may change from run to run. It
+is also important to fix the guarantees about the messages that were sent before
+$\mathit{GST}$. We assume that they are received by $\mathit{GST} +
+\mathit{MsgDelay}$ the latest.
 
+Now we can write a formal definition of what it means for a message to be
+received on time under partial synchrony:
+
+{% github_embed
+  https://raw.githubusercontent.com/konnov/leanda/2496533b5cc27fe915f93346c5c9eaadfc613c27/epfd/Epfd/Basic.lean
+  lean 61-65
+ %}
+
+### 2.3. Specifying the actions
+
+Now we are ready to specify the actions of a distributed system that follows the
+algorithm. You can find all definitions in [Propositional.lean][].
+
+We start with the protocol parameters and the variables `s` and `s'` that
+we use throughout the definitions:
+
+{% github_embed
+  https://raw.githubusercontent.com/konnov/leanda/2496533b5cc27fe915f93346c5c9eaadfc613c27/epfd/Epfd/Propositional.lean
+  lean 20-36
+ %}
+
+Below is the definition of receiving a heartbeat request:
+
+{% github_embed
+  https://raw.githubusercontent.com/konnov/leanda/2496533b5cc27fe915f93346c5c9eaadfc613c27/epfd/Epfd/Propositional.lean
+  lean 38-55
+ %}
+
+As you can see, the definition of `rcv_heartbeat_request` captures the behavior
+of the whole system, when `dst` processes a heartbeat request. In particular,
+`dst` cannot be crashed when receiving the message, the message has to be
+timely, etc.  Similar to TLA<sup>+</sup>, we specify that certain fields
+preserve their values.  Actually, we could update the structure `s'` instead of
+writing down multiple equalities over the fields. However, it would make the
+proofs more cumbersome. I could not find a simple way to express something like
+TLA<sup>+</sup>'s `UNCHANGED` over multiple variables.
+
+Interestingly, I accidentally swapped `src` and `dst` in the initial version of
+`reply` in `rcv_heartbeat_request`. I only found that when trying to prove one
+of the lemmas towards strong completeness.
+
+Similar to `rcv_heartbeat_request`, we specify `rcv_heartbeat_reply`:
+
+{% github_embed
+  https://raw.githubusercontent.com/konnov/leanda/2496533b5cc27fe915f93346c5c9eaadfc613c27/epfd/Epfd/Propositional.lean
+  lean 57-73
+ %}
+
+The definition of `timeout` is the longest one, as a lot of things happen on
+timeout:
+
+{% github_embed
+  https://raw.githubusercontent.com/konnov/leanda/2496533b5cc27fe915f93346c5c9eaadfc613c27/epfd/Epfd/Propositional.lean
+  lean 75-105
+ %}
+
+As you can see, the sequential logic from the pseudo-code is compressed into
+multiple equalities, very much in the spirit of TLA<sup>+</sup>. Our proofs are
+complex enough, so it's good that we do not have to deal with sequential
+execution inside actions. If this is not convincing enough, we could write
+sequential code and prove that it refines the corresponding propositional
+definition.
+
+We have defined the three actions, as in the pseudo-code (the definition of
+`init` comes later). Are we done? Not quite. Since we are specifying the
+behavior of the distributed system, not just the behavior of individual
+processes, we need two more actions.
+
+The first additional action is `crash`:
+
+{% github_embed
+  https://raw.githubusercontent.com/konnov/leanda/2496533b5cc27fe915f93346c5c9eaadfc613c27/epfd/Epfd/Propositional.lean
+  lean 107-120
+ %}
+
+Yes, we have to specify what it means for a process to crash, as there is no
+built-in semantics of crashing in Lean.
+
+What is left? Remember that we had the fictitious global clock? We have to
+advance it:
+
+{% github_embed
+  https://raw.githubusercontent.com/konnov/leanda/2496533b5cc27fe915f93346c5c9eaadfc613c27/epfd/Epfd/Propositional.lean
+  lean 122-134
+ %}
+
+I have cut a corner in the definition of `advance_clock` by incrementing it,
+instead of advancing it by a positive delta. This works since we declared the
+clock to be a natural number rather than a rational or real. Incrementing the
+clock simplifies the proofs a bit.
+
+Finally, we define the initialization and the transition relation as follows:
+
+{% github_embed
+  https://raw.githubusercontent.com/konnov/leanda/2496533b5cc27fe915f93346c5c9eaadfc613c27/epfd/Epfd/Propositional.lean
+  lean 136-165
+ %}
+
+Notice the `noncomputable` qualifier in front of `init_map`. Lean requires it,
+as we are converting `Finset.univ` to a list. If we want to write an executable
+specification, we have to work around this, perhaps, by passing the list of all
+process identities to the initializer.
+
+So far, our definitions looked very much like a typical specification in
+TLA<sup>+</sup>, even though we had to use Lean's data structures such as finite
+sets and hash maps, instead of TLA<sup>+</sup>'s sets and functions. I believe
+that there is an advantage in keeping this resemblance. First, if we choose to
+translate this specification to TLA<sup>+</sup>, e.g., to use the model
+checkers, it is not hard. (Actually, I did that; it was almost no-brainer with
+Copilot). Second, we can reuse the standard specification idioms from
+TLA<sup>+</sup>.
+
+### 2.4. Specifying the temporal properties
+
+In [two-phase commit][lean-two-phase-proofs], we were only concerned with state
+invariants and, thus, only had to reason about lists of actions. In the case of
+failure detectors, we have to reason about temporal properties. In general,
+temporal properties require us to reason about infinite behaviors. Surprisingly,
+it is quite easy to specify properties of infinite behaviors in Lean. We just
+use a function `seq` of natural numbers to `ProtocolState`.
+
+Here is how we specify strong completeness of the failure detector:
+
+{% github_embed
+  https://raw.githubusercontent.com/konnov/leanda/10ff35431f967ff3f13d8945514c5dac33e14156/epfd/Epfd/Propositional.lean
+  lean 182-189
+ %}
+
+The above definition may seem to be a bit loaded. The left part of `→` requires
+that the set `Crashed` indeed contains all the processes that crashed in the
+run. The set `Crashed` happened to be hard to define. More on that later.  The
+right part of `→` says that there is a point `k` in `seq`, so that starting with
+$k$, every further state $seq (i + k)$ satisfies $q \notin (seq (i +
+k)).suspected[p]!$ for a correct $p$ and a crashed $q$.
+
+If you know temporal logic, e.g., as defined in TLA<sup>+</sup>, the right-hand
+side of `→` could be written like:
+
+```tla
+<>[](∀ p q: Proc, p ∉ C ∧ q ∈ C → q ∈ suspected[p])
+```
+
+Similar to that, this is how we specify strong accuracy:
+
+{% github_embed
+  https://raw.githubusercontent.com/konnov/leanda/10ff35431f967ff3f13d8945514c5dac33e14156/epfd/Epfd/Propositional.lean
+  lean 200-207
+ %}
+
+Again, in temporal logic it would look like:
+
+```tla
+<>[](∀ p q: Proc, p ∉ crashed ∧ q ∉ crashed → q ∉ suspected[p])
+```
+
+**Don't we need a framework for temporal logic?** Well, actually not. Instead of
+`[]` and `<>`, we can simply use `∀` and `∃` over indices. There is even a
+deeper connection between linear temporal logic and first-order logic with
+ordering, shown by Kamp. For example, see a recent [Proof of Kamp's
+theorem][Rabinovich12] by Alexander Rabinovich. Of course, temporal formulas are
+often less bulky. So I prefer to accompany properties in Lean with temporal
+properties in the documentation.
 
 <a name="end"></a>
 
@@ -227,5 +400,7 @@ TBD
 [DP2011]: https://www.distributedprogramming.net/
 [LINFO2345-5]: https://www.youtube.com/watch?v=k_mlWOcWOSA
 [ChandraToueg96]: https://dl.acm.org/doi/abs/10.1145/226643.226647
+[DLS88]: https://dl.acm.org/doi/abs/10.1145/42282.42283
+[Rabinovich12]: https://drops.dagstuhl.de/storage/00lipics/lipics-vol016-csl2012/LIPIcs.CSL.2012.516/LIPIcs.CSL.2012.516.pdf
 [happy to help]: {{ 'contact/' | relative_url }}
 [leave-comment]: #end
