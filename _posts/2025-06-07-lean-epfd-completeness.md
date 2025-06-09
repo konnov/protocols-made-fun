@@ -30,7 +30,7 @@ natural thing to do was to find a protocol that required partial synchrony.
 [Failure detectors][fd-wikipedia] seemed to be a good fit to me. These
 algorithms are relatively small, but require plenty of reasoning about time.
 
-Hence, I opened the [book][DP2011] on Reliable and Secure Distributed
+Hence, I opened the [book][DP2011] (DP2011) on Reliable and Secure Distributed
 Programming by Christian Cachin, Rachid Guerraoui, and Luís Rodrigues and found
 the pseudo-code of the eventually-perfect failure detector (EPFD). If you have
 never heard of failure detectors, there are a few introductory lectures on
@@ -75,6 +75,31 @@ arbitrary properties of computations. Of course, it would be interesting to see
 how this proof compares to a proof in TLAPS, which is specifically designed to
 reason about temporal properties.
 
+Although a time investment of about a week to prove strong completeness of EPFD
+may seem like a lot, this approach has certain benefits in comparison to using
+tools like the explicit-state model checker [TLC][] or the symbolic model
+checker [Apalache][]:
+
+ 1. Re-checking the proofs takes seconds. It's also trivial to integrate
+ proof-checking in the GitHub continuous integration.
+ 
+ 1. All tools require a spec to be massaged a bit. I always felt bad about not
+ being able to formally show that these transformations are sound with a model
+ checker. With Lean, it is usually easy.
+ 
+ 1. If you manage to decompose your proof goals into smaller lemmas, there is a
+ sense of progress. Even though I had to prove 4-5 unexpected lemmas in this
+ experiment, I could definitely say whether I was making progress or not. In the
+ end, I only proved one lemma that happened to be redundant. With model
+ checkers, both explicit and symbolic, it is often frustrating to wait for hours
+ or days without clear progress.
+
+Obviously, the downside of using an interactive theorem prover is that someone
+has to write the proofs. For a customer, it may make a difference whether they
+pay for 2–4 weeks of contract work, or for 1 week of contract work and then wait
+3 weeks for a model checker. However, if time is critical, it makes sense to
+invest in both approaches.
+
 ## Table of contents
 
 TBD
@@ -82,8 +107,8 @@ TBD
 ## 1. Eventually perfect failure detector in pseudo-code
 
 To avoid any potential copyright issues, I am not giving the pseudo-code from
-the book. If you want to see the original version, go check [the
-book][DP2011][^1], Algorithm 2.7, p. 55. Below is an adapted version, which
+the book. If you want to see the original version, go check
+[DP2011][][^1], Algorithm 2.7, p. 55. Below is an adapted version, which
 simplifies the events, as we do not have to reason about the interactions
 between different protocol layers in the proof. Every process $p \in
 \mathit{Proc}$ works as follows:
@@ -101,20 +126,20 @@ between different protocol layers in the proof. Every process $p \in
     delay := delay + InitDelay
   suspected := Proc \ alive
   <strong>send</strong> HeartbeatRequest <strong>to</strong> all p ∈ Proc
-  alive := ∅;
-  set_timeout(delay);
+  alive := ∅
+  set_timeout(delay)
 
 <strong>upon receive</strong> HeartbeatRequest <strong>from</strong> q <strong>do</strong>
   <strong>send</strong> HeartbeatReply <strong>to</strong> q
 
 <strong>upon receive</strong> HeartbeatReply <strong>from</strong> p <strong>do</strong>
-  alive := alive ∪ {p};
+  alive := alive ∪ {p}
 </code>
 </pre>
 
 Intuitively, the operation of a failure detector is very simple.  Initially, a
 process $p$ considers all the processes alive and suspects no other process of
-being crashed. Initially, it sets a timer to $\mathit{InitDelay}$ time units.
+being crashed. Also, it sets a timer to $\mathit{InitDelay}$ time units.
 Basically, nothing interesting happens in the time interval $[0,
 \mathit{InitDelay})$, except that some processes may crash.
 
@@ -171,7 +196,7 @@ Next, we define the types of message tags and messages:
 
 Now, most of it should be obvious, except, perhaps, for the field `timestamp`.
 What is it? If we look at the original paper on failure detectors by [Chandra
-and Toueg][ChandraToueg96], we'll see that they assume the existence of a global
+and Toueg][ChandraToueg96] (CT96), we'll see that they assume the existence of a global
 clock. The processes can’t read this clock, but the system definitions refer to
 it. Hence, a message's timestamp refers to the value of the global clock at the
 moment the message is sent.
@@ -207,18 +232,18 @@ field `crashed`.
 
 ### 2.2. Partial synchrony
 
-The algorithm is designed to work under partial synchrony. Unfortunately, [the
-book][DP2011] does not give us a precise definition of what it means. So we go
-back to the paper [Dwork, Lynch, and Stockmeyer][DLS88] who introduced partial
-synchrony. There are several kinds of partial synchrony in the paper. We choose
-the one that is probably the most commonly used nowadays: There is a period of
-time called global stabilization time (GST), after which every correct process
-$p$ receives a message from a correct process $q$ no later than
-$\mathit{MsgDelay}$ time units after it was sent by $q$. Both $\mathit{GST}$ and
-$\mathit{GST}$ are unknown to the processes, and may change from run to run. It
-is also important to fix the guarantees about the messages that were sent before
-$\mathit{GST}$. We assume that they are received by $\mathit{GST} +
-\mathit{MsgDelay}$ the latest.
+The algorithm is designed to work under partial synchrony. Unfortunately,
+[DP2011][] does not give us a precise definition of what it means. So we
+go back to the paper [Dwork, Lynch, and Stockmeyer][DLS88] (DLS88) who
+introduced partial synchrony. There are several kinds of partial synchrony in
+the paper. We choose the one that is probably the most commonly used nowadays:
+There is a period of time called global stabilization time (GST), after which
+every correct process $p$ receives a message from a correct process $q$ no later
+than $\mathit{MsgDelay}$ time units after it was sent by $q$. Both
+$\mathit{GST}$ and $\mathit{GST}$ are unknown to the processes, and may change
+from run to run. It is also important to fix the guarantees about the messages
+that were sent before $\mathit{GST}$. We assume that they are received by
+$\mathit{GST} + \mathit{MsgDelay}$ the latest.
 
 Now we can write a formal definition of what it means for a message to be
 received on time under partial synchrony:
@@ -227,6 +252,15 @@ received on time under partial synchrony:
   https://raw.githubusercontent.com/konnov/leanda/2496533b5cc27fe915f93346c5c9eaadfc613c27/epfd/Epfd/Basic.lean
   lean 61-65
  %}
+
+Both DLS88 and DP2011 mention that in practice partial synchrony means that the
+periods of asynchrony and synchrony alternate. DLS88 mention that for their
+consensus algorithms one should be able to compute the time of convergence after
+GST. I am not actually sure how it would work in case of failure detectors, as
+it is impossible to predict how long it takes a process to crash. Hence, in our
+model, there is no alternation of asynchrony and synchrony. After GST,
+communication becomes synchronous, in the sense that every message is delivered
+not later than $\mathit{MsgDelay}$ time units after it was sent.
 
 ### 2.3. Specifying the actions
 
@@ -299,22 +333,22 @@ Yes, we have to specify what it means for a process to crash, as there is no
 built-in semantics of crashing in Lean.
 
 What is left? Remember that we had the fictitious global clock? We have to
-advance it:
+advance it from time to time:
 
 {% github_embed
-  https://raw.githubusercontent.com/konnov/leanda/2496533b5cc27fe915f93346c5c9eaadfc613c27/epfd/Epfd/Propositional.lean
+  https://raw.githubusercontent.com/konnov/leanda/a944e15cd22c33e5a75c0d077267cd080078cd4f/epfd/Epfd/Propositional.lean
   lean 122-134
  %}
 
 I have cut a corner in the definition of `advance_clock` by incrementing it,
 instead of advancing it by a positive delta. This works since we declared the
 clock to be a natural number rather than a rational or real. Incrementing the
-clock simplifies the proofs a bit.
+clock instead of advancing it by delta simplifies the proofs a bit.
 
 Finally, we define the initialization and the transition relation as follows:
 
 {% github_embed
-  https://raw.githubusercontent.com/konnov/leanda/2496533b5cc27fe915f93346c5c9eaadfc613c27/epfd/Epfd/Propositional.lean
+  https://raw.githubusercontent.com/konnov/leanda/a944e15cd22c33e5a75c0d077267cd080078cd4f/epfd/Epfd/Propositional.lean
   lean 136-165
  %}
 
@@ -362,7 +396,7 @@ side of `→` could be written like:
 <>[](∀ p q: Proc, p ∉ C ∧ q ∈ C → q ∈ suspected[p])
 ```
 
-Similar to that, this is how we specify strong accuracy:
+Similar to `is_strongly_complete`, this is how we specify strong accuracy:
 
 {% github_embed
   https://raw.githubusercontent.com/konnov/leanda/10ff35431f967ff3f13d8945514c5dac33e14156/epfd/Epfd/Propositional.lean
@@ -383,12 +417,21 @@ theorem][Rabinovich12] by Alexander Rabinovich. Of course, temporal formulas are
 often less bulky. So I prefer to accompany properties in Lean with temporal
 properties in the documentation.
 
+### 2.5. Specifying fairness and fair runs
+
+TBD
+
+## 3. Proving strong completeness in Lean
+
+TBD
+
 <a name="end"></a>
 
 [^1]: Christian Cachin, Rachid Guerraoui, and Luís Rodrigues. Introduction to Reliable and Secure Distributed Programming. Second Edition, Springer, 2011, XIX, 320 pages
 [Igor Konnov]: https://konnov.phd
 [Lean]: https://github.com/leanprover/lean4
 [Apalache]: https://apalache-mc.org/
+[TLC]: https://github.com/tlaplus/tlaplus
 [lean-two-phase]: {% link _posts/2025-04-25-lean-two-phase.md %}
 [lean-two-phase-proofs]: {% link _posts/2025-05-10-lean-two-phase-proofs.md %}
 [Basic.lean]: https://github.com/konnov/leanda/blob/main/epfd/Epfd/Basic.lean
