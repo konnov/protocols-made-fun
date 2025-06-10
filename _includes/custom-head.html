@@ -21,13 +21,11 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
   <script>
     MathJax = {
       tex: {
-        loader: {load: ['[tex]/require']},
         inlineMath: [['$', '$'], ['\\(', '\\)']],
         macros: {
           bold: ["{\\bf #1}", 1],
           tla: ["{\\textsf{TLA}^+}", 0],
-        },
-        tex: {packages: {'[+]': ['require']}}
+        }
       },
       svg: {
         fontCache: 'global'

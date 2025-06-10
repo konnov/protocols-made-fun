@@ -142,17 +142,16 @@ TBD
 
 ## 1. Eventually perfect failure detector in pseudo-code
 
-To avoid any potential copyright issues, I am not giving the pseudo-code from
-the book. If you want to see the original version, go check
-[DP2011][][^1], Algorithm 2.7, p. 55. Below is an adapted version, which
-simplifies the events, as we do not have to reason about the interactions
-between different protocol layers in the proof. Every process $p \in
-\mathit{Proc}$ works as follows:
+To avoid any potential copyright issues, I am not copying the pseudo-code from
+the book. If you want to see the original version, go check [DP2011][][^1],
+Algorithm 2.7, p. 55. Below is an adapted version, which simplifies the events,
+as we do not have to reason about the interactions between different protocol
+layers in the proof. Every process $p \in \mathit{Procs}$ works as follows:
 
 <pre>
 <code class="nohighlight">
 <strong>upon</strong> Init <strong>do</strong>
-  alive := Proc
+  alive := Procs
   suspected := ∅
   delay := InitDelay
   set_timeout(delay)
@@ -160,8 +159,8 @@ between different protocol layers in the proof. Every process $p \in
 <strong>upon</strong> Timeout <strong>do</strong>
   <strong>if</strong> alive ∩ suspected ≠ ∅ <strong>then</strong>
     delay := delay + InitDelay
-  suspected := Proc \ alive
-  <strong>send</strong> HeartbeatRequest <strong>to</strong> all p ∈ Proc
+  suspected := Procs \ alive
+  <strong>send</strong> HeartbeatRequest <strong>to</strong> all p ∈ Procs
   alive := ∅
   set_timeout(delay)
 
@@ -266,20 +265,25 @@ distributed system, we notice that the processes cannot have access to those
 fields. Otherwise, detecting failures would be trivial, we would just access the
 field `crashed`.
 
+If you find this representation of the global state surprising, it's actually
+quite common to reason about such a global snapshot of a distributed system in
+TLA<sup>+</sup>. Here, we're simply following the TLA<sup>+</sup> methodology,
+albeit reproduced in Lean.
+
 ### 2.2. Partial synchrony
 
 The algorithm is designed to work under partial synchrony. Unfortunately,
-[DP2011][] does not give us a precise definition of what it means. So we
-go back to the paper [Dwork, Lynch, and Stockmeyer][DLS88] (DLS88) who
+[DP2011][] does not give us a precise definition of what this means. So we go
+back to the paper by [Dwork, Lynch, and Stockmeyer][DLS88] (DLS88) who
 introduced partial synchrony. There are several kinds of partial synchrony in
 the paper. We choose the one that is probably the most commonly used nowadays:
 There is a period of time called global stabilization time (GST), after which
 every correct process $p$ receives a message from a correct process $q$ no later
 than $\mathit{MsgDelay}$ time units after it was sent by $q$. Both
-$\mathit{GST}$ and $\mathit{GST}$ are unknown to the processes, and may change
-from run to run. It is also important to fix the guarantees about the messages
-that were sent before $\mathit{GST}$. We assume that they are received by
-$\mathit{GST} + \mathit{MsgDelay}$ the latest.
+$\mathit{GST}$ and $\mathit{MsgDelay}$ are unknown to the processes, and may
+change from run to run. It is also important to fix the guarantees about the
+messages that were sent before $\mathit{GST}$. We assume that they are received
+by $\mathit{GST} + \mathit{MsgDelay}$ the latest.
 
 Now we can write a formal definition of what it means for a message to be
 received on time under partial synchrony:
@@ -319,13 +323,13 @@ Below is the definition of receiving a heartbeat request:
  %}
 
 As you can see, the definition of `rcv_heartbeat_request` captures the behavior
-of the whole system, when `dst` processes a heartbeat request. In particular,
-`dst` cannot be crashed when receiving the message, the message has to be
-timely, etc.  Similar to TLA<sup>+</sup>, we specify that certain fields
-preserve their values.  Actually, we could update the structure `s'` instead of
-writing down multiple equalities over the fields. However, it would make the
-proofs more cumbersome. I could not find a simple way to express something like
-TLA<sup>+</sup>'s `UNCHANGED` over multiple variables.
+of the whole system, when `dst` handles a heartbeat request. In particular,
+`dst` cannot be in the crashed state when it is receiving the message, the
+message has to be timely, etc. Similar to TLA<sup>+</sup>, we specify that
+certain fields preserve their values. Actually, we could update the structure
+`s'` instead of writing down multiple equalities over the fields. However, it
+would make the proofs more cumbersome. I could not find a simple way to express
+something like TLA<sup>+</sup>'s `UNCHANGED` over multiple variables.
 
 Interestingly, I accidentally swapped `src` and `dst` in the initial version of
 `reply` in `rcv_heartbeat_request`. I only found that when trying to prove one
@@ -354,9 +358,9 @@ sequential code and prove that it refines the corresponding propositional
 definition.
 
 We have defined the three actions, as in the pseudo-code (the definition of
-`init` comes later). Are we done? Not quite. Since we are specifying the
-behavior of the distributed system, not just the behavior of individual
-processes, we need two more actions.
+`init` comes later). Are we done? Not quite. Since we're specifying the behavior
+of the entire distributed system, not just individual processes, we need two
+more actions.
 
 The first additional action is `crash`:
 
@@ -426,7 +430,8 @@ $k$, every further state $seq (i + k)$ satisfies $q \notin (seq (i +
 k)).suspected[p]!$ for a correct $p$ and a crashed $q$.
 
 If you know temporal logic, e.g., as defined in TLA<sup>+</sup>, the right-hand
-side of `→` could be written like:
+side of `→` could be written like (`<>` is usually called "eventually" and `[]`
+is called "always"):
 
 ```tla
 <>[](∀ p q: Proc, p ∉ C ∧ q ∈ C → q ∈ suspected[p])
@@ -448,9 +453,9 @@ Again, in temporal logic it would look like:
 **Don't we need a framework for temporal logic?** Well, actually not. Instead of
 `[]` and `<>`, we can simply use `∀` and `∃` over indices. There is even a
 deeper connection between linear temporal logic and first-order logic with
-ordering, shown by Kamp. For example, see a recent [Proof of Kamp's
-theorem][Rabinovich12] by Alexander Rabinovich. Of course, temporal formulas are
-often less bulky. So I prefer to accompany properties in Lean with temporal
+ordering, shown by [Hans Kamp][]. For example, see a recent [Proof of Kamp's
+theorem][Rabinovich12] by Alexander Rabinovich. Temporal formulas are often
+easier to read. So I prefer to accompany properties in Lean with temporal
 properties in the documentation.
 
 ### 2.5. Specifying fairness and fair runs
@@ -464,7 +469,7 @@ For instance, our definition of `next` allows the scheduler to always choose
 consists of states that only have the increasing clock values. Is it an
 interesting sequence? Not really. We have not even had a chance to try other
 actions. Usually, such executions are called unfair. We want to restrict our
-analysis to fair executions.
+liveness analysis to fair executions.
 
 To save you guess work, here are the three kinds of conditions we want from a
 fair execution in our failure detector:
@@ -585,8 +590,9 @@ to prove, in order to show `strong_completeness_on_states`.
     alt="Proof schema" %}
 
 If you want to understand the proofs, you should inspect
-[PropositionalProofs.lean][] with the Lean extension for VSCode. I am going to
-highlight only my observations about how I wrote these proofs.
+[PropositionalProofs.lean][] with the Lean extension for VSCode. I will only
+give you human-readable summaries as well as my observations about how I wrote
+these proofs.
 
 ### 3.1. Shorthand temporal definitions
 
@@ -773,7 +779,7 @@ of the crashed processes can only grow in a single step:
  %}
 
 We use these simple lemmas to prove that $clock$ never decreases in a fair run,
-and once a process has crashed, it always stays crashed. In both cases, the
+and once a process has crashed, it always remains crashed. In both cases, the
 proof is done by simple induction over the indices in a fair run. For example,
 here is the lemma `crashed_is_monotonic_in_fair_run`, together with its proof:
 
@@ -810,7 +816,7 @@ detailed Lean proofs, as my pen & paper proofs had several flaws.
 
 #### 3.3.1. Main lemma: Eventually q is always suspected by p
 
-To show strong completeness for $p$ and $q$, we proof the following lemma:
+To show strong completeness for $p$ and $q$, we prove the following key lemma:
 
 **Lemma** `eventually_crashes_implies_always_suspected`. If $q$ crashes at some
 time $j$ and $p$ never crashes, then there exists $k$ such that for all $i \ge
@@ -834,17 +840,18 @@ You can check the [detailed proof in
 Lean](https://github.com/konnov/leanda/blob/24e84d9f9a16831df31fc6f5577ce96ec56df55e/epfd/Epfd/PropositionalProofs.lean#L709-L722).
 The proof is about 100 LOC long. I have asked ChatGPT to summarize the proof
 similar to a mathematician's proof.  It looked very convincing, but the AI has
-hallucinated a lot, by inventing additional lemmas. Instead, here is my proof
-summary:
+hallucinated a lot, by inventing additional lemmas and mixing process names.
+Instead, here is my proof summary, 100% organic:
 
 **Proof.** Since $q$ eventually crashes, we apply Lemma
-`eventually_crashes_implies_never_alive` (see below) to show that there is an
-index $k$ such that for all $i \ge k$, we have $q \notin alive[p]$ at $i$. Now,
-we may still have $q \in suspected[p]$ at $k$. Hence, we apply the fairness
-constraint `is_fair_timeout` to show that there is an index $j > k$ such that
-$p$ timeouts at $j$. By the definition of `timeout`, we have $q \in
-suspected[p]$ at $j + 1$, as the action `timeout` updates `suspected[p]` with
-`Finset.univ \ alive[p]`, and $q \notin alive[p]$ at $j$.
+`eventually_crashes_implies_never_alive` (see
+[below](#332-eventually-q-is-never-alive-for-p)) to show that there is an index
+$k$ such that for all $i \ge k$, we have $q \notin alive[p]$ at $i$. Now, we may
+still have $q \in suspected[p]$ at $k$. Hence, we apply the fairness constraint
+`is_fair_timeout` to show that there is an index $j > k$ such that $p$ timeouts
+at $j$. By the definition of `timeout`, we have $q \in suspected[p]$ at $j + 1$,
+as the action `timeout` updates `suspected[p]` with `Finset.univ \ alive[p]`,
+and $q \notin alive[p]$ at $j$.
 
 It remains to show that $q \in suspected[p]$ at an arbitrary $i > j$. We do this
 by induction on $i$. All actions except `Timeout` preserve the value of the
@@ -890,9 +897,10 @@ $$
 
 We invoke Lemma `eventually_clock_is_t` to show that eventually the global clock
 reaches the value $t_{magic}$. Further, we invoke Lemma
-`eventually_alive_is_empty` (see below) to show that eventually $alive[p] =
-\emptyset$ after that point. Hence, we have an index $i_{empty}$ with the
-following constraints at:
+`eventually_alive_is_empty` (see
+[below](#333-non-crashing-p-resets-alive-infinitely-often)) to show that
+eventually $alive[p] = \emptyset$ after that point. Hence, we have an index
+$i_{empty}$ with the following constraints at:
 
  1. $alive[p] = \emptyset$ at $i_{empty}$,
  
@@ -992,12 +1000,14 @@ Although this lemma seems to be obvious, the proof is relatively long. It is
 mostly technical.
 
 **Proof.** The proof is done by induction on $i$. It invokes two other lemmas:
- 
+  
   1. Lemma `crashed_is_monotonic_in_fair_run` that we discussed before, and
-  1. Lemma `no_sent_from_the_future` (see below), which states that no message
-     can have a timestamp above the current value of the global clock.
+  
+  1. Lemma `no_sent_from_the_future` (see
+  [below](#335-no-message-sent-from-the-future)), which states that no message
+  can have a timestamp above the current value of the global clock.
 
-The induction goes by case analysis on the actions executed at point $i$.
+The induction goes by case analysis on the action that is executed at point $i$.
 There are two interesting cases that extend the set of sent messages $sent$:
 
  1. A timeout by process $r$. Since $q$ crashed at $k$, it remains crashed at
@@ -1067,6 +1077,7 @@ great if those proofs could be derived automatically.
 
 [^1]: Christian Cachin, Rachid Guerraoui, and Luís Rodrigues. Introduction to Reliable and Secure Distributed Programming. Second Edition, Springer, 2011, XIX, 320 pages
 [Igor Konnov]: https://konnov.phd
+[Hans Kamp]: https://en.wikipedia.org/wiki/Hans_Kamp
 [Lean]: https://github.com/leanprover/lean4
 [Apalache]: https://apalache-mc.org/
 [TLC]: https://github.com/tlaplus/tlaplus
