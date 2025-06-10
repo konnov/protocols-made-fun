@@ -138,7 +138,26 @@ invest in both approaches.
 
 ## Table of contents
 
-TBD
+  * [1\. Eventually perfect failure detector in pseudo\-code](#1-eventually-perfect-failure-detector-in-pseudo-code)
+  * [2\. Eventually perfect failure detector in Lean](#2-eventually-perfect-failure-detector-in-lean)
+    * [2\.1\. Basic type definitions](#21-basic-type-definitions)
+    * [2\.2\. Partial synchrony](#22-partial-synchrony)
+    * [2\.3\. Specifying the actions](#23-specifying-the-actions)
+    * [2\.4\. Specifying the temporal properties](#24-specifying-the-temporal-properties)
+    * [2\.5\. Specifying fairness and fair runs](#25-specifying-fairness-and-fair-runs)
+  * [3\. Proving strong completeness in Lean](#3-proving-strong-completeness-in-lean)
+    * [3\.1\. Shorthand temporal definitions](#31-shorthand-temporal-definitions)
+    * [3\.2\. Warming up with simple temporal lemmas](#32-warming-up-with-simple-temporal-lemmas)
+    * [3\.3\. Proving completeness for two processes](#33-proving-completeness-for-two-processes)
+      * [3\.3\.1\. Main lemma: Eventually q is always suspected by p](#331-main-lemma-eventually-q-is-always-suspected-by-p)
+      * [3\.3\.2\. Eventually q is never alive for p](#332-eventually-q-is-never-alive-for-p)
+      * [3\.3\.3\. Non\-crashing p resets alive infinitely often](#333-non-crashing-p-resets-alive-infinitely-often)
+      * [3\.3\.4\. A crashed process q stops sending messages](#334-a-crashed-process-q-stops-sending-messages)
+      * [3\.3\.5\. No message sent from the future](#335-no-message-sent-from-the-future)
+      * [3\.3\.6\. Other lemmas](#336-other-lemmas)
+    * [3\.4\. From 2 to N processes](#34-from-2-to-n-processes)
+      * [3\.4\.1\. Defining the crashed processes](#341-defining-the-crashed-processes)
+      * [3\.4\.2\. Where do the suspected sets meet?](#342-where-do-the-suspected-sets-meet)
 
 ## 1. Eventually perfect failure detector in pseudo-code
 
