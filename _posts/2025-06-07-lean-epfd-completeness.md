@@ -214,7 +214,7 @@ types. You can find them in [Basic.lean][]. First, we declare the type `Proc`
 that we use for process identities:
 
 {% github_embed
-  https://raw.githubusercontent.com/konnov/leanda/24e84d9f9a16831df31fc6f5577ce96ec56df55e/epfd/Epfd/Basic.lean
+  https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/Basic.lean
   lean 17-17
  %}
 
@@ -226,7 +226,7 @@ around the set of all processes. With `Fintype`, we can simply use
 Next, we define the types of message tags and messages:
 
 {% github_embed
-  https://raw.githubusercontent.com/konnov/leanda/24e84d9f9a16831df31fc6f5577ce96ec56df55e/epfd/Epfd/Basic.lean
+  https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/Basic.lean
   lean 19-35
  %}
 
@@ -240,7 +240,7 @@ moment the message is sent.
 Finally, we define a protocol state with the following structure:
 
 {% github_embed
-  https://raw.githubusercontent.com/konnov/leanda/24e84d9f9a16831df31fc6f5577ce96ec56df55e/epfd/Epfd/Basic.lean
+  https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/Basic.lean
   lean 51-59
  %}
 
@@ -290,7 +290,7 @@ Now we can write a formal definition of what it means for a message to be
 received on time under partial synchrony:
 
 {% github_embed
-  https://raw.githubusercontent.com/konnov/leanda/24e84d9f9a16831df31fc6f5577ce96ec56df55e/epfd/Epfd/Basic.lean
+  https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/Basic.lean
   lean 61-65
  %}
 
@@ -312,14 +312,14 @@ We start with the protocol parameters and the variables `s` and `s'` that
 we use throughout the definitions:
 
 {% github_embed
-  https://raw.githubusercontent.com/konnov/leanda/24e84d9f9a16831df31fc6f5577ce96ec56df55e/epfd/Epfd/Propositional.lean
+  https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/Propositional.lean
   lean 20-36
  %}
 
 Below is the definition of receiving a heartbeat request:
 
 {% github_embed
-  https://raw.githubusercontent.com/konnov/leanda/24e84d9f9a16831df31fc6f5577ce96ec56df55e/epfd/Epfd/Propositional.lean
+  https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/Propositional.lean
   lean 38-55
  %}
 
@@ -339,7 +339,7 @@ of the lemmas towards strong completeness.
 Similar to `rcv_heartbeat_request`, we specify `rcv_heartbeat_reply`:
 
 {% github_embed
-  https://raw.githubusercontent.com/konnov/leanda/24e84d9f9a16831df31fc6f5577ce96ec56df55e/epfd/Epfd/Propositional.lean
+  https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/Propositional.lean
   lean 57-73
  %}
 
@@ -347,7 +347,7 @@ The definition of `timeout` is the longest one, as a lot of things happen on
 timeout:
 
 {% github_embed
-  https://raw.githubusercontent.com/konnov/leanda/24e84d9f9a16831df31fc6f5577ce96ec56df55e/epfd/Epfd/Propositional.lean
+  https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/Propositional.lean
   lean 75-105
  %}
 
@@ -366,7 +366,7 @@ more actions.
 The first additional action is `crash`:
 
 {% github_embed
-  https://raw.githubusercontent.com/konnov/leanda/24e84d9f9a16831df31fc6f5577ce96ec56df55e/epfd/Epfd/Propositional.lean
+  https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/Propositional.lean
   lean 107-120
  %}
 
@@ -377,7 +377,7 @@ What is left? Remember that we had the fictitious global clock? We have to
 advance it from time to time:
 
 {% github_embed
-  https://raw.githubusercontent.com/konnov/leanda/24e84d9f9a16831df31fc6f5577ce96ec56df55e/epfd/Epfd/Propositional.lean
+  https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/Propositional.lean
   lean 122-134
  %}
 
@@ -389,7 +389,7 @@ clock instead of advancing it by delta simplifies the proofs a bit.
 Finally, we define the initialization and the transition relation as follows:
 
 {% github_embed
-  https://raw.githubusercontent.com/konnov/leanda/24e84d9f9a16831df31fc6f5577ce96ec56df55e/epfd/Epfd/Propositional.lean
+  https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/Propositional.lean
   lean 136-165
  %}
 
@@ -419,7 +419,7 @@ use a function `seq` of natural numbers to `ProtocolState`.
 Here is how we specify strong completeness of the failure detector:
 
 {% github_embed
-  https://raw.githubusercontent.com/konnov/leanda/24e84d9f9a16831df31fc6f5577ce96ec56df55e/epfd/Epfd/Propositional.lean
+  https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/Propositional.lean
   lean 182-189
  %}
 
@@ -441,7 +441,7 @@ is called "always"):
 Similar to `is_strongly_complete`, this is how we specify strong accuracy:
 
 {% github_embed
-  https://raw.githubusercontent.com/konnov/leanda/24e84d9f9a16831df31fc6f5577ce96ec56df55e/epfd/Epfd/Propositional.lean
+  https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/Propositional.lean
   lean 200-207
  %}
 
@@ -504,7 +504,7 @@ structure. Essentially, every protocol state is constructed by executing one
 of the six actions:
 
 {% github_embed
-  https://raw.githubusercontent.com/konnov/leanda/24e84d9f9a16831df31fc6f5577ce96ec56df55e/epfd/Epfd/Propositional.lean
+  https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/Propositional.lean
   lean 218-224
  %}
 
@@ -513,7 +513,7 @@ taken in a fair execution. To this end, we refine our transition relation `next`
 with `next_a`:
 
 {% github_embed
-  https://raw.githubusercontent.com/konnov/leanda/24e84d9f9a16831df31fc6f5577ce96ec56df55e/epfd/Epfd/Propositional.lean
+  https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/Propositional.lean
   lean 229-242
  %}
 
@@ -523,7 +523,7 @@ easy to do in Lean. Below is the theorem statement. Check
 [PropositionalProofs.lean][] for the actual proof:
 
 {% github_embed
-  https://raw.githubusercontent.com/konnov/leanda/24e84d9f9a16831df31fc6f5577ce96ec56df55e/epfd/Epfd/PropositionalProofs.lean
+  https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/PropositionalProofs.lean
   lean 925-929
  %}
 
@@ -532,7 +532,7 @@ reason about sequences of states and actions. Formally, we introduce the
 definition of a *trace* and related definitions:
 
 {% github_embed
-  https://raw.githubusercontent.com/konnov/leanda/24e84d9f9a16831df31fc6f5577ce96ec56df55e/epfd/Epfd/Propositional.lean
+  https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/Propositional.lean
   lean 247-266
  %}
 
@@ -541,7 +541,7 @@ it means for a trace to be a run of the protocol, not necessarily a fair one,
 and what it means for a trace to be a fair run of the protocol:
 
 {% github_embed
-  https://raw.githubusercontent.com/konnov/leanda/24e84d9f9a16831df31fc6f5577ce96ec56df55e/epfd/Epfd/Propositional.lean
+  https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/Propositional.lean
   lean 305-330
  %}
 
@@ -549,7 +549,7 @@ Having all these definitions, we proceed with our fairness constraints. The
 simplest one is `is_fair_clock`:
 
 {% github_embed
-  https://raw.githubusercontent.com/konnov/leanda/24e84d9f9a16831df31fc6f5577ce96ec56df55e/epfd/Epfd/Propositional.lean
+  https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/Propositional.lean
   lean 300-303
  %}
 
@@ -560,14 +560,14 @@ infinitely often.  In TLA<sup>+</sup>, it would be written like
 Further, we define `is_fair_timeout` as follows:
 
 {% github_embed
-  https://raw.githubusercontent.com/konnov/leanda/24e84d9f9a16831df31fc6f5577ce96ec56df55e/epfd/Epfd/Propositional.lean
+  https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/Propositional.lean
   lean 289-295
  %}
 
 Finally, `is_reliable_communication` has the longest definition:
 
 {% github_embed
-  https://raw.githubusercontent.com/konnov/leanda/24e84d9f9a16831df31fc6f5577ce96ec56df55e/epfd/Epfd/Propositional.lean
+  https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/Propositional.lean
   lean 273-284
  %}
 
@@ -579,7 +579,7 @@ The main theorem that we want to prove is `strong_completeness_on_states`, which
 basically delegates the work to `strong_completeness` over fair traces:
 
 {% github_embed
-  https://raw.githubusercontent.com/konnov/leanda/24e84d9f9a16831df31fc6f5577ce96ec56df55e/epfd/Epfd/PropositionalProofs.lean
+  https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/PropositionalProofs.lean
   lean 899-911
  %}
 
@@ -602,7 +602,7 @@ used throughout the proofs. For instance, below is the definition of
 `never_crashes`:
 
 {% github_embed
-  https://raw.githubusercontent.com/konnov/leanda/24e84d9f9a16831df31fc6f5577ce96ec56df55e/epfd/Epfd/PropositionalProofs.lean
+  https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/PropositionalProofs.lean
   lean 27-30
  %}
 
@@ -642,7 +642,7 @@ This property can be visualized as follows:
 The negation of `never_crashes` is `eventually_crashes`:
 
 {% github_embed
-  https://raw.githubusercontent.com/konnov/leanda/24e84d9f9a16831df31fc6f5577ce96ec56df55e/epfd/Epfd/PropositionalProofs.lean
+  https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/PropositionalProofs.lean
   lean 32-35
  %}
 
@@ -680,7 +680,7 @@ The negation of `never_crashes` is `eventually_crashes`:
 We also need `eventually_never_alive`:
 
 {% github_embed
-  https://raw.githubusercontent.com/konnov/leanda/24e84d9f9a16831df31fc6f5577ce96ec56df55e/epfd/Epfd/PropositionalProofs.lean
+  https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/PropositionalProofs.lean
   lean 37-42
  %}
 
@@ -718,7 +718,7 @@ We also need `eventually_never_alive`:
 We also need `q_is_always_suspected` and `eventually_q_is_always_suspected`:
 
 {% github_embed
-  https://raw.githubusercontent.com/konnov/leanda/24e84d9f9a16831df31fc6f5577ce96ec56df55e/epfd/Epfd/PropositionalProofs.lean
+  https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/PropositionalProofs.lean
   lean 44-57
  %}
 
@@ -756,7 +756,7 @@ We also need `q_is_always_suspected` and `eventually_q_is_always_suspected`:
 Finally, we need the definition of the set of crashing processes:
 
 {% github_embed
-  https://raw.githubusercontent.com/konnov/leanda/24e84d9f9a16831df31fc6f5577ce96ec56df55e/epfd/Epfd/PropositionalProofs.lean
+  https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/PropositionalProofs.lean
   lean 59-64
  %}
 
@@ -767,7 +767,7 @@ ones. To start with, we can easily show that the global clock never decreases in
 a single step. The proof is basically done by the `simp` tactic:
 
 {% github_embed
-  https://raw.githubusercontent.com/konnov/leanda/24e84d9f9a16831df31fc6f5577ce96ec56df55e/epfd/Epfd/PropositionalProofs.lean
+  https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/PropositionalProofs.lean
   lean 100-114
  %}
 
@@ -775,7 +775,7 @@ Very much similar to `clock_is_monotonic_in_one_step`, we can prove that the set
 of the crashed processes can only grow in a single step:
 
 {% github_embed
-  https://raw.githubusercontent.com/konnov/leanda/24e84d9f9a16831df31fc6f5577ce96ec56df55e/epfd/Epfd/PropositionalProofs.lean
+  https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/PropositionalProofs.lean
   lean 116-131
  %}
 
@@ -785,7 +785,7 @@ proof is done by simple induction over the indices in a fair run. For example,
 here is the lemma `crashed_is_monotonic_in_fair_run`, together with its proof:
 
 {% github_embed
-  https://raw.githubusercontent.com/konnov/leanda/24e84d9f9a16831df31fc6f5577ce96ec56df55e/epfd/Epfd/PropositionalProofs.lean
+  https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/PropositionalProofs.lean
   lean 162-185
  %}
 
@@ -793,12 +793,12 @@ Further, we prove another useful lemma: Given a clock value $t$, eventually
 the global clock reaches the value $t$:
 
 {% github_embed
-  https://raw.githubusercontent.com/konnov/leanda/24e84d9f9a16831df31fc6f5577ce96ec56df55e/epfd/Epfd/PropositionalProofs.lean
+  https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/PropositionalProofs.lean
   lean 187-197
  %}
 
 You can check the [full proof of
-eventually_clock_is_t](https://github.com/konnov/leanda/blob/24e84d9f9a16831df31fc6f5577ce96ec56df55e/epfd/Epfd/PropositionalProofs.lean#L187-L233).
+eventually_clock_is_t](https://github.com/konnov/leanda/blob/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/PropositionalProofs.lean#L187-L233).
 It is not a long one, but it requires a bit of linear arithmetic to reason about
 indices and clock constraints.
 
@@ -833,12 +833,12 @@ $$
 This is how the lemma is formulated in Lean:
 
 {% github_embed
-  https://raw.githubusercontent.com/konnov/leanda/24e84d9f9a16831df31fc6f5577ce96ec56df55e/epfd/Epfd/PropositionalProofs.lean
+  https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/PropositionalProofs.lean
   lean 716-722
  %}
 
 You can check the [detailed proof in
-Lean](https://github.com/konnov/leanda/blob/24e84d9f9a16831df31fc6f5577ce96ec56df55e/epfd/Epfd/PropositionalProofs.lean#L709-L722).
+Lean](https://github.com/konnov/leanda/blob/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/PropositionalProofs.lean#L709-L722).
 The proof is about 100 LOC long. I have asked ChatGPT to summarize the proof
 similar to a mathematician's proof.  It looked very convincing, but the AI has
 hallucinated a lot, by inventing additional lemmas and mixing process names.
@@ -879,11 +879,11 @@ $$
 $$
 
 This is how the lemma is formulated in Lean, the [detailed
-proof in Lean](https://github.com/konnov/leanda/blob/24e84d9f9a16831df31fc6f5577ce96ec56df55e/epfd/Epfd/PropositionalProofs.lean#L538-L545)
+proof in Lean](https://github.com/konnov/leanda/blob/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/PropositionalProofs.lean#L538-L545)
 is 170 LOC:
 
 {% github_embed
-  https://raw.githubusercontent.com/konnov/leanda/24e84d9f9a16831df31fc6f5577ce96ec56df55e/epfd/Epfd/PropositionalProofs.lean
+  https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/PropositionalProofs.lean
   lean 538-544
  %}
 
@@ -958,11 +958,11 @@ $$
 $$
 
 This is how the lemma is formulated in Lean, the [detailed
-proof in Lean](https://github.com/konnov/leanda/blob/24e84d9f9a16831df31fc6f5577ce96ec56df55e/epfd/Epfd/PropositionalProofs.lean#L241)
+proof in Lean](https://github.com/konnov/leanda/blob/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/PropositionalProofs.lean#L241)
 is 30 LOC:
 
 {% github_embed
-  https://raw.githubusercontent.com/konnov/leanda/24e84d9f9a16831df31fc6f5577ce96ec56df55e/epfd/Epfd/PropositionalProofs.lean
+  https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/PropositionalProofs.lean
   lean 241-248
  %}
 
@@ -989,11 +989,11 @@ $$
 $$
 
 This is how the lemma is formulated in Lean, the [detailed
-proof in Lean](https://github.com/konnov/leanda/blob/24e84d9f9a16831df31fc6f5577ce96ec56df55e/epfd/Epfd/PropositionalProofs.lean#L419)
+proof in Lean](https://github.com/konnov/leanda/blob/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/PropositionalProofs.lean#L419)
 is 110 LOC:
 
 {% github_embed
-  https://raw.githubusercontent.com/konnov/leanda/24e84d9f9a16831df31fc6f5577ce96ec56df55e/epfd/Epfd/PropositionalProofs.lean
+  https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/PropositionalProofs.lean
   lean 419-425
  %}
 
@@ -1035,11 +1035,11 @@ $$
 $$
 
 This is how the lemma is formulated in Lean, the [detailed
-proof in Lean](https://github.com/konnov/leanda/blob/24e84d9f9a16831df31fc6f5577ce96ec56df55e/epfd/Epfd/PropositionalProofs.lean#L303)
+proof in Lean](https://github.com/konnov/leanda/blob/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/PropositionalProofs.lean#L303)
 is 110 LOC:
 
 {% github_embed
-  https://raw.githubusercontent.com/konnov/leanda/24e84d9f9a16831df31fc6f5577ce96ec56df55e/epfd/Epfd/PropositionalProofs.lean
+  https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/PropositionalProofs.lean
   lean 303-308
  %}
 
@@ -1065,7 +1065,7 @@ simple inductive invariants.
 Finally, we have another lemma called `when_clock_is_positive_step_is_non_init`.
 It is just a technical lemma to work around a corner case that could not be
 solved by the tactic `omega`. You can check [this
-lemma](https://github.com/konnov/leanda/blob/24e84d9f9a16831df31fc6f5577ce96ec56df55e/epfd/Epfd/PropositionalProofs.lean#L279).
+lemma](https://github.com/konnov/leanda/blob/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/PropositionalProofs.lean#L279).
 There is really nothing interesting in it.
 
 Overall, when we go down the dependency tree of our lemmas, the proofs in the
@@ -1146,14 +1146,14 @@ Recall that we have proven the main lemma for two processes, and it looks like
 this:
 
 {% github_embed
-  https://raw.githubusercontent.com/konnov/leanda/24e84d9f9a16831df31fc6f5577ce96ec56df55e/epfd/Epfd/PropositionalProofs.lean
+  https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/PropositionalProofs.lean
   lean 716-722
  %}
 
 The yet-to-prove theorem `strong_completeness` looks like this:
 
 {% github_embed
-  https://raw.githubusercontent.com/konnov/leanda/24e84d9f9a16831df31fc6f5577ce96ec56df55e/epfd/Epfd/PropositionalProofs.lean
+  https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/PropositionalProofs.lean
   lean 850-856
  %}
 
@@ -1185,7 +1185,7 @@ $\forall p$ and $\forall q$ inside $\Diamond \square (\dots)$. This observation
 together with `Finset.induction` gave me this nice theorem:
 
 {% github_embed
-  https://raw.githubusercontent.com/konnov/leanda/24e84d9f9a16831df31fc6f5577ce96ec56df55e/epfd/Epfd/TemporalLemmas.lean
+  https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/TemporalLemmas.lean
   lean 17-26
  %}
 
@@ -1195,14 +1195,14 @@ online](https://github.com/konnov/leanda/blob/a96eb677d7f514e8d6ac1cdd6970643f24
 By using this theorem twice, we finally arrive at the final lemma:
 
 {% github_embed
-  https://raw.githubusercontent.com/konnov/leanda/24e84d9f9a16831df31fc6f5577ce96ec56df55e/epfd/Epfd/PropositionalProofs.lean
+  https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/PropositionalProofs.lean
   lean 810-845
  %}
 
 With this lemma, we finally prove `strong_completeness`:
 
 {% github_embed
-  https://raw.githubusercontent.com/konnov/leanda/24e84d9f9a16831df31fc6f5577ce96ec56df55e/epfd/Epfd/PropositionalProofs.lean
+  https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/PropositionalProofs.lean
   lean 850-856
  %}
 
