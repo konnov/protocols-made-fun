@@ -131,6 +131,23 @@ body {
   font-style: italic;
 }
 
+/* Timeline styles */
+.timeline-table {
+  border-collapse: collapse;
+  text-align: center;
+  margin: 1em auto;
+}
+.timeline-table th,
+.timeline-table td {
+  padding: 4px 8px;
+  border-bottom: 1px solid #ccc;
+}
+.timeline-valid {
+  font-style: italic;
+  text-align: center;
+  margin-top: 0.5em;
+}
+
 /* Hide photo on small screens */
 @media (max-width: 600px) {
   .float-photo {
