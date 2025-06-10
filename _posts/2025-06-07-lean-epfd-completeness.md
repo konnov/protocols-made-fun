@@ -60,14 +60,15 @@ $q$ with the timestamp above $t$. Not so fast, this has to be proven! For the
 impatient, the complete proofs can be found in [PropositionalProofs.lean][].
 See [Section 3][proving-completeness] for detailed explanations.
 
-It took me about 35 hours to finish the proof of strong completeness. I
-remember to have a working proof for a *pair* of processes $p$ and $q$ after the
-25 hour mark already. However, the property in the book is formulated over all
+It took me about 35 hours to finish the proof of strong completeness. I remember
+to have a working proof for a *pair* of processes $p$ and $q$ after the 25 hour
+mark already. However, the property in the book is formulated over all
 processes, not just a pair. Proving the property over all processes took me
 about additional 10 hours. This actually required more advanced Lean proof
-mechanics and solving a few curious proof challenges with crashing processes.
-Also, bear in mind that this was literally my first proof of temporal properties
-in Lean. I believe that the next protocol would require less time.
+mechanics and solving a few curious proof challenges with crashing processes,
+e.g., [how we define them][crashed processes]. Also, bear in mind that this was
+literally my first proof of temporal properties in Lean. I believe that the next
+protocol would require less time.
 
 Below is the nice diagram that illustrates the dependencies between the theorems
 (green) and lemmas (yellow) that I had to prove, culminating in the theorem
@@ -801,7 +802,7 @@ eventually_clock_is_t](https://github.com/konnov/leanda/blob/24e84d9f9a16831df31
 It is not a long one, but it requires a bit of linear arithmetic to reason about
 indices and clock constraints.
 
-### 3.3. Proving completeness for a pair of processes
+### 3.3. Proving completeness for two processes
 
 Before we dive into the results for all processes, we focus on just two
 processes in a fair run `tr`:
@@ -970,7 +971,7 @@ is 30 LOC:
 so that $p$ times out at $k + i$. When processing the action `timeout`,
 process $p$ resets $alive[p]$ to the empty set. $\blacksquare$
  
-#### 3.3.4. A crashed q stops sending messages
+#### 3.3.4. A crashed process q stops sending messages
 
 We invoked Lemma `crashed_process_does_not_send` in the proof of
 `eventually_crashes_implies_never_alive`. This is how this lemma looks like in a
@@ -1073,11 +1074,160 @@ top require quite a bit of creative thinking. The proofs in the bottom like
 mechanical. They are long but they do not require much thinking. It would be
 great if those proofs could be derived automatically.
 
+### 3.4. From 2 to N processes
+
+With [main lemma][], we have proven strong completeness for a pair of processes.
+Actually, we could just stop there. However, I decided to go the last mile and
+prove strong completeness for arbitrary sets of processes, exactly as the
+properties are written in [DP2011][]. The last mile happened to be harder than I
+anticipated. Nevertheless, the findings and the proof technique are quite
+interesting.
+
+#### 3.4.1. Defining the crashed processes
+
+When I was writing a proof on paper, I was writing something along these lines:
+
+> Given a fair run, let us define the set `Crashed` that contains exactly those
+processes that crash in the run.
+
+Hence, I tried to write a definition like this in Lean:
+
+```lean
+def crashed_set (tr: Trace Proc) :=
+  { p: Proc | ∃ i ∈ Nat, p ∈ (tr i).s.crashed }
+```
+
+Lean produced an a bit obscure error: "failed to synthesize Membership ?m.10217 Type".
+
+So I thought, OK, it seems to be hard to define a potentially infinite set
+that uses a proposition over an infinite sequence. Let's try finite sets:
+
+```lean
+def crashed_set (tr: Trace Proc) :=
+  Finset.univ.filter (fun p => ∃ i ∈ ℕ, p ∈ (tr i).s.crashed)
+```
+
+The same error. What is going on? If we rewrite the definition like this, it
+works (obviously, it does not do what we want though):
+
+```lean
+def crashed_set (tr: Trace Proc) :=
+  Finset.univ.filter (fun p => p ∈ (tr 0).s.crashed)
+```
+
+Ugh. It looks like Lean does not like that we have to prove existence of a
+member of an infinite set to filter a finite set. It would be fine to use
+that in a proposition, but not in a definition. Well, this kind of makes sense.
+We cannot just compute `crashed_set`, as we cannot predict when processes crash!
+Lean is a bit strict about random mathy stuff.
+
+Interestingly though, given a fair run, we should be able to define the set of
+the crashed processes. This set is bounded from above with the finite set
+`Finset.univ` of type `Finset Proc`. Also, as we showed in
+`crashed_is_monotonic_in_fair_run`, the set of crashed processes can only grow,
+not shrink. Hence, in theory, we should be able to define `crash_set` as the
+fixpoint of the operator that transforms $s_i$ into $s_{i+1}$ in our run. We
+should be able to apply [Knaster-Tarski][] theorem. Conversations with ChatGPT
+about Knaster-Tarski in Lean opened a new rabbit hole.
+
+This was getting too hard, all of a sudden. So I have decided that it was not
+worth the effort. If I had a conversation like that with a customer, they would
+tell me to stop right there. Hence, I decided that the properties should simply
+have two parameters:
+
+ - The set `(Crashed: Finset Proc)`, and
+ - a proof that it's exactly the set of the crashing processes.
+
+This is why our [temporal properties][] have these two parameters.
+
+#### 3.4.2. Where do the suspected sets meet?
+
+Recall that we have proven the main lemma for two processes, and it looks like
+this:
+
+{% github_embed
+  https://raw.githubusercontent.com/konnov/leanda/24e84d9f9a16831df31fc6f5577ce96ec56df55e/epfd/Epfd/PropositionalProofs.lean
+  lean 716-722
+ %}
+
+The yet-to-prove theorem `strong_completeness` looks like this:
+
+{% github_embed
+  https://raw.githubusercontent.com/konnov/leanda/24e84d9f9a16831df31fc6f5577ce96ec56df55e/epfd/Epfd/PropositionalProofs.lean
+  lean 850-856
+ %}
+
+The challenge here is that the theorem claims existence of a single index $k$
+for all processes, whereas we get different indices when applying the lemma.
+Intuitively, we should be just able to pick the maximum index among them. This
+starts to smell like the above problem with the crashing sets. On the other
+hand, choosing the maximum among the values of a finite set should be possible.
+This made me think about [Well-founded induction][]. Intuitively, we should be
+able to start with the empty set, add elements one-by-one and pick the maximum
+of two numbers at each inductive step: the maximum of the smaller set, and the
+value for the new element. This is what [`Finset.induction`][Finset.induction]
+can do for us!
+
+Another way to see the issue is by comparing these two temporal formulas in
+TLA<sup>+</sup>:
+
+$$
+\begin{align}
+  \forall p, q:\ \Diamond \square (&p \notin crashed \land q \in crashed
+    \Rightarrow q \in suspected[p]) \tag{1}\\
+  \Diamond \square (\forall p, q:\ &p \notin crashed \land q \in crashed
+    \Rightarrow q \in suspected[p]) \tag{2}
+\end{align}
+$$
+
+Hence, to go from Equation (1) to Equation (2), we have to move two quantifiers
+$\forall p$ and $\forall q$ inside $\Diamond \square (\dots)$. This observation
+together with `Finset.induction` gave me this nice theorem:
+
+{% github_embed
+  https://raw.githubusercontent.com/konnov/leanda/24e84d9f9a16831df31fc6f5577ce96ec56df55e/epfd/Epfd/TemporalLemmas.lean
+  lean 17-26
+ %}
+
+The proof of the theorem is not hard, but it is 60 LOC. So you can [check it
+online](https://github.com/konnov/leanda/blob/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/TemporalLemmas.lean#L22).
+
+By using this theorem twice, we finally arrive at the final lemma:
+
+{% github_embed
+  https://raw.githubusercontent.com/konnov/leanda/24e84d9f9a16831df31fc6f5577ce96ec56df55e/epfd/Epfd/PropositionalProofs.lean
+  lean 810-845
+ %}
+
+With this lemma, we finally prove `strong_completeness`:
+
+{% github_embed
+  https://raw.githubusercontent.com/konnov/leanda/24e84d9f9a16831df31fc6f5577ce96ec56df55e/epfd/Epfd/PropositionalProofs.lean
+  lean 850-856
+ %}
+
+The
+[proof](https://github.com/konnov/leanda/blob/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/PropositionalProofs.lean#L850-L851)
+is just a technical application of `eventually_crashes_implies_always_suspected`
+and `eventually_always_suspected_meet`.  It is 40 LOC of unfolding definitions
+and repacking them into the right format.
+
+# Conclusions
+
+This was probably the longest blog post I have ever written. It almost feels
+like an academic paper. I don't expect many people to read all of it. If you
+have read the whole blog post and reached the conclusions, leave me a comment! I
+really want to know, whether anyone manages to read the whole writeup.
+
 <a name="end"></a>
+
+## Footnotes
 
 [^1]: Christian Cachin, Rachid Guerraoui, and Luís Rodrigues. Introduction to Reliable and Secure Distributed Programming. Second Edition, Springer, 2011, XIX, 320 pages
 [Igor Konnov]: https://konnov.phd
 [Hans Kamp]: https://en.wikipedia.org/wiki/Hans_Kamp
+[Knaster-Tarski]: https://en.wikipedia.org/wiki/Knaster%E2%80%93Tarski_theorem
+[Well-founded induction]: https://en.wikipedia.org/wiki/Well-founded_relation
 [Lean]: https://github.com/leanprover/lean4
 [Apalache]: https://apalache-mc.org/
 [TLC]: https://github.com/tlaplus/tlaplus
@@ -1094,11 +1244,14 @@ great if those proofs could be derived automatically.
 [ChandraToueg96]: https://dl.acm.org/doi/abs/10.1145/226643.226647
 [DLS88]: https://dl.acm.org/doi/abs/10.1145/42282.42283
 [Rabinovich12]: https://drops.dagstuhl.de/storage/00lipics/lipics-vol016-csl2012/LIPIcs.CSL.2012.516/LIPIcs.CSL.2012.516.pdf
+[Finset.induction]: https://leanprover-community.github.io/mathlib4_docs/Mathlib/Data/Finset/Insert.html
 [Zeno]: https://en.wikipedia.org/wiki/Zeno%27s_paradoxes
-[proving-completeness]: #3-proving-strong-completeness-in-lean
-[spec-partial-synchrony]: #22-partial-synchrony
-[spec-fairness]: #25-specifying-fairness-and-fair-runs
-[temporal properties]: #24-specifying-the-temporal-properties
 [spec-epfd]: #2-eventually-perfect-failure-detector-in-lean
+[spec-partial-synchrony]: #22-partial-synchrony
+[temporal properties]: #24-specifying-the-temporal-properties
+[spec-fairness]: #25-specifying-fairness-and-fair-runs
+[proving-completeness]: #3-proving-strong-completeness-in-lean
+[main lemma]: #331-main-lemma-eventually-q-is-always-suspected-by-p
+[crashed processes]: #341-defining-the-crashed-processes
 [happy to help]: {{ 'contact/' | relative_url }}
 [leave-comment]: #end
