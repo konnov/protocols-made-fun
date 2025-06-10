@@ -4,7 +4,6 @@ title: "Proving completeness of an eventually perfect failure detector in Lean4"
 date: 2025-06-10
 categories: lean
 tlaplus: true
-quint: true
 math: true
 lean: true
 shell: true
