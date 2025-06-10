@@ -30,35 +30,37 @@ natural thing to do was to find a protocol that required partial synchrony.
 [Failure detectors][fd-wikipedia] seemed to be a good fit to me. These
 algorithms are relatively small, but require plenty of reasoning about time.
 
-Hence, I opened the [book][DP2011] (DP2011) on Reliable and Secure Distributed
-Programming by Christian Cachin, Rachid Guerraoui, and Luís Rodrigues and found
-the pseudo-code of the eventually-perfect failure detector (EPFD). If you have
-never heard of failure detectors, there are a few introductory lectures on
-YouTube, e.g., [this one][LINFO2345-5]. Writing a decent TLA<sup>+</sup>-like
+Hence, I opened the book [DP2011] on Reliable and Secure Distributed Programming
+by Christian Cachin, Rachid Guerraoui, and Luís Rodrigues and found the
+pseudo-code of the eventually-perfect failure detector (EPFD). If you have never
+heard of failure detectors, there are a few introductory lectures on YouTube,
+e.g., [this one][LINFO2345-5]. Writing a decent TLA<sup>+</sup>-like
 specification of EPFD and its temporal properties in Lean took me about eight
 hours. Since temporal properties require us to reason about infinite executions,
 this required a bit of experimentation with Lean.  Figuring out how to capture
-partial synchrony and fairness was the most interesting part of the exercise. I
-believe that this approach can be reused in many other protocol specifications.
-You can find the protocol specification and the properties in
-[Propositional.lean][].
+[partial synchrony][spec-partial-synchrony] and [fairness][spec-fairness] was
+the most interesting part of the exercise. I believe that this approach can be
+reused in many other protocol specifications.  You can find the protocol
+specification and the properties in [Propositional.lean][]. See [Section
+2][spec-epfd] for detailed explanations.
 
 To prove correctness of EPFD, we have to show that it satisfies strong
-completeness and strong accuracy. See Section TBD. I chose to start with strong
-completeness. The proof in the book is just four (!) lines long. In contrast to
-that, my proof of strong completeness in Lean is about 1 KLOC. It consists of 13
-lemmas and 2 theorems. As one professor once asked me: *Do you want to convince
-a machine that distributed algorithms are correct?* Apparently, it takes more
-effort to convince a machine than to convince a human. By a machine, I mean a
-proof assistant such as Lean, not an LLM, which would be easy to convince in
-pretty much anything. The real reason for that is that we take a lot of things
-about computations for granted, whereas Lean requires them to be explained. For
-instance, if a process $q$ crashes when the global clock value is $t$, it seems
-obvious that no process $p$ can receive a message from $q$ with the timestamp
-above $t$. Not so fast, this has to be proven! For the impatient, the complete
-proofs can be found in [PropositionalProofs.lean][].
+completeness and strong accuracy (see [temporal properties][]). I chose
+to start with strong completeness. The proof in the book is just four (!) lines
+long. In contrast to that, my proof of strong completeness in Lean is about 1
+KLOC. It consists of 13 lemmas and 2 theorems. As one professor once asked me:
+*Do you want to convince a machine that distributed algorithms are correct?*
+Apparently, it takes more effort to convince a machine than to convince a human.
+By a machine, I mean a proof assistant such as Lean, not an LLM, which would be
+easy to convince in pretty much anything. The real reason for that is that we
+take a lot of things about computations for granted, whereas Lean requires them
+to be explained. For instance, if a process $q$ crashes when the global clock
+value is $t$, it seems obvious that no process $p$ can receive a message from
+$q$ with the timestamp above $t$. Not so fast, this has to be proven! For the
+impatient, the complete proofs can be found in [PropositionalProofs.lean][].
+See [Section 3][proving-completeness] for detailed explanations.
 
-It took me about 35 hours to finish the proof of strong completeness.  I
+It took me about 35 hours to finish the proof of strong completeness. I
 remember to have a working proof for a *pair* of processes $p$ and $q$ after the
 25 hour mark already. However, the property in the book is formulated over all
 processes, not just a pair. Proving the property over all processes took me
@@ -71,7 +73,10 @@ Below is the nice diagram that illustrates the dependencies between the theorems
 (green) and lemmas (yellow) that I had to prove, culminating in the theorem
 `strong_completeness_on_states`. Notice `forall_FG_implies_FG_forall` is not a
 lemma. Actually, it is a general theorem about swapping universal quantifiers
-and eventually-always, which could be reused in other proofs.
+and eventually-always, which could be reused in other proofs. Once I realized
+that I had to apply this lemma twice in the proof of
+`eventually_always_suspected_meet`, I finished the proof quickly. This is one
+more instance of that temporal logic helps us with high-level reasoning.
 
 {% include webp.html
     src="epfd-completeness-deps.png"
@@ -84,6 +89,27 @@ structure the proofs in terms of temporal formulas, rather than in terms of
 arbitrary properties of computations. Of course, it would be interesting to see
 how this proof compares to a proof in TLAPS, which is specifically designed to
 reason about temporal properties.
+
+If you look at how the lemma statements are written in [Section
+3][proving-completeness], you will see that they are all
+*temporal formulas*, just written directly using quantifiers $\forall$ and
+$\exists$ instead of modal operators like $\square$ and $\Diamond$. To emphasize
+this similarity, I wrote alternative statements in TLA<sup>+</sup>. If you know
+temporal logic or TLA<sup>+</sup>, just have a look at all these statements:
+
+$$
+\begin{align}
+   \square (\forall m \in sent: m.ts \le clock) & \\
+ \square (p \notin crashed)
+   \Rightarrow& \square \Diamond (alive[p] = \emptyset) \\
+ \square (p \notin crashed) \land \Diamond (q \in crashed)
+   \Rightarrow& \Diamond \square (q \notin alive[p]) \\
+ \square (p \notin crashed) \land \Diamond (q \in crashed)
+   \Rightarrow& \Diamond \square (q \in suspected[p]) \\
+ \square (\forall c \in \mathbb{N}: (q \in crashed \land clock = c)
+   \Rightarrow& \square (\forall m \in sent: (m.src = q) \Rightarrow m.ts \le c))
+\end{align}
+$$
 
 Although a time investment of about a week to prove strong completeness of EPFD
 may seem like a lot, this approach has certain benefits in comparison to using
@@ -730,7 +756,7 @@ Finally, we need the definition of the set of crashing processes:
 ### 3.2. Warming up with simple temporal lemmas
 
 Before discussing hard-to-prove lemmas, let's have a look at a few very simple
-one. To start with, we can easily show that the global clock never decreases in
+ones. To start with, we can easily show that the global clock never decreases in
 a single step. The proof is basically done by the `simp` tactic:
 
 {% github_embed
@@ -746,10 +772,10 @@ of the crashed processes can only grow in a single step:
   lean 116-131
  %}
 
-We use these simple lemmas to prove that clock never decreases in a fair run,
-and once a process has crashed, it always stays crash. In both cases, the proof
-is done by simple induction over the indices in a fair run. For example, here is
-the lemma `crashed_is_monotonic_in_fair_run`, together with its proof:
+We use these simple lemmas to prove that $clock$ never decreases in a fair run,
+and once a process has crashed, it always stays crashed. In both cases, the
+proof is done by simple induction over the indices in a fair run. For example,
+here is the lemma `crashed_is_monotonic_in_fair_run`, together with its proof:
 
 {% github_embed
   https://raw.githubusercontent.com/konnov/leanda/24e84d9f9a16831df31fc6f5577ce96ec56df55e/epfd/Epfd/PropositionalProofs.lean
@@ -766,9 +792,276 @@ the global clock reaches the value $t$:
 
 You can check the [full proof of
 eventually_clock_is_t](https://github.com/konnov/leanda/blob/24e84d9f9a16831df31fc6f5577ce96ec56df55e/epfd/Epfd/PropositionalProofs.lean#L187-L233).
-It is not a long one, but it require a bit of linear arithmetic to reason about
+It is not a long one, but it requires a bit of linear arithmetic to reason about
 indices and clock constraints.
 
+### 3.3. Proving completeness for a pair of processes
+
+Before we dive into the results for all processes, we focus on just two
+processes in a fair run `tr`:
+
+ - a process `p` that never crashes in `tr`,
+ - a process `q` that eventually crashes in `tr`.
+
+Since the Lean proofs are quite detailed, I provide the lemmas with short
+human-readable proofs. Actually, I had to write proof schemas on paper, before
+developing detailed proofs. The math-like proofs below are summaries of the
+detailed Lean proofs, as my pen & paper proofs had several flaws.
+
+#### 3.3.1. Main lemma: Eventually q is always suspected by p
+
+To show strong completeness for $p$ and $q$, we proof the following lemma:
+
+**Lemma** `eventually_crashes_implies_always_suspected`. If $q$ crashes at some
+time $j$ and $p$ never crashes, then there exists $k$ such that for all $i \ge
+k$, we have $q \in \text{suspected}[p]$ at $i$.
+
+Using the TLA<sup>+</sup> notation, we could write this lemma in temporal logic:
+
+$$
+\square (p \notin crashed) \land \Diamond (q \in crashed)
+  \Rightarrow \Diamond \square (q \in suspected[p])
+$$
+
+This is how the lemma is formulated in Lean:
+
+{% github_embed
+  https://raw.githubusercontent.com/konnov/leanda/24e84d9f9a16831df31fc6f5577ce96ec56df55e/epfd/Epfd/PropositionalProofs.lean
+  lean 716-722
+ %}
+
+You can check the [detailed proof in
+Lean](https://github.com/konnov/leanda/blob/24e84d9f9a16831df31fc6f5577ce96ec56df55e/epfd/Epfd/PropositionalProofs.lean#L709-L722).
+The proof is about 100 LOC long. I have asked ChatGPT to summarize the proof
+similar to a mathematician's proof.  It looked very convincing, but the AI has
+hallucinated a lot, by inventing additional lemmas. Instead, here is my proof
+summary:
+
+**Proof.** Since $q$ eventually crashes, we apply Lemma
+`eventually_crashes_implies_never_alive` (see below) to show that there is an
+index $k$ such that for all $i \ge k$, we have $q \notin alive[p]$ at $i$. Now,
+we may still have $q \in suspected[p]$ at $k$. Hence, we apply the fairness
+constraint `is_fair_timeout` to show that there is an index $j > k$ such that
+$p$ timeouts at $j$. By the definition of `timeout`, we have $q \in
+suspected[p]$ at $j + 1$, as the action `timeout` updates `suspected[p]` with
+`Finset.univ \ alive[p]`, and $q \notin alive[p]$ at $j$.
+
+It remains to show that $q \in suspected[p]$ at an arbitrary $i > j$. We do this
+by induction on $i$. All actions except `Timeout` preserve the value of the
+field `suspected`, so we have $q \in suspected[p]$. In case of `Timeout r`, we
+consider two cases: (1) $r \ne p$, and (2) $r = p$. When $r \ne p$, the value of
+$suspected[p]$ does not change.  When $r = p$, we again invoke the conclusion
+that $q \notin alive[p]$ at $i$. Similar to the above reasoning about the action
+`timeout`, we conclude $q \in suspected[p]$ at all $i > j$. $\blacksquare$
+
+#### 3.3.2. Eventually q is never alive for p
+
+As you have noticed, we invoked Lemma `eventually_crashes_implies_never_alive`.
+This is how it looks like in a human-readable form:
+
+**Lemma** `eventually_crashes_implies_never_alive`. If $q$ crashes at some
+time $j$ and $p$ never crashes, then there exists $k$ such that for all $i \ge
+k$, we have $q \notin \text{alive}[p]$ at $i$.
+
+Using the TLA<sup>+</sup> notation, we could write this lemma in temporal logic:
+
+$$
+\square (p \notin crashed) \land \Diamond (q \in crashed)
+  \Rightarrow \Diamond \square (q \notin alive[p])
+$$
+
+This is how the lemma is formulated in Lean, the [detailed
+proof in Lean](https://github.com/konnov/leanda/blob/24e84d9f9a16831df31fc6f5577ce96ec56df55e/epfd/Epfd/PropositionalProofs.lean#L538-L545)
+is 170 LOC:
+
+{% github_embed
+  https://raw.githubusercontent.com/konnov/leanda/24e84d9f9a16831df31fc6f5577ce96ec56df55e/epfd/Epfd/PropositionalProofs.lean
+  lean 538-544
+ %}
+
+**Proof.** Since $q$ eventually crashes, there is an index $i_{crash}$, so
+$q \in crashed$ at $i_{crash}$. Let's denote with $t_{crash}$ the clock value at
+$i_{crash}$. However, $p$ may still receive heartbeats from $q$ that were sent
+in the past. Hence, we choose the time point $t_{magic}$:
+
+$$
+t_{magic} = max(\mathit{GST} + \mathit{MsgDelay}, t_{crash} + \mathit{MsgDelay}) + 1
+$$
+
+We invoke Lemma `eventually_clock_is_t` to show that eventually the global clock
+reaches the value $t_{magic}$. Further, we invoke Lemma
+`eventually_alive_is_empty` (see below) to show that eventually $alive[p] =
+\emptyset$ after that point. Hence, we have an index $i_{empty}$ with the
+following constraints at:
+
+ 1. $alive[p] = \emptyset$ at $i_{empty}$,
+ 
+ 1. $q$ has crashed and no heartbeats from $q$ can longer arrive, as the global
+ clock is past $\mathit{GST} + \mathit{MsgDelay}$,
+
+The rest of the proof goes by induction over $i \ge i_{empty}$.  We have already
+shown the inductive base. The inductive step is proven by contradiction: Assume
+that there is an index $i + 1$, where $alive[p] \ne \emptyset$.  We do case
+analysis on the action that produces the state at $i + 1$. There are two
+interesting cases:
+
+ 1. A process $r$ times out. If $r \ne p$, the $r$ keeps the value of
+ $alive[p]$.  If $p$ times out, it resets $alive[p]$ to $\emptyset$. In both
+ cases, $alive[p] = \emptyset$.
+ 
+ 1. A process $\mathit{dst}$ receives a heartbeat reply $m$ from a process
+ $\mathit{src}$. The cases of $dst \ne p$ or $src \ne q$ are trivial, as the
+ predicate $q \in alive[p]$ does not change in those cases. The case of $src =
+ q$ and $dst = p$ is the hardest one. First, we apply Lemma
+ `crashed_process_does_not_send` (see below) to show that the message timestamp
+ $m.ts$ is not greater than $t_{crash}$. Second, we apply Lemma
+ `clock_is_monotonic_in_fair_run` to show that $clock \ge t_{magic}$ at point
+ $i$. Third, we apply the constraint `isMsgTimely` from the definition of
+ `rcv_heartbeat_reply`. We arrive at the following combination of linear
+ constraints that do not have a solution:
+
+$$
+\require{cases}
+\begin{cases}
+  \mathit{m.ts} &\le t_{crash}\\
+  clock &\ge t_{magic}\\
+  clock &\ge m.ts\\
+  clock &\le max(GST, m.ts) + \mathit{MsgDelay}
+\end{cases}
+$$
+
+This inductive argument finishes the proof. $\blacksquare$
+ 
+#### 3.3.3. Non-crashing p resets alive infinitely often
+
+We invoked Lemma `eventually_alive_is_empty` in the previous section. This is
+how this lemma looks like in a human-readable form:
+
+**Lemma** `eventually_alive_is_empty`. If $p$ never crashes, then for every
+$k > 0$,
+there is $i \ge k$ such that we have $\text{alive}[p] = \emptyset$ at $i$.
+
+Using the TLA<sup>+</sup> notation, we could write this lemma in temporal logic:
+
+$$
+\square (p \notin crashed)
+  \Rightarrow \square \Diamond (alive[p] = \emptyset)
+$$
+
+This is how the lemma is formulated in Lean, the [detailed
+proof in Lean](https://github.com/konnov/leanda/blob/24e84d9f9a16831df31fc6f5577ce96ec56df55e/epfd/Epfd/PropositionalProofs.lean#L241)
+is 30 LOC:
+
+{% github_embed
+  https://raw.githubusercontent.com/konnov/leanda/24e84d9f9a16831df31fc6f5577ce96ec56df55e/epfd/Epfd/PropositionalProofs.lean
+  lean 241-248
+ %}
+
+**Proof.** Since $p$ never crashes, we apply the fairness constraint
+`is_fair_timeout` to the index $k$. Hence, there exists an index $i$,
+so that $p$ times out at $k + i$. When processing the action `timeout`,
+process $p$ resets $alive[p]$ to the empty set. $\blacksquare$
+ 
+#### 3.3.4. A crashed q stops sending messages
+
+We invoked Lemma `crashed_process_does_not_send` in the proof of
+`eventually_crashes_implies_never_alive`. This is how this lemma looks like in a
+human-readable form:
+
+**Lemma** `crashed_process_does_not_send`. If $q$ is crashed at $k$ and the
+clock value at $k$ equals to some $c$, then for every $i \ge 0$ and every
+message $m \in sent$ at $k + i$, if $m.src = q$, then $m.ts \le c$.
+
+Using the TLA<sup>+</sup> notation, we could write this lemma in temporal logic:
+
+$$
+\square (\forall c \in \mathbb{N}: (q \in crashed \land clock = c)
+  \Rightarrow \square (\forall m \in sent: (m.src = q) \Rightarrow m.ts \le c))
+$$
+
+This is how the lemma is formulated in Lean, the [detailed
+proof in Lean](https://github.com/konnov/leanda/blob/24e84d9f9a16831df31fc6f5577ce96ec56df55e/epfd/Epfd/PropositionalProofs.lean#L419)
+is 110 LOC:
+
+{% github_embed
+  https://raw.githubusercontent.com/konnov/leanda/24e84d9f9a16831df31fc6f5577ce96ec56df55e/epfd/Epfd/PropositionalProofs.lean
+  lean 419-425
+ %}
+
+Although this lemma seems to be obvious, the proof is relatively long. It is
+mostly technical.
+
+**Proof.** The proof is done by induction on $i$. It invokes two other lemmas:
+ 
+  1. Lemma `crashed_is_monotonic_in_fair_run` that we discussed before, and
+  1. Lemma `no_sent_from_the_future` (see below), which states that no message
+     can have a timestamp above the current value of the global clock.
+
+The induction goes by case analysis on the actions executed at point $i$.
+There are two interesting cases that extend the set of sent messages $sent$:
+
+ 1. A timeout by process $r$. Since $q$ crashed at $k$, it remains crashed at
+ $k+i$. Hence, $q$ cannot timeout, and, thus, $r \ne q$. Therefore, the new
+ heartbeat requests in $sent$ do not have $q$ as their source.
+ 
+ 1. Receiving a heartbeat request by process $r$. Again, $q$ is crashed at
+ $k+i$, and $r \ne q$. Therefore, the new heartbeat replies in $sent$ do not
+ have $q$ as their source. $\blacksquare$
+
+#### 3.3.5. No message sent from the future
+
+Lemma `no_sent_from_the_future` plays an important role in the proof of
+`crashed_process_does_not_send`. This is how this lemma looks like in a
+human-readable form:
+
+**Lemma** `no_sent_from_the_future`. For every point $i \ge 0$ and every
+message $m \in sent$ at $i$, it holds that $m.ts \le clock$.
+
+Using the TLA<sup>+</sup> notation, we could write this lemma in temporal logic:
+
+$$
+  \square (\forall m \in sent: m.ts \le clock)
+$$
+
+This is how the lemma is formulated in Lean, the [detailed
+proof in Lean](https://github.com/konnov/leanda/blob/24e84d9f9a16831df31fc6f5577ce96ec56df55e/epfd/Epfd/PropositionalProofs.lean#L303)
+is 110 LOC:
+
+{% github_embed
+  https://raw.githubusercontent.com/konnov/leanda/24e84d9f9a16831df31fc6f5577ce96ec56df55e/epfd/Epfd/PropositionalProofs.lean
+  lean 303-308
+ %}
+
+**Proof.** The proof is done by induction on $i$ and case analysis on the
+action executed at $i$. The proof is quite mechanical. We basically show that
+either the set $sent$ does not change, whereas the value of $clock$ does not
+decrease, or the new messages have their timestamp set to $clock$. Such messages
+are sent in `timeout` and `rcv_heartbeat_request`. $\blacksquare$
+
+Most likely, a human reader would immediately infer this lemma without much
+thought. However, the lemma’s proof works only because we’re using the global
+clock value $clock$ when sending messages. If we used local clocks for
+timestamps, the lemma would no longer hold.
+
+#### 3.3.6. Other lemmas
+
+The proof of `no_sent_from_the_future` invokes another lemma called
+`inductive_inv`.  It provides us with a general proof of inductive invariants in
+the context of our protocol. I expected more proofs to use `inductive_inv`, but
+it happened that the other proofs required additional temporal reasoning beyond
+simple inductive invariants.
+
+Finally, we have another lemma called `when_clock_is_positive_step_is_non_init`.
+It is just a technical lemma to work around a corner case that could not be
+solved by the tactic `omega`. You can check [this
+lemma](https://github.com/konnov/leanda/blob/24e84d9f9a16831df31fc6f5577ce96ec56df55e/epfd/Epfd/PropositionalProofs.lean#L279).
+There is really nothing interesting in it.
+
+Overall, when we go down the dependency tree of our lemmas, the proofs in the
+top require quite a bit of creative thinking. The proofs in the bottom like
+`crashed_process_does_not_send` and `no_sent_from_the_future` are quite
+mechanical. They are long but they do not require much thinking. It would be
+great if those proofs could be derived automatically.
 
 <a name="end"></a>
 
@@ -791,5 +1084,10 @@ indices and clock constraints.
 [DLS88]: https://dl.acm.org/doi/abs/10.1145/42282.42283
 [Rabinovich12]: https://drops.dagstuhl.de/storage/00lipics/lipics-vol016-csl2012/LIPIcs.CSL.2012.516/LIPIcs.CSL.2012.516.pdf
 [Zeno]: https://en.wikipedia.org/wiki/Zeno%27s_paradoxes
+[proving-completeness]: #3-proving-strong-completeness-in-lean
+[spec-partial-synchrony]: #22-partial-synchrony
+[spec-fairness]: #25-specifying-fairness-and-fair-runs
+[temporal properties]: #24-specifying-the-temporal-properties
+[spec-epfd]: #2-eventually-perfect-failure-detector-in-lean
 [happy to help]: {{ 'contact/' | relative_url }}
 [leave-comment]: #end
