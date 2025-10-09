@@ -8,7 +8,7 @@ layout: home
         <div>simulation</div>
         <div>fuzzing</div>
         <div>protocol audits</div>
-        <div>TLA<sup>+</sup>/Quint</div>
+        <div>TLA<sup>+</sup>/Lean/Quint</div>
         <div>model checking</div>
         <div>verification</div>
         <div>proofs</div>
