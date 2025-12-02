@@ -144,7 +144,7 @@ Error: Invariant SafeInv is violated.
 ```
 
 This effectiveness of randomized search is actually not a one-off thing.
-The Quint simulator [find the bug][quint-simulation] in less than a second.
+The Quint simulator [finds the bug][quint-simulation] in less than a second.
 Similarly, the Rust property-based testing with [proptest][] finds the bug
 almost immediately.
 
