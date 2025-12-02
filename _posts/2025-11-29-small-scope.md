@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "Small scope hypothesis revisited"
-date: 2025-11-29
+date: 2025-12-02
 categories: tlaplus
 tlaplus: true
 math: true
@@ -29,6 +29,12 @@ As you will see below, my example fits into this hypothesis quite well. However,
 having spoken to many engineers over the years, I believe that there is a
 mismatch between what engineers understand by "small scope" and what
 verification engineers understand by "small scope".
+
+In this blog post, I've decided to try a **new format**. Since everyone is using
+LLMs nowadays, I will follow the protocol. I will present the example and the
+problem of finding a small scope. Then, it is your turn to decide how this blog
+post should continue. If someone gives me an interesting example or insight in a
+[comment][leave-comment], I will update this blog post accordingly.
 
 ## 1. Example 1: Buggy circular buffer
 
@@ -175,7 +181,7 @@ flexibility: We had to give concrete values to `BUFFER_SIZE` and `BUFFER_ELEMS`.
 the Alloy scopes in spirit, though they work slightly different from Alloy."
 %}
 
-Hence, we have two distinguish between small scopes and small parameter
+Hence, we have to distinguish between small scopes and small parameter
 assignments in TLC. After thinking about this question a bit more, I've asked
 myself:
 
@@ -185,9 +191,32 @@ myself:
   within this scope?
 </em></strong></p>
 
-TODO: An example from discrete math?
+Even though my intuition says "yes", there must be plenty of such examples, I
+could not come up with with non-artificial examples immediately. On top of my
+head, I can think of the following directions to look for such examples:
+
+  - Examples from **abstract interpretation**. If we have non-trivial math with
+  overflows and underflows, it might be hard to find concrete assignments that
+  would trigger these overflows and underflows.
+  
+  - Examples from **graph theory**. For instance, [non-planar graphs][planar]
+  must contain subgraphs that are subdivisions of $K_5$ or $K_{3,3}$ (see
+  Kuratowski's theorem on [planar graphs][planar]). So if a bug shows up only in
+  non-planar graphs, there must be a small scope that reveals the bug.  However,
+  our concrete graph would have to contain a subdivision of $K_5$ or $K_{3,3}$,
+  which is far from an arbitrary graph. Unfortunately, I do not know any
+  concurrent or distributed algorithm that would have something to do with
+  planar or non-planar graphs.
+
+## 3. Your turn
+
+It is your turn to decide how this blog post should continue. If someone gives
+me an interesting example or insight in a [comment][leave-comment], I will
+update this blog post accordingly.
 
 
+<!-- references -->
+  
 [Igor Konnov]: https://konnov.phd
 [Markus Kuppe]: https://github.com/lemmy
 [TLC]: https://github.com/tlaplus/tlaplus
@@ -202,5 +231,6 @@ TODO: An example from discrete math?
 [apalache-bmc]: https://github.com/konnov/cyclic-buffer-challenge/tree/main/tla#bounded-model-checking-with-apalache
 [quint-simulation]: https://github.com/konnov/cyclic-buffer-challenge/tree/main/quint#randomized-simulation
 [proptest]: https://github.com/konnov/cyclic-buffer-challenge/tree/main/rust/proptest
+[planar]: https://en.wikipedia.org/wiki/Planar_graph
 [happy to help]: {{ 'contact/' | relative_url }}
 [leave-comment]: #end
