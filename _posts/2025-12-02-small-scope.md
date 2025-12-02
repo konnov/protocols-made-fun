@@ -88,8 +88,8 @@ I wanted to see how far TLC could go, so I gave it a machine with 128 GB of RAM
 and 32 cores. TLC has explored around 3 billion states in about 40 minutes.
 After consuming 400 GB of disk space, it has run out of disk space and
 terminated. No bug was found. Is this surprising? Not really. In this
-configuration, TLC has to enumerate $(2^8)^{10} * 10 * 10 * 10 \approx 2^{100}$
-states.
+configuration, TLC has to enumerate $(2^8)^{10} * 10 * 10 * 10 \approx 2^{90}$
+states. (Thanks to [Thomas Pani][] for correcting the initially wrong estimate.)
 
 Obviously, anyone who used TLC for some time would have asked the same question
 as Markus did:
@@ -219,6 +219,7 @@ update this blog post accordingly.
   
 [Igor Konnov]: https://konnov.phd
 [Markus Kuppe]: https://github.com/lemmy
+[Thomas Pani]: https://blltprf.xyz/
 [TLC]: https://github.com/tlaplus/tlaplus
 [cyclic-tla]: https://github.com/konnov/cyclic-buffer-challenge/tree/main/tla
 [MC10u8_BuggyCircularBuffer.tla]: https://github.com/konnov/cyclic-buffer-challenge/blob/main/tla/MC10u8_BuggyCircularBuffer.tla
