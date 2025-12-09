@@ -47,7 +47,7 @@ Some of the key highlights from this article include:
 * **Making verification scale** with compositional reasoning and inductive invariants ([§5.3](#53-compositional-reasoning), [§7.3](#73-inductive-invariants-making-verification-scale))
 * **Showing that the protocol can progress**: witnesses of liveness ([§7.4](#74-witnesses-of-liveness-proving-the-protocol-can-progress))
  
-Our formal report can be accessed via [this link][report].
+Our formal report can be accessed via [this link][report] and the specifications can be found via [this link][repo].
 
 ## 2. Overview of Aztec Governance
 
@@ -531,3 +531,4 @@ A natural next step would be to **connect the formal protocol specification** wi
 [WETH]: https://etherscan.io/address/0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2#code
 [AZTEC]: https://etherscan.io/address/0xA27EC0006e59f245217Ff08CD52A7E8b169E62D2#code
 [Apalache JSON-RPC API]: https://github.com/apalache-mc/apalache/tree/main/json-rpc
+[repo]: https://github.com/konnov/aztec-governance-formal-verification-2025q3
