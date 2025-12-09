@@ -275,7 +275,10 @@ power at `t`.
 This range is `[round * ROUND_SIZE, (round + 1) * ROUND_SIZE)`.
  - **SP-11**: The number of signals is correct. It does not exceed `lastSignalSlot % ROUND_SIZE + 1`.
 
-**Formalized invariant in Quint.** We formalized all 125 invariants in Quint as well. For example, the `Governance` contract should uphold the **Solvency Invariant** (['The Holy Grail'][The Holy Grail], as coined by FV researchers at [Certora][]):
+**Formalized invariants in Quint.** We formalized all 125 invariants in Quint as
+well. For example, the `Governance` contract should uphold the **Solvency Invariant**
+(['The Holy Grail'][The Holy Grail], as coined by FV researchers at
+[Certora][]):
 
 ```ts
 // GOV-28: Solvency: Governance holds enough balance to cover all future
