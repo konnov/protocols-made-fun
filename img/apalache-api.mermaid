@@ -1,0 +1,10 @@
+stateDiagram-v2
+    direction LR
+    [*] --> Idle
+
+    Idle --> Loaded: loadSpec
+    Loaded --> Prepared: assumeTransition
+    Prepared --> Loaded: nextStep
+    Prepared --> Prepared: checkInvariant
+    Loaded --> Loaded: assumeState / rollback / query / nextModel
+    Loaded --> [*]: disposeSpec
