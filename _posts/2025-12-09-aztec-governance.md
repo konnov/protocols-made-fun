@@ -44,9 +44,9 @@ These runtimes are comparable to large-scale fuzzing campaigns – but with a cr
 Some of the key highlights from this article include:
 
 * **Representative issue: Governance Insolvency** with root-cause analysis and fix ([§9.1](#91-governance-insolvency))
-* Choosing the **right tools** ([§4](#4-Choosing-the-Right-Tools))
-* **Bootstrapping the formal specification with AI** ([§5.2](#52-Bootstrapping-the-Formal-Specification-with-AI))
-* **Making verification scale** with compositional reasoning and inductive invariants ([§5.3](#53-compositional-reasoning), [§7.3](#73-Inductive-Invariants-Making-Verification-Scale))
+* Choosing the **right tools** ([§4](#4-choosing-the-right-tools))
+* **Bootstrapping the formal specification with AI** ([§5.2](#52-bootstrapping-the-formal-specification-with-ai))
+* **Making verification scale** with compositional reasoning and inductive invariants ([§5.3](#53-compositional-reasoning), [§7.3](#73-inductive-invariants-making-verification-scale))
 * **Showing that the protocol can progress**: witnesses of liveness ([§7.4](#74-witnesses-of-liveness-proving-the-protocol-can-progress))
  
 Our formal report can be accessed via [this link][report].
@@ -295,7 +295,7 @@ pure def governance_solvency_inv(_evm: EvmState, ga: IGovernance): bool = {
 }
 ```
 
-Turns out, the solvency invariant is actually violated under certain conditions. We will get back to it in Section [9.1. Governance Insolvency](#91-Governance-Insolvency).
+Turns out, the solvency invariant is actually violated under certain conditions. We will get back to it in Section [9.1. Governance Insolvency](#91-governance-insolvency).
 
 With the key invariants defined, we started verifying them using Quint and Apalache.
 
@@ -451,7 +451,7 @@ Below we explain one representative issue: a **violation of the solvency invaria
 
 ### 9.1. Governance Insolvency
 
-Recall the solvency invariant from [Protocol Invariants](#6-Protocol-Invariants). When we check it, Apalache produces a counterexample. Below is the root cause of this issue:
+Recall the solvency invariant from [Protocol Invariants](#6-protocol-invariants). When we check it, Apalache produces a counterexample. Below is the root cause of this issue:
 
 ```ts
 function deposit(address _beneficiary, uint256 _amount) external
