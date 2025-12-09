@@ -32,7 +32,7 @@ For the impatient reader, here are some key figures:
 | **125 invariants** specified across **10 contracts**, **8 libraries**, and **8 interfaces**                                                                                                                                                                                                          |
 | **992 verification conditions** checked in total                                                                                                                                                                                                                                           |
 | **72 physical cores / 368 GiB RAM**, running for **321 CPU-days** (≈ 2 weeks)                                                                                                                                                                                                              |
-| **Findings:** <span style="background-color:#C48F00; color:#fff; padding:2px 6px; border-radius:6px;">5 Medium</span> • <span style="background-color:#2F7D32; color:#fff; padding:2px 6px; border-radius:6px;">3 Low</span> • <span style="background-color:#005A9E; color:#fff; padding:2px 6px; border-radius:6px;">6 Info</span>&nbsp;&nbsp;[(jump ahead)](##9-Findings) |
+| **Findings:** <span style="background-color:#C48F00; color:#fff; padding:2px 6px; border-radius:6px;">5 Medium</span> • <span style="background-color:#2F7D32; color:#fff; padding:2px 6px; border-radius:6px;">3 Low</span> • <span style="background-color:#005A9E; color:#fff; padding:2px 6px; border-radius:6px;">6 Info</span>&nbsp;&nbsp;[(jump ahead)](#9-findings) |
 | **Final complete verification run** in **576 CPU-hours** (≈ 1 calendar day)                                                                                                                                                                                                                |
 | **Contract size:** **~2 kLOC** Solidity                                                                                                                                                                                                                                                    |
 | **Specification size:** **~4 kLOC** Quint (incl. traceability comments)                                                                                                                                                                                                           |
@@ -43,11 +43,11 @@ These runtimes are comparable to large-scale fuzzing campaigns – but with a cr
 
 Some of the key highlights from this article include:
 
-* **Representative issue: Governance Insolvency** with root-cause analysis and fix ([§9.1](#91-Governance-Insolvency))
+* **Representative issue: Governance Insolvency** with root-cause analysis and fix ([§9.1](#91-governance-insolvency))
 * Choosing the **right tools** ([§4](#4-Choosing-the-Right-Tools))
 * **Bootstrapping the formal specification with AI** ([§5.2](#52-Bootstrapping-the-Formal-Specification-with-AI))
-* **Making verification scale** with compositional reasoning and inductive invariants ([§5.3](#53-Compositional-Reasoning), [§7.3](#73-Inductive-Invariants-Making-Verification-Scale))
-* **Showing that the protocol can progress**: witnesses of liveness ([§7.4](#74-Witnesses-of-Liveness-Proving-the-Protocol-Can-Progress))
+* **Making verification scale** with compositional reasoning and inductive invariants ([§5.3](#53-compositional-reasoning), [§7.3](#73-Inductive-Invariants-Making-Verification-Scale))
+* **Showing that the protocol can progress**: witnesses of liveness ([§7.4](#74-witnesses-of-liveness-proving-the-protocol-can-progress))
  
 Our formal report can be accessed via [this link][report].
 
@@ -256,7 +256,7 @@ Of course, as with all AI assistants, we had to carefully proofread the translat
 
 ### 5.3. Compositional Reasoning
 
-Some security researchers believe that formal verification does not scale to more than 1–2 smart contracts, or to exploit scenarios longer than 1–2 external calls deep. We have organized our specification in such a way that the verification tools can deal with the behavior of 10–20 smart contracts, and arbitrarily long transaction sequences. **This level of scalability requires not just formal verification expertise, but a deep understanding of how model checkers and provers work internally** and interact with protocol architecture. It builds directly on our prior formal verification work – including [zkSync Governance][], [ChonkyBFT][], and [Ethereum 3-slot-finality][] – **where we pushed verification tools to reason compositionally across complex systems**. More on this in Section [7.3. Inductive Invariants: Making Verification Scale](#73-Inductive-Invariants-Making-Verification-Scale).
+Some security researchers believe that formal verification does not scale to more than 1–2 smart contracts, or to exploit scenarios longer than 1–2 external calls deep. We have organized our specification in such a way that the verification tools can deal with the behavior of 10–20 smart contracts, and arbitrarily long transaction sequences. **This level of scalability requires not just formal verification expertise, but a deep understanding of how model checkers and provers work internally** and interact with protocol architecture. It builds directly on our prior formal verification work – including [zkSync Governance][], [ChonkyBFT][], and [Ethereum 3-slot-finality][] – **where we pushed verification tools to reason compositionally across complex systems**. More on this in Section [7.3. Inductive Invariants: Making Verification Scale](#73-inductive-invariants-making-verification-scale).
 
 ## 6. Protocol Invariants
 
