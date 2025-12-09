@@ -9,8 +9,6 @@ shell: true
 typescript: true
 ---
 
-# Formal Verification of the Aztec Governance Protocol
-
 **Authors:** [Thomas Pani][], [Igor Konnov][]
 
 **Date:** December 9, 2025
