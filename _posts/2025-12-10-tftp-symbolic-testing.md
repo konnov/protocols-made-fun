@@ -296,7 +296,70 @@ If you want to access this API from Python right away, use two helper libraries:
   Apalache, and
   
   - [itf-py][] for serializing and deserializing ITF traces.
-  
+
+## 5. Case study: TFTP protocol
+
+To experiment with interactive symbolic testing and the new JSON-RPC API, I
+wanted to choose a relatively simple network protocol that had multiple
+implementations. After several sessions with ChatGPT, I ended up with the
+Trivial File Transfer Protocol (TFTP) as a reasonable target for this small
+project.
+
+The Wikipedia page on [TFTP][] gives a good overview of the protocol. In short,
+TFTP is a simple protocol to transfer files over UDP. It supports reading and
+writing files from a remote server. The protocol is simple enough to be
+specified in TLA<sup>+</sup> without too much effort, yet it has enough
+complexity to make the testing interesting. Actually, I've only specified
+reading requests (RRQ) and no writing requests (WRQ) to keep the scope
+manageable.
+
+You can find more detailed specifications in the original [RFC 1350][], as well
+as in its extensions [RFC 2347][], [RFC 2348][], and [RFC 2349][]. RFC 1350
+defines a simple non-negotated version of the protocol. Below is an example of
+such an interaction between the client and the server. Notice that the client
+first sends a read request (RRQ) to the server on the control port 69, which
+responds with the first data block (DATA) on a newly allocated ephemeral port.
+The client acknowledges (ACK) the received data block on the same ephemeral
+port.  This continues until the server sends the last data block, which is
+smaller than the maximum block size (512 bytes by default).
+
+<picture>
+  <img class="responsive-img"
+    src="{{ site.baseurl }}/img/rrq1350.svg"
+    alt="Read request and transfer as per RFC 1350">
+</picture>
+
+Further, [RFC 2347][] defines an option negotiation phase that happens right after the
+read request. The client and the server may negotiate options like block size,
+timeout, and transfer size. [RFC 2348][] defines the block size option, while
+[RFC 2349][] defines the transfer size option. Below is an example interaction with
+option negotiation:
+
+<picture>
+  <img class="responsive-img"
+    src="{{ site.baseurl }}/img/rrq2347.svg"
+    alt="Read request and transfer as per RFC 2347">
+</picture>
+
+The cool thing about TFTP is that there are multiple open-source implementations
+of TFTP clients and servers in different programming languages. Here are some
+of them that ChatGPT helped me to find:
+
+ - [tftp-hpa][] is the canonical implementation of TFTP for Linux systems in C.
+ 
+ - [atftpd][] is advanced TFTP, which is intended for fast boot in large
+ clusters, also in C.
+ 
+ - [dnsmasq][] is a lightweight DNS and DHCP server that also includes a TFTP
+ server, in C.
+ 
+ - [rs-tftpd][] (Rust) is an implementation of a TFTP server in Rust (because
+ there must be a library in Rust).
+ 
+ - [gotfpd][] (Go) is an implementation of a TFTP server in Go.
+ 
+ - busybox also has its minimalistic implementation for file reads.
+
 ## 10. Prior Work
 
 In this section, I've collected the previous work on model-based testing and
@@ -338,6 +401,11 @@ aware of any other relevant work.
 [Quint]: https://github.com/informalsystems/quint
 [TLAPS]: https://proofs.tlapl.us/
 [TLA<sup>+</sup>]: https://tlapl.us/
+[TFTP]: https://en.wikipedia.org/wiki/Trivial_File_Transfer_Protocol
+[RFC 1350]: https://www.rfc-editor.org/rfc/rfc1350
+[RFC 2347]: https://www.rfc-editor.org/rfc/rfc2347
+[RFC 2348]: https://www.rfc-editor.org/rfc/rfc2348
+[RFC 2349]: https://www.rfc-editor.org/rfc/rfc2349
 [Z3]: https://github.com/Z3Prover/z3
 [GNU parallel]: https://www.gnu.org/software/parallel/
 [Jetty]: https://jetty.org/
@@ -353,3 +421,8 @@ aware of any other relevant work.
 [K24b]: https://www.youtube.com/watch?v=NZmON-XmrkI
 [MZ19]: https://www.mcmil.net/pubs/SIGCOMM19.pdf
 [Giuliano Losa]: https://www.losa.fr/
+[tftp-hpa]: https://kernel.googlesource.com/pub/scm/network/tftp/tftp-hpa/
+[atftpd]: https://github.com/madmartin/atftp
+[dnsmasq]: http://www.thekelleys.org.uk/dnsmasq/doc.html
+[rs-tftpd]: https://github.com/altugbakan/rs-tftpd
+[gotfpd]: https://github.com/pin/tftp

@@ -1,0 +1,12 @@
+sequenceDiagram                                                                       
+    participant ip172_20_0_11_port1025 as 172.20.0.11:1025
+    participant ip172_20_0_10_port1025 as 172.20.0.10:1025
+    participant ip172_20_0_10_port69 as 172.20.0.10:69
+
+    ip172_20_0_11_port1025->>ip172_20_0_10_port69: RRQ(file1)
+    ip172_20_0_10_port1025->>ip172_20_0_11_port1025: DATA(blk=1, 512B)
+    ip172_20_0_11_port1025->>ip172_20_0_10_port1025: ACK(blk=1)
+    ip172_20_0_10_port1025->>ip172_20_0_11_port1025: DATA(blk=2, 512B)
+    ip172_20_0_11_port1025->>ip172_20_0_10_port1025: ACK(blk=2)
+    ip172_20_0_10_port1025->>ip172_20_0_11_port1025: DATA(blk=3, 0B)
+    ip172_20_0_11_port1025->>ip172_20_0_10_port1025: ACK(blk=3)
