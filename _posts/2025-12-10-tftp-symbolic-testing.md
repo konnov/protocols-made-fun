@@ -170,14 +170,133 @@ internal transition executor of Apalache.
   <img class="responsive-img"
     src="{{ site.baseurl }}/img/symbolic-testing.svg" alt="Symbolic testing">
 </picture>
- 
+
+To implement this approach to testing with Apalache, we would have to find a way
+for Apalache and the test harness to communicate. My experience with development
+of Apalache shows that **fixing exploration strategies inside the model checker
+is not a good idea**. People always want to tweak them a bit for their purposes.
+Given this observation, [Thomas Pani][] and I have decided to try to implement a
+simple JSON-RPC API for Apalache that would allow external tools to drive the
+symbolic execution of TLA<sup>+</sup> specifications.
+
 ## 4. The new JSON-RPC API of Apalache
+
+[Thomas][Thomas Pani] and I wanted to have a lightweight API that we could use
+from any programming language without writing too much boilerplate code. At this
+point, every engineer would whisper: hey, you need gRPC, I've got some. Well, we
+tried gRPC in the integration of [Apalache][] with [Quint][]. Too much hassle
+for my taste.
+
+So we have decided to go with [JSON-RPC][], which is a very simple protocol that
+works over HTTP/HTTPS. Implementing a JSON-RPC server is quite straightforward.
+Since Apalache is written in Scala, which is JVM-compatible, we can use the
+well-known and battle-tested libraries. Perhaps, a bit unexpectedly for a Scala
+project, I've decided to implement this server with [Jetty][] and [Jackson][]
+for JSON serialization. (The reason is that we have already burnt ourselves with
+fancy but poorly supported libraries in Scala.) The resulting server is
+lightweight and fast. Moreover, it can be tested with command-line tools like
+[curl][].
+
+The state-chart diagram of the Apalache JSON-RPC server for a single session is
+shown below.
 
 <picture>
   <img class="responsive-img"
     src="{{ site.baseurl }}/img/apalache-api.svg" alt="Apalache JSON-RPC API">
 </picture>
 
+To see a detailed description of this API, check [Apalache JSON-RPC][].
+Just to give you a taste, here is how you can create a new Apalache session with
+a TLA<sup>+</sup> specification:
+
+```shell
+$ SPEC=`cat <<EOF | base64
+---- MODULE Inc ----
+EXTENDS Integers
+VARIABLE
+  \* @type: Int;
+  x
+Init == I:: x = 0
+Next == (A:: (x < 3 /\\ x' = x + 1)) \\/ (B:: (x > -3 /\\ x' = x - 1))
+Inv3 == Inv:: x /= 0
+\* @type: () => <<Bool, Bool, Bool>>;
+View == <<x < 0, x = 0, x > 0>>
+=====================
+EOF`
+$ curl -X POST http://localhost:8822/rpc \
+  -H "Content-Type: application/json" \
+  -d '{"jsonrpc":"2.0","method":"loadSpec","params":{"sources": [ "'${SPEC}'" ],
+       "invariants": ["Inv3"], "exports": ["View"]},"id":1}'
+```
+
+Having the specification loaded, we load the predicate `Init` into the SMT
+context, which is encoded as transition 0:
+
+```shell
+$ curl -X POST http://localhost:8822/rpc \
+  -H "Content-Type: application/json" \
+  -d '{"jsonrpc":"2.0","method":"assumeTransition","params":{"sessionId":"1",
+       "transitionId":0,"checkEnabled":true},"id":2}'
+```
+
+Assuming that the previous called returned `ENABLED`, we switch to the next
+step, which applies the effect of `Init` to the current symbolic state:
+
+```shell
+$ curl -X POST http://localhost:8822/rpc \
+  -H "Content-Type: application/json" \
+  -d '{"jsonrpc":"2.0","method":"nextStep","params":{"sessionId":"1"},"id":3}'
+```
+
+Now, we can check the invariant `Inv3` against all states that satisfy `Init`:
+
+```shell
+$ curl -X POST http://localhost:8822/rpc \
+  -H "Content-Type: application/json" \
+  -d '{"jsonrpc":"2.0","method":"checkInvariant",
+       "params":{"sessionId":"1","invariantId":0},"id":3}'
+```
+
+Since invariant `Inv3` is violated by the initial state, the server will return
+`VIOLATED`, along with a counter-example trace:
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 3,
+  "result": {
+    "sessionId": "1",
+    "invariantStatus": "VIOLATED",
+    "trace": {
+      "#meta": {
+        "format": "ITF",
+        "varTypes": { "x": "Int" },
+        "format-description": "https://apalache-mc.org/docs/adr/015adr-trace.html",
+        "description": "Created by Apalache on Thu Dec 11 16:56:47 CET 2025"
+      },
+      "vars": [ "x" ],
+      "states": [ {
+          "#meta": { "index": 0 },
+          "x": { "#bigint": "0" }
+      } ]
+    }
+  }
+}
+```
+
+The trace is encoded in the [ITF format][ITF], which is a simple JSON-based
+format for TLA<sup>+</sup> traces.
+
+Had the invariant been violated on a deeper trace, we would have to assume more
+transitions by calling `assumeTransition` and `nextStep` multiple times.
+
+If you want to access this API from Python right away, use two helper libraries:
+
+  - [apalache-rpc-client][] for interacting with the JSON-RPC server of
+  Apalache, and
+  
+  - [itf-py][] for serializing and deserializing ITF traces.
+  
 ## 10. Prior Work
 
 In this section, I've collected the previous work on model-based testing and
@@ -212,14 +331,23 @@ aware of any other relevant work.
 
 
 [Igor Konnov]: https://konnov.phd
+[Thomas Pani]: https://blltprf.xyz
 [Lean]: https://lean-lang.org/
 [TLC]: https://github.com/tlaplus/tlaplus
 [Apalache]: https://apalache-mc.org
+[Quint]: https://github.com/informalsystems/quint
 [TLAPS]: https://proofs.tlapl.us/
 [TLA<sup>+</sup>]: https://tlapl.us/
 [Z3]: https://github.com/Z3Prover/z3
 [GNU parallel]: https://www.gnu.org/software/parallel/
-[Apalache JSON-RPC API]: https://github.com/apalache-mc/apalache/tree/main/json-rpc
+[Jetty]: https://jetty.org/
+[Jackson]: https://github.com/FasterXML/jackson
+[JSON-RPC]: https://www.jsonrpc.org/
+[curl]: https://curl.se/
+[Apalache JSON-RPC]: https://github.com/apalache-mc/apalache/tree/main/json-rpc
+[ITF]: https://apalache-mc.org/docs/adr/015adr-trace.html
+[itf-py]: https://github.com/konnov/itf-py/
+[apalache-rpc-client]: https://github.com/konnov/apalache-rpc-client/
 [small-scope]: {% link _posts/2025-12-02-small-scope.md %}
 [N25]: https://www.youtube.com/watch?v=DO8MvouV29M
 [K24b]: https://www.youtube.com/watch?v=NZmON-XmrkI
