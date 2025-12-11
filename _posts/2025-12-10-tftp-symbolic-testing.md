@@ -202,7 +202,7 @@ shown below.
 
 <picture>
   <img class="responsive-img"
-    src="{{ site.baseurl }}/img/apalache-api.svg" alt="Apalache JSON-RPC API">
+    src="{{ site.baseurl }}/img/apalache-api.svg.gz" alt="Apalache JSON-RPC API">
 </picture>
 
 To see a detailed description of this API, check [Apalache JSON-RPC][].
