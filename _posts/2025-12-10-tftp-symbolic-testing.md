@@ -360,6 +360,96 @@ of them that ChatGPT helped me to find:
  
  - busybox also has its minimalistic implementation for file reads.
 
+## 6. Initial TLA<sup>+</sup> specification of TFTP
+
+In the first stage of this experiment, I read the RFCs and wrote a
+TLA<sup>+</sup> specification of the TFTP protocol. At that stage, I did not
+introduce packet loss, duplication, or reordering. I just wanted to have a
+simple working specification that I could use for testing the implementations.
+**This stage took me just two days.** Well, I have been writing plenty of
+TLA<sup>+</sup> specifications in the past.
+
+You can check this initial specification in the [initial commit][] of the
+[testing repo][]. The main body of the specification lives in `tftp.tla`,
+which imports several several auxiliary modules:
+
+ - `typedefs.tla` defines the types of the data structures and the basic
+ constructors for these data structures. Since I am using Apalachec, it requires
+ type definitions. Luckily, these days, I just write the type definitions in
+ comments and let Claude generate the auxilliary operators such as constructors
+ and accessors.
+ 
+ - `util.tla` defines common utility definitions such as `Min`, `Max`, and
+ options conversions.
+ 
+Finally, `MC2_tftp.tla` defines a protocol instances of two clients and one
+server. If you stumble upon the definitions that end with `View` there, ignore
+them. They are not essential for this blog post. I used them to experiment with
+more advanced symbolic exploration scripts.
+
+If you are not familiar with TLA<sup>+</sup>, or your TLA<sup>+</sup> skills are
+rusty, I recommend giving one of the definitions and this prompt to ChatGPT. It
+actually explains TLA<sup>+</sup> quite well:
+
+```
+Assume that I am a software engineer. I don't know TLA+ but know Golang or Rust.
+Explain me this TLA+ snippet using my knowledge: ...
+```
+
+As I always do, I also specified "falsy invariants" to produce interesting
+examples. For example, using the invariant `RecvThreeDataBlocksEx` below, I can
+easily produce a trace where a client receives three data blocks from the
+server.
+
+```tla
+\* Check this falsy invariant to see an example of a client receiving 3 blocks.
+RecvThreeDataBlocksEx ==
+    ~(\E p \in DOMAIN clientTransfers:
+        Len(clientTransfers[p].blocks) >= 3)
+```
+
+If you want to try it right way without installing anything, just do this with
+docker:
+
+```shell
+$ git clone git@github.com:konnov/tftp-symbolic-testing.git
+$ git checkout 6fb00d1878b7e37a629868ac25b853d95b16cbdc
+$ docker pull ghcr.io/apalache-mc/apalache
+$ docker run --rm -v `pwd`:/var/apalache ghcr.io/apalache-mc/apalache \
+  check --inv=RecvThreeDataBlocksEx MC2_tftp.tla
+```
+
+Since Apalache emits traces in the [ITF format][ITF], it was easy for me to
+convince Claude to produce a Python script that would convert ITF traces to
+human-readable state charts in Mermaid. Here is just an example of such a trace
+produced by Apalache when checking the invariant `RecvThreeDataBlocksEx` in
+Mermaid:
+
+```
+sequenceDiagram
+    participant ip10_0_0_3_port65000 as 10.0.0.3:65000
+    participant ip10_0_0_1_port10000 as 10.0.0.1:10000
+    participant ip10_0_0_1_port69 as 10.0.0.1:69
+
+    ip10_0_0_3_port65000->>ip10_0_0_1_port69: RRQ(file1, blksize=0, timeout=4)
+    ip10_0_0_1_port10000->>ip10_0_0_3_port65000: DATA(blk=1, 512B)
+    ip10_0_0_3_port65000->>ip10_0_0_1_port10000: ACK(blk=1)
+    ip10_0_0_1_port10000->>ip10_0_0_3_port65000: DATA(blk=2, 512B)
+    ip10_0_0_3_port65000->>ip10_0_0_1_port10000: ACK(blk=2)
+    ip10_0_0_1_port10000->>ip10_0_0_3_port65000: DATA(blk=3, 0B)
+    ip10_0_0_3_port65000->>ip10_0_0_1_port10000: ACK(blk=3)
+```
+
+This is how it looks like when rendered by Mermaid:
+
+<picture>
+  <img class="responsive-img"
+    src="{{ site.baseurl }}/img/tftp3.svg"
+    alt="Visualized trace of TFTP client receiving three data blocks">
+</picture>
+
+
+
 ## 10. Prior Work
 
 In this section, I've collected the previous work on model-based testing and
@@ -426,3 +516,5 @@ aware of any other relevant work.
 [dnsmasq]: http://www.thekelleys.org.uk/dnsmasq/doc.html
 [rs-tftpd]: https://github.com/altugbakan/rs-tftpd
 [gotfpd]: https://github.com/pin/tftp
+[testing repo]: https://github.com/konnov/tftp-symbolic-testing
+[initial commit]: https://github.com/konnov/tftp-symbolic-testing/tree/6fb00d1878b7e37a629868ac25b853d95b16cbdc

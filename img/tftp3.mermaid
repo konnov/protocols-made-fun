@@ -1,0 +1,12 @@
+sequenceDiagram
+    participant ip10_0_0_3_port65000 as 10.0.0.3:65000
+    participant ip10_0_0_1_port10000 as 10.0.0.1:10000
+    participant ip10_0_0_1_port69 as 10.0.0.1:69
+
+    ip10_0_0_3_port65000->>ip10_0_0_1_port69: RRQ(file1, blksize=0, timeout=4)
+    ip10_0_0_1_port10000->>ip10_0_0_3_port65000: DATA(blk=1, 512B)
+    ip10_0_0_3_port65000->>ip10_0_0_1_port10000: ACK(blk=1)
+    ip10_0_0_1_port10000->>ip10_0_0_3_port65000: DATA(blk=2, 512B)
+    ip10_0_0_3_port65000->>ip10_0_0_1_port10000: ACK(blk=2)
+    ip10_0_0_1_port10000->>ip10_0_0_3_port65000: DATA(blk=3, 0B)
+    ip10_0_0_3_port65000->>ip10_0_0_1_port10000: ACK(blk=3)
