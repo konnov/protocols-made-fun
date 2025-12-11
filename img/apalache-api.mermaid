@@ -1,10 +1,19 @@
-stateDiagram-v2
-    direction LR
-    [*] --> Idle
+---
+config:
+  theme: redux
+---
+stateDiagram
+  direction LR
+  [*] --> Idle
+  Idle --> Loaded:loadSpec
+  Loaded --> Solving1:assumeTransition
+  Loaded --> Loaded:rollback
+  Solving1 --> Prepared:sat/timeout
+  Solving1 --> Loaded:unsat
+  Prepared --> Loaded:nextStep
+  Prepared --> Solving3:checkInvariant
+  Solving3 --> Prepared:sat/unsat/timeout
+  Loaded --> Solving2:query/assumeState/nextModel
+  Solving2 --> Loaded:sat/unsat/timeout
+  Loaded --> [*]:disposeSpec
 
-    Idle --> Loaded: loadSpec
-    Loaded --> Prepared: assumeTransition
-    Prepared --> Loaded: nextStep
-    Prepared --> Prepared: checkInvariant
-    Loaded --> Loaded: assumeState / rollback / query / nextModel
-    Loaded --> [*]: disposeSpec

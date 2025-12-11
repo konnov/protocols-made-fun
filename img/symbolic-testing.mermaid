@@ -3,6 +3,13 @@ sequenceDiagram
     participant Harness
     participant Impl as Implementation
 
+    Harness->>Spec: loadSpec
+    Spec-->>Harness: spec parameters & snapshot 0
+
+    loop for tests j in 0..k
+        Harness->>Spec: rollback to snapshot 0
+        Spec-->>Harness: ok
+
     loop for steps i in 0..n
         Harness->>Spec: i. assumeTransition t_i
         Spec-->>Harness: sat
@@ -14,8 +21,10 @@ sequenceDiagram
         Harness->>Spec: i+1. assumeState from response i
         Spec-->>Harness: sat
     end
-
-
     Note right of Harness: if assumeState returns unsat,
     Note right of Harness: then report divergence
 
+    end
+
+    Harness->>Spec: disposeSpec
+    Spec-->>Harness: ok
