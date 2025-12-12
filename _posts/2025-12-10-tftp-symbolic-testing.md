@@ -157,7 +157,12 @@ receives feedback from the implementation during the testing. I am not sure how
 it is called exactly, so I would call it **interactive symbolic testing**.  I
 think the first time I heard about this approach was from [Giuliano Losa][],
 when he explained the paper by [Ken McMillan and Leonore Zuck (2019)][MZ19] to
-me. The idea is to generate an action with the SMT solver by following the
+me. If you have not read this paper yet, I highly recommend doing so. On the
+naming side, McMillan and Zuck call their approach "specification-based
+testing". I find this name to be a bit non-descriptive, as MBT is also
+specification-based.
+
+The idea is to generate an action with the SMT solver by following the
 specification, execute it against the implementation, and then feed the results
 back to the SMT solver to generate the next action. This way, we can
 systematically explore the protocol specification while getting feedback from
@@ -175,9 +180,9 @@ To implement this approach to testing with Apalache, we would have to find a way
 for Apalache and the test harness to communicate. My experience with development
 of Apalache shows that **fixing exploration strategies inside the model checker
 is not a good idea**. People always want to tweak them a bit for their purposes.
-Given this observation, [Thomas Pani][] and I have decided to try to implement a
-simple JSON-RPC API for Apalache that would allow external tools to drive the
-symbolic execution of TLA<sup>+</sup> specifications.
+Given this observation, [Thomas Pani][] and I have decided to implement a simple
+JSON-RPC API for Apalache that would allow external tools to drive the symbolic
+execution of TLA<sup>+</sup> specifications.
 
 ## 4. The new JSON-RPC API of Apalache
 
@@ -191,23 +196,33 @@ So we have decided to go with [JSON-RPC][], which is a very simple protocol that
 works over HTTP/HTTPS. Implementing a JSON-RPC server is quite straightforward.
 Since Apalache is written in Scala, which is JVM-compatible, we can use the
 well-known and battle-tested libraries. Perhaps, a bit unexpectedly for a Scala
-project, I've decided to implement this server with [Jetty][] and [Jackson][]
-for JSON serialization. (The reason is that we have already burnt ourselves with
-fancy but poorly supported libraries in Scala.) The resulting server is
-lightweight and fast. Moreover, it can be tested with command-line tools like
-[curl][].
+project, I've decided to implement this server with [Jetty][] for serving the
+HTTP requests and [Jackson][] for JSON serialization. (The reason is that we
+have already burnt ourselves with fancy but poorly supported libraries in
+Scala.) The resulting server is lightweight and fast. Moreover, it can be tested
+with command-line tools like [curl][].
 
 The state-chart diagram of the Apalache JSON-RPC server for a single session is
 shown below.
 
 <picture>
   <img class="responsive-img"
-    src="{{ site.baseurl }}/img/apalache-api.svg.gz" alt="Apalache JSON-RPC API">
+    src="{{ site.baseurl }}/img/apalache-api.svg" alt="Apalache JSON-RPC API">
 </picture>
 
-To see a detailed description of this API, check [Apalache JSON-RPC][].
-Just to give you a taste, here is how you can create a new Apalache session with
-a TLA<sup>+</sup> specification:
+To see a detailed description of this API, check [Apalache JSON-RPC][].  Just to
+give you the taste of it, here is how you start the server without having
+anything installed but Docker:
+
+```shell
+$ docker pull ghcr.io/apalache-mc/apalache
+$ docker run --rm /tmp:/var/apalache -p 8822:8822 \
+    ghcr.io/apalache-mc/apalache:latest \
+    server --server-type=explorer
+```
+
+Now, we create a new Apalache session with a TLA<sup>+</sup> specification (in a
+separate tab):
 
 ```shell
 $ SPEC=`cat <<EOF | base64
@@ -229,7 +244,10 @@ $ curl -X POST http://localhost:8822/rpc \
        "invariants": ["Inv3"], "exports": ["View"]},"id":1}'
 ```
 
-Having the specification loaded, we load the predicate `Init` into the SMT
+Is not that amazing? No protobuf, no code generation, just pure shell and
+readable JSON.
+
+Having the specification loaded, we load the predicate `Init` into the solver
 context, which is encoded as transition 0:
 
 ```shell
@@ -239,7 +257,7 @@ $ curl -X POST http://localhost:8822/rpc \
        "transitionId":0,"checkEnabled":true},"id":2}'
 ```
 
-Assuming that the previous called returned `ENABLED`, we switch to the next
+Assuming that the previous call returned `ENABLED`, we switch to the next
 step, which applies the effect of `Init` to the current symbolic state:
 
 ```shell
@@ -285,7 +303,7 @@ Since invariant `Inv3` is violated by the initial state, the server will return
 ```
 
 The trace is encoded in the [ITF format][ITF], which is a simple JSON-based
-format for TLA<sup>+</sup> traces.
+format for TLA<sup>+</sup> and Quint traces.
 
 Had the invariant been violated on a deeper trace, we would have to assume more
 transitions by calling `assumeTransition` and `nextStep` multiple times.
@@ -305,9 +323,9 @@ implementations. After several sessions with ChatGPT, I ended up with the
 Trivial File Transfer Protocol (TFTP) as a reasonable target for this small
 project.
 
-The Wikipedia page on [TFTP][] gives a good overview of the protocol. In short,
-TFTP is a simple protocol to transfer files over UDP. It supports reading and
-writing files from a remote server. The protocol is simple enough to be
+The Wikipedia page on [TFTP][] gives us a good overview of the protocol. In
+short, TFTP is a simple protocol to transfer files over UDP. It supports reading
+and writing files from a remote server. The protocol is simple enough to be
 specified in TLA<sup>+</sup> without too much effort, yet it has enough
 complexity to make the testing interesting. Actually, I've only specified
 reading requests (RRQ) and no writing requests (WRQ) to keep the scope
@@ -374,10 +392,12 @@ You can check this initial specification in the [initial commit][] of the
 which imports several several auxiliary modules:
 
  - `typedefs.tla` defines the types of the data structures and the basic
- constructors for these data structures. Since I am using Apalachec, it requires
- type definitions. Luckily, these days, I just write the type definitions in
- comments and let Claude generate the auxilliary operators such as constructors
- and accessors.
+ constructors for these data structures. Since I am using Apalache, the
+ specification needs type definitions. Luckily, these days, I just write the
+ type definitions in comments and let Claude generate the auxilliary operators
+ such as constructors and accessors. If you already have an untyped
+ specification, Claude is good at figuring out the types in the agent mode. Just
+ use [this prompt][types-prompt].
  
  - `util.tla` defines common utility definitions such as `Min`, `Max`, and
  options conversions.
@@ -396,10 +416,25 @@ Assume that I am a software engineer. I don't know TLA+ but know Golang or Rust.
 Explain me this TLA+ snippet using my knowledge: ...
 ```
 
-As I always do, I also specified "falsy invariants" to produce interesting
-examples. For example, using the invariant `RecvThreeDataBlocksEx` below, I can
-easily produce a trace where a client receives three data blocks from the
-server.
+To see the kinds of actions this initial specification had, have a look at the
+definition of `Next` in `tftp.tla`:
+
+{% github_embed
+  https://raw.githubusercontent.com/konnov/tftp-symbolic-testing/6fb00d1878b7e37a629868ac25b853d95b16cbdc/spec/tftp.tla
+  tlaplus 470-499
+ %}
+
+{% include tip.html content="Do not spend too much time on reading this
+initial specification. I misunderstood several thigs about TFTP from the
+RFCs, which I fixed later. Especially, the timeouts are completely wrong
+in this initial version. Good that the actual implementations helped me to
+find these mistakes!"
+%}
+
+**Falsy invariants**. As I always do, I also specified "falsy invariants" to
+produce interesting examples. For example, using the invariant
+`RecvThreeDataBlocksEx` below, I can easily produce a trace where a client
+receives three data blocks from the server.
 
 ```tla
 \* Check this falsy invariant to see an example of a client receiving 3 blocks.
@@ -419,11 +454,12 @@ $ docker run --rm -v `pwd`:/var/apalache ghcr.io/apalache-mc/apalache \
   check --inv=RecvThreeDataBlocksEx MC2_tftp.tla
 ```
 
-Since Apalache emits traces in the [ITF format][ITF], it was easy for me to
-convince Claude to produce a Python script that would convert ITF traces to
-human-readable state charts in Mermaid. Here is just an example of such a trace
-produced by Apalache when checking the invariant `RecvThreeDataBlocksEx` in
-Mermaid:
+**Trace visualization.**
+Since Apalache emits traces in the [ITF format][ITF], which has a very simple
+schema in JSON, it was easy for me to convince Claude to produce a Python script
+that would convert ITF traces to human-readable state charts in Mermaid. Here is
+just an example of such a trace produced by Apalache when checking the invariant
+`RecvThreeDataBlocksEx` in Mermaid:
 
 ```
 sequenceDiagram
@@ -440,7 +476,7 @@ sequenceDiagram
     ip10_0_0_3_port65000->>ip10_0_0_1_port10000: ACK(blk=3)
 ```
 
-This is how it looks like when rendered by Mermaid:
+This is how it looks like when rendered by [Mermaid][]:
 
 <picture>
   <img class="responsive-img"
@@ -448,6 +484,19 @@ This is how it looks like when rendered by Mermaid:
     alt="Visualized trace of TFTP client receiving three data blocks">
 </picture>
 
+**Note on abstractions.** Similar to the [McMillan and Zuck][MZ19], I tried
+to avoid unnecessary abstractions and approximations in the specification.  If
+you look at the type definition of a TFTP packet in
+[`typedefs.tla`](https://github.com/konnov/tftp-symbolic-testing/blob/6fb00d1878b7e37a629868ac25b853d95b16cbdc/spec/typedefs.tla),
+you will see that all fields except `data` are modeled as strings and integers:
+
+{% github_embed
+  https://raw.githubusercontent.com/konnov/tftp-symbolic-testing/6fb00d1878b7e37a629868ac25b853d95b16cbdc/spec/typedefs.tla
+  tlaplus 18-36
+ %}
+
+Thinking about it now, I could even model `data` as a sequence of bytes, but it
+was obvious to me that only the length of `data` matters for the protocol logic.
 
 
 ## 10. Prior Work
@@ -518,3 +567,5 @@ aware of any other relevant work.
 [gotfpd]: https://github.com/pin/tftp
 [testing repo]: https://github.com/konnov/tftp-symbolic-testing
 [initial commit]: https://github.com/konnov/tftp-symbolic-testing/tree/6fb00d1878b7e37a629868ac25b853d95b16cbdc
+[types-prompt]: https://github.com/apalache-mc/apalache/blob/main/prompts/type-annotation-assistant.md
+[Mermaid]: https://www.mermaidchart.com/
