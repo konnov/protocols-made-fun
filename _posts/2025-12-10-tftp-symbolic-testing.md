@@ -13,6 +13,9 @@ typescript: true
 
 **Date:** December 10, 2025
 
+*Note: I mostly stopped using LLMs for proof-reading my texts. Enjoy my typos
+and weird grammar!*
+
 ## 1. Introduction
 
 As promised in the [blog post on small-scope hypothesis][small-scope], I am
@@ -181,7 +184,7 @@ for Apalache and the test harness to communicate. My experience with development
 of Apalache shows that **fixing exploration strategies inside the model checker
 is not a good idea**. People always want to tweak them a bit for their purposes.
 Given this observation, [Thomas Pani][] and I have decided to implement a simple
-JSON-RPC API for Apalache that would allow external tools to drive the symbolic
+server API for Apalache that would allow external tools to drive the symbolic
 execution of TLA<sup>+</sup> specifications.
 
 ## 4. The new JSON-RPC API of Apalache
@@ -498,6 +501,172 @@ you will see that all fields except `data` are modeled as strings and integers:
 Thinking about it now, I could even model `data` as a sequence of bytes, but it
 was obvious to me that only the length of `data` matters for the protocol logic.
 
+## 7. Bootstrapping the testing harness with Claude
+
+Now, we have the initial TLA<sup>+</sup> specification of TFTP and the standard
+implementation [tftp-hpa][], which is the default `tftpd` server on Linux.
+
+I wanted to avoid running the TFTP server on my laptop. What if I accidentally
+find a bug that corrupts my file system? So I have decided to run the server and
+the client harnesses in Docker containers. This way, I could easily reset the
+SUT and have an isolated network for the TFTP server and clients.
+
+Below is the architecture of the test harness that I had in mind. It's quite a
+bit overengineered for testing TFTP. I also wanted to experiment with Docker
+networking and managing multiple containers for potential future projects.
+
+```
+┌──────────────────────────────────────────────────────────────────┐
+│                        Host Machine                              │
+│                                                                  │
+│  ┌────────────────────────────────────────────────────────────┐  │
+│  │ harness.py                                                 │  │
+│  │  - Coordinates symbolic execution                          │  │
+│  │  - Manages Apalache server                                 │  │
+│  │  - Controls Docker containers                              │  │
+│  │  - Generates and saves test runs                           │  │
+│  └────────┬────────────────────────┬──────────────────────────┘  │
+│           │                        │                             │
+│           ▼                        ▼                             │
+│  ┌─────────────────┐     ┌──────────────────────────┐            │
+│  │ Apalache Server │     │  Docker Manager          │            │
+│  │  (port 8822)    │     │  - Network: 172.20.0.0/24│            │
+│  └─────────────────┘     └──────────┬───────────────┘            │
+│                                     │                            │
+└─────────────────────────────────────┼────────────────────────────┘
+                                      │
+                         ┌────────────┴──────────────┐
+                         │   Docker Network          │
+                         │   (172.20.0.0/24)         │
+                         │                           │
+         ┌───────────────┼───────────────────────────┼─────────────┐
+         │               │                           │             │
+         ▼               ▼                           ▼             │
+  ┌─────────────┐ ┌─────────────┐          ┌─────────────┐         │
+  │ TFTP Server │ │  Client 1   │          │  Client 2   │         │
+  │ 172.20.0.10 │ │ 172.20.0.11 │          │ 172.20.0.12 │         │
+  │             │ │             │          │             │         │
+  │ tftp-hpa    │ │ Python      │          │ Python      │         │
+  │ Port: 69    │ │ TCP: 15001  │          │ TCP: 15002  │         │
+  │ Data:1024-27│ │ (control)   │          │ (control)   │         │
+  └─────────────┘ └─────────────┘          └─────────────┘         │
+         ▲               │                           │             │
+         │               │    UDP TFTP packets       │             │
+         └───────────────┴───────────────────────────┘             │
+                                                                   │
+                         Docker Containers                         │
+                                                                   │
+                         tftp-test-harness:latest                  │
+                                                                   │
+└──────────────────────────────────────────────────────────────────┘
+```
+
+**LLMs will do the work (huh).** As you could have guessed, I had no interest in
+writing the Docker files and the test harness from scratch. Having heard from so
+many people that LLMs are so amazing, I have decided to give Claude a try at
+generating the test harness.  (At this point, you probably guessed that I have
+mixed feelings about the end result.)
+
+Hence, I spent about four hours writing a very detailed prompt for Claude that
+explained how I want the test harness to look like (the above architecture
+diagram is actually generated by Claude from my prompt).
+
+**Pushing the button!** So I've run Claude in the agent mode with my prompt and
+went for a coffee break. You can see the first generated version in [this
+commit](https://github.com/konnov/tftp-symbolic-testing/commit/063da7d2b79c07dfb64225da852440c98b76c41e3).
+The result looked so exciting and amazing until I looked at `CHECKLIST.md`:
+
+```
+## Notes
+
+- The framework is complete and production-ready
+- Remaining work is mostly about connecting components
+- Each task is independent and can be tackled separately
+- Estimated effort: 4-8 hours for core integration (tasks 1-4)
+- Additional 2-4 hours for polish and testing (tasks 5-8)
+```
+
+When I read the thing above, I almost spilled my coffee. What? Claude left me
+homework? I was also baffled by the hourly estimates: Are these Claude hours or
+my hours? In the hindsight, the estimate was surprisingly accurate. It took me
+about 1.5 days to make this code do the first test run that made the harness
+exchange UDP packets with the TFTP server.
+
+Then I looked at `harness.py`, which was supposed to be "complete and
+production-ready". Guess what? The main loop was left as a TODO!
+
+```python
+        # TODO: Implement actual TFTP operation execution
+        # This would involve:
+        # - Querying Apalache for the transition details
+        # - Sending commands to the TFTP client in Docker
+        # - Collecting UDP packet responses
+        # - Parsing the responses
+```
+
+The overall structure was there, but the most important pieces were left as
+TODOs. Fine. It did the tedious part at least. So I started to chat with Claude
+again to implement the missing pieces. If you look at the commit history, you
+will see plenty of spaghetti code generated by Claude. In the end, it became a
+bit better after my guidance, but I had to rewrite it at some point.
+
+Even though I am making jokes about LLMs here, I must say that Claude really
+helped me to debug the Docker setup and produce the python code for
+communicating over UDP in modern Python. I could easily lose a couple of days
+there.
+
+Of course, the exploration logic was totally broken. After all, there is not
+much for LLMs to learn from. We are trying something new here!
+
+**1.5 days later.** Something was working, but even the happy path was not
+there. So I had to do the baby steps with Claude. Here are just a few examples
+from my Copilot chat:
+
+> Let's implement sending the RRQ packet over the wire.
+
+> ...
+
+> Now I am receiving a response like below. This is good! What I want you to
+> do next. Decode the response and construct the expected packet for the TLA+
+> specification. Save this as the expectation that we will use in the next step.
+
+> ...
+
+> You should not construct a TLA+ expression. Rather, convert the packet to an
+> ITF value using itf-py.
+
+> ...
+
+> Can you implement this case for receiving OACK from the server and sending ACK
+> by the client to the server.
+
+**2 more days later.** I had the happy path working. At this point, I was tired
+of reading the harness logs. So I needed some form of visualization for each
+run. Obviously, I wanted to have the same kind of Mermaid diagrams as before.
+
+So I asked Claude to generate a script that would reconstruct the sequence
+diagram from the harness logs. Well, it took me longer than expected. At some
+point, Claude was producing quite convoluted log parsers with regular
+expressions and python loops. Of course, it needs a human to define a simple log
+format instead.
+
+Below is an example of such a log run, visualized with the generated script in
+Mermaid:
+
+<picture>
+  <img class="responsive-img"
+    src="{{ site.baseurl }}/img/tftp-happy.svg"
+    alt="Trace visualization of the testing run">
+</picture>
+
+If you look at the above diagram carefully, you will notice that server responses
+come in two flavors:
+
+ 1. The dashed arrows indicates that the client has received the UDP packet from
+    the UDP socket.
+
+ 1. The solid arrow indicates that the UDP packet was successfully replayed
+    with the TLA<sup>+</sup> specification.
 
 ## 10. Prior Work
 
