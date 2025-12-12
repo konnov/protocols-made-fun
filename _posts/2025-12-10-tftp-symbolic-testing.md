@@ -668,6 +668,206 @@ come in two flavors:
  1. The solid arrow indicates that the UDP packet was successfully replayed
     with the TLA<sup>+</sup> specification.
 
+## 8. Debugging the TLA<sup>+</sup> specification with the implementation
+
+At that point, the tests started to produce actual interactions between the
+TLA<sup>+</sup> specification (as solved by Apalache and Z3) and the real TFTP
+server. This brought a lot of surprises! I am going to present some of them
+below.
+
+In this debugging session, I am keeping the scorecard of how many times the
+TLA<sup>+</sup> specification was wrong versus how many times the implementation
+(tftp-hpa) was wrong. The scorecard at this point looks like this:
+
+| Spec bugs     | Implementation bugs     |
+|---------------|-------------------------|
+| 0             | 0                       |
+
+Actually, tftp-hpa is a quite mature implementation, so I was not expecting any
+bugs there. Keep reading to see what I found.
+
+### 8.1. Sending errors on read request
+
+The first surprise came from my misunderstanding of how exactly TFTP is supposed
+to reply to a malformed read request (RRQ). Since a client sends RRQ to the
+control port 69 of the server, I thought that the server would reply with an
+error packet (ERROR) from the port 69, instead of introducing a new ephemeral
+port.
+
+This is what [RFC 2347][] says about option negotiation:
+
+> ...the server should simply omit the option from the OACK, respond with an
+> alternate value, or send an ERROR packet, with error code 8, to terminate the
+> transfer.
+
+No explanation about the port from which the ERROR packet is sent. Well, my
+understanding was wrong. The server always allocates a new ephemeral port for
+sending the ERROR packet. This kind of makes sense, as the implementation simply
+forks on a new request. One score to the implementation:
+
+| Spec bugs     | Implementation bugs     |
+|---------------|-------------------------|
+| 1             | 0                       |
+
+{% include tip.html content="Actually, as I found later, the spec was not
+always wrong, as the busybox implementation always uses port 69!"
+%}
+
+### 8.2. The server may send duplicate packets
+
+Well, I knew that, but was lazy to write an action in the specification that would
+handle duplicate packets. So the server retransmitted a DATA packet, which produced
+a deviation in the TLA<sup>+</sup> specification. Another score to the
+implementation:
+
+| Spec bugs     | Implementation bugs     |
+|---------------|-------------------------|
+| 2             | 0                       |
+
+Formally speaking, this action does not affect protocol safety, so it is
+tempting to simply skip duplicates. However, in conformance testing, we have to
+handle all possible actions of the implementation, even if they produce stuttering
+steps in the theory of TLA<sup>+</sup>.
+
+### 8.3. Input-output conformance does not work with UDP!
+
+The next issue was quite interesting. When I read the papers on input-output
+conformance testing from the 1990s, there was always an assumption that the
+system under test (SUT) is input-enabled. This means that the SUT can always
+accept any input at any time and respond to it, possibly, with an error message.
+This assumption makes sense for synchronous systems (such as vending machines?),
+where the tester can wait for the SUT to be ready to accept the input.
+
+However, TFTP is not like that at all. The client may send an ERROR packet at
+any point in time, and the server does not have to reply to it! This is exactly
+a deviating test run I saw produced by the harness.
+
+So instead of waiting for a reply from the server on each client action, the
+test harness has to optimistically send the next UDP packet and then retrieve
+the UDP packets from the server (remember that they live in Docker!).
+
+This is where Claude was useful again. It helped me to collect the UDP packets
+on the Docker client. Before taking the next step, the harness would retrieve
+the buffered UDP packets from the Docker clients and replay these packets in the
+TLA<sup>+</sup> specification, in arbitrary order.
+
+This makes our testing approach a bit more sensitive to the timing of extracting
+the buffered UDP packets, but it worked for TFTP.
+
+| Spec bugs     | Implementation bugs     |
+|---------------|-------------------------|
+| 3             | 0                       |
+
+### 8.4. The server recycles an ephemeral port on ERROR
+
+Another interesting deviation happened when the server recycled an ephemeral
+port. [RFC 1350][] explains how the server allocates ephemeral ports:
+
+> In order to create a connection, each end of the connection chooses a TID for
+> itself, to be used for the duration of that connection. The TID's chosen for a
+> connection should be randomly chosen, so that the probability that the same
+> number is chosen twice in immediate succession is very low.”
+
+Well, in our test run, the event of low probability happened:
+
+<picture>
+  <img class="responsive-img"
+    src="{{ site.baseurl }}/img/tftp-fix5.svg"
+    alt="Recycling ephemeral ports on error">
+</picture>
+
+Actually, this theme of reusing the same ephemeral port happened multiple times
+in the following debugging iterations. It is probably the most problematic
+aspect of the protocol, as there is no notion of a session in TFTP. Another
+score to the implementation:
+
+| Spec bugs     | Implementation bugs     |
+|---------------|-------------------------|
+| 4             | 0                       |
+
+### 8.5. The server recycles an ephemeral port on success
+
+Guess what? A very similar thing happened on a successful file transfer as well.
+Here is a pruned version of the trace that shows this behavior (the initial
+sequence of RRQ-OACK-DATA-ACK is omitted for brevity):
+
+<picture>
+  <img class="responsive-img"
+    src="{{ site.baseurl }}/img/tftp-fix6.svg"
+    alt="Recycling ephemeral ports on success">
+</picture>
+
+This behavior seems to be consistent with [Section 6 of RFC 1350][], though it
+seems to be ambiguous to me. Anyway, another score to the implementation:
+
+| Spec bugs     | Implementation bugs     |
+|---------------|-------------------------|
+| 5             | 0                       |
+
+### 8.6. Mixing the protocol versions
+
+TFTP essentially has two versions: the original version defined in RFC 1350 and
+the extended version with option negotiation defined in RFC 2347. In combination
+with packet duplication, this produced a very interesting deviation. I've not
+saved the full trace, but here is what happened. The server processes an RRQ
+with options and sends an OACK, as per RFC 2347. After that, the TLA<sup>+</sup>
+specification of the server interprets an earlier RRQ without options and sends
+a DATA packet, as per RFC 1350. The implementation does not expect this.
+
+Obviously, this is caused by non-determinism in the TLA<sup>+</sup>
+specification, which allows the protocol to behave according to both protocol
+versions at the same time. I had to fix the specification by disallowing the
+server to behave according to RFC 1350, when it receives an RRQ with options.
+One score to the implementation:
+
+| Spec bugs     | Implementation bugs     |
+|---------------|-------------------------|
+| 6             | 0                       |
+
+### 8.7. More deviations on the specification side
+
+At some point, I got tired of collecting the precise deviations. They still can
+be recovered from the commit log though. Here are some of the further deviations
+on the specification side that I fixed:
+
+ - The client must send `tsize = 0` in RRQ.
+
+ - The server should send default timeout if it's not specified in the options.
+
+ - The server may send invalid (e.g., outdated) packets.
+
+ - My understanding of TFTP timeouts was wrong. I thought that a timeout was
+ meant to closes a transfer session. Instead, timeouts in TFTP are just
+ triggering packet retransmissions. The number of retries is not specified in
+ the RFCs. In practice, tftp-hpa seems to retry 5 times before giving up.
+
+ - The server specification should store transfers for  triplets `(clientIP,
+ clientPort, serverPort)` instead of pairs `(clientIP, clientPort)`.
+
+In the end, the implementation scored another 7 points, before tests started to
+work.
+
+| Spec bugs     | Implementation bugs     |
+|---------------|-------------------------|
+| 13            | 0                       |
+ 
+
+In the end, it looks like my TLA<sup>+</sup> specification was a bit sloppy, in
+comparison to the mature implementation of `tftp-hpa`. I have not designed this
+protocol and did not give much thought to it. Obviously, the engineers have
+spent much more time about its behavior.
+
+## 9. Adding adversarial behavior to the clients
+
+At some point I thought: My clients are too well-behaved! They never lose,
+duplicate, or reorder packets. What if they start to misbehave within the limits
+of the protocol? Would I be able to find more bugs in the implementation?
+
+| Spec bugs     | Implementation bugs     |
+|---------------|-------------------------|
+| 13            | 1                       |
+
+ 
 ## 10. Prior Work
 
 In this section, I've collected the previous work on model-based testing and
@@ -738,3 +938,4 @@ aware of any other relevant work.
 [initial commit]: https://github.com/konnov/tftp-symbolic-testing/tree/6fb00d1878b7e37a629868ac25b853d95b16cbdc
 [types-prompt]: https://github.com/apalache-mc/apalache/blob/main/prompts/type-annotation-assistant.md
 [Mermaid]: https://www.mermaidchart.com/
+[Section 6 of RFC 1350]: https://www.rfc-editor.org/rfc/rfc1350#section-6
