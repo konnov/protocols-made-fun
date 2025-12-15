@@ -1,8 +1,4 @@
 remote_theme: jekyll/minima@bf9ef989246b63536e9db61082f663f1a6d4d9ce
-author:
-  name: Igor Konnov
-  email: "igor@konnov.phd"
-title: Protocols Made Fun
 description: All things about protocol specification, testing, and verification. Creative Commons Attribution 4.0 International License.
 show_downloads: false
 github.is_project_page: false
@@ -14,6 +10,12 @@ twitter_username: k0nn0v
 github_username:  konnov
 disqus:
   shortname: protocols-made-fun
+author:
+  igor:
+    name: Igor Konnov
+    url: https://konnov.phd
+    email: "igor@konnov.phd"
+title: Protocols Made Fun
 minima:
   skin: auto
   nav_pages:

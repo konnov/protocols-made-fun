@@ -2,6 +2,7 @@
 layout: post
 title: "Interactive Symbolic Testing of TFTP with TLA+ and Apalache"
 date: 2025-12-15
+author: Igor Konnov
 categories: tlaplus
 tlaplus: true
 math: true
