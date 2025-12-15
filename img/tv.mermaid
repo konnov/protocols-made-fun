@@ -1,0 +1,30 @@
+sequenceDiagram
+    participant Impl as Implementation
+    participant Harness
+    participant Spec as Model checker
+
+
+    Impl->>Impl:
+    Note right of Impl: run
+    Note right of Harness: collect the logs
+    Harness->>Impl: get logs
+    Impl-->>Harness: logs
+
+    Harness->>Spec: concrete trace
+    Spec->>Spec:
+    Note right of Spec: compose spec & trace
+    Harness->>Spec: check
+
+    Spec->>Spec:
+    Note right of Spec: check state 0
+
+    Spec->>Spec:
+    Note right of Spec: check state 1
+
+    Spec->>Spec:
+    Note right of Spec: check state 2
+
+    Spec->>Spec:
+    Note right of Harness: deadlock
+    Note right of Harness: report divergence
+

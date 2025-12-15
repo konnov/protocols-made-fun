@@ -1,0 +1,17 @@
+sequenceDiagram
+    participant Spec as Model checker
+    participant Harness
+    participant Impl as Implementation
+
+    Spec->>Spec: #nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;#nbsp;check
+    Note right of Spec: find an invariant violation
+    Spec->>Harness: abstract trace
+
+    Harness->>Impl: concrete action 1
+    Impl-->>Harness: ok
+    Harness->>Impl: concrete action 2
+    Impl-->>Harness: ok
+    Harness->>Impl: concrete action 3
+    Impl-->>Harness: divergence
+    Note right of Harness: report divergence
+

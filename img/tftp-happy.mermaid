@@ -1,0 +1,35 @@
+sequenceDiagram
+    participant ip172_20_0_11_port1024 as 172.20.0.11:1024
+    participant ip172_20_0_11_port1026 as 172.20.0.11:1026
+    participant ip172_20_0_12_port1025 as 172.20.0.12:1025
+    participant ip172_20_0_10_port35995 as 172.20.0.10:35995
+    participant ip172_20_0_10_port50059 as 172.20.0.10:50059
+    participant ip172_20_0_10_port56636 as 172.20.0.10:56636
+    participant ip172_20_0_10_port57285 as 172.20.0.10:57285
+    participant ip172_20_0_10_port69 as 172.20.0.10:69
+
+    ip172_20_0_11_port1024->>ip172_20_0_10_port69: RRQ(file1, {'blksize': 15356})
+    ip172_20_0_10_port50059-->>ip172_20_0_11_port1024: OACK({'blksize': 15356})
+    ip172_20_0_10_port50059->>ip172_20_0_11_port1024: OACK({'blksize': 15356})
+    ip172_20_0_11_port1024->>ip172_20_0_10_port69: RRQ(file1, {'blksize': 15356})
+    ip172_20_0_10_port35995-->>ip172_20_0_11_port1024: OACK({'blksize': 15356})
+    ip172_20_0_10_port35995->>ip172_20_0_11_port1024: OACK({'blksize': 15356})
+    ip172_20_0_11_port1024->>ip172_20_0_10_port50059: ERROR(8, )
+    Note over ip172_20_0_11_port1024,ip172_20_0_10_port69: ⏰ Clock +1s (total: 1s)
+    Note over ip172_20_0_11_port1024,ip172_20_0_10_port69: ⏰ Clock +1s (total: 2s)
+    ip172_20_0_11_port1024->>ip172_20_0_10_port50059: ERROR(8, )
+    Note over ip172_20_0_11_port1024,ip172_20_0_10_port69: ⏰ Clock +1s (total: 3s)
+    Note over ip172_20_0_11_port1024,ip172_20_0_10_port69: ⏰ Clock +1s (total: 4s)
+    ip172_20_0_11_port1024->>ip172_20_0_10_port50059: ERROR(8, )
+    ip172_20_0_11_port1024->>ip172_20_0_10_port50059: ERROR(8, )
+    ip172_20_0_12_port1025->>ip172_20_0_10_port69: RRQ(file1, {'timeout': 2})
+    ip172_20_0_10_port35995-->>ip172_20_0_11_port1024: OACK({'blksize': 15356})
+    ip172_20_0_10_port57285-->>ip172_20_0_12_port1025: OACK({'timeout': 2})
+    ip172_20_0_10_port57285->>ip172_20_0_12_port1025: OACK({'timeout': 2})
+    ip172_20_0_10_port35995->>ip172_20_0_11_port1024: OACK({'blksize': 15356})
+    ip172_20_0_12_port1025->>ip172_20_0_10_port57285: ERROR(8, )
+    Note over ip172_20_0_11_port1024,ip172_20_0_10_port69: ⏰ Clock +1s (total: 5s)
+    ip172_20_0_11_port1026->>ip172_20_0_10_port69: RRQ(file1, {'blksize': 18265})
+    ip172_20_0_10_port56636-->>ip172_20_0_11_port1026: OACK({'blksize': 18265})
+    ip172_20_0_10_port56636->>ip172_20_0_11_port1026: OACK({'blksize': 18265})
+    ip172_20_0_12_port1025->>ip172_20_0_10_port57285: ERROR(8, )

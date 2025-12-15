@@ -1,0 +1,20 @@
+---
+config:
+  theme: base
+---
+stateDiagram
+  direction LR
+  [*] --> Idle
+  Idle --> Ready:loadSpec
+  Ready --> Solving1:assumeTransition
+  Ready --> Ready:rollback
+  Solving1 --> Prepared:sat/timeout
+  Solving1 --> Ready:unsat
+  Prepared --> Ready:nextStep
+  Prepared --> Solving4:checkInvariant
+  Solving4 --> Prepared:sat/unsat/timeout
+  Ready --> Solving2:query/assumeState/nextModel
+  Solving2 --> Ready:sat/unsat/timeout
+  Ready --> [*]:disposeSpec
+  Ready --> Solving3:checkInvariant
+  Solving3 --> Ready:sat/unsat/timeout

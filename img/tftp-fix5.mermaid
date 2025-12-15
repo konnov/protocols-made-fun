@@ -1,0 +1,21 @@
+---
+config:
+  theme: redux-color
+---
+sequenceDiagram
+    participant ip172_20_0_11_port1024 as 172.20.0.11:1024
+    participant ip172_20_0_12_port1025 as 172.20.0.12:1025
+    participant ip172_20_0_10_port1027 as 172.20.0.10:1027
+    participant ip172_20_0_10_port69   as 172.20.0.10:69
+
+    %% First RRQ attempt
+    ip172_20_0_11_port1024 ->> ip172_20_0_10_port69: RRQ(file1, {'timeout': 1})
+
+    ip172_20_0_10_port1027 -->> ip172_20_0_11_port1024: OACK({timeout: 1})
+    ip172_20_0_10_port1027 ->> ip172_20_0_11_port1024: OACK({timeout: 1})
+
+    ip172_20_0_11_port1024 ->> ip172_20_0_10_port69: ERROR(8)
+
+    %% Second RRQ attempt from a different client port
+    ip172_20_0_12_port1025 ->> ip172_20_0_10_port69: RRQ(file1, {timeout: 2})
+    ip172_20_0_10_port1027 -->> ip172_20_0_12_port1025: OACK({timeout: 2})
