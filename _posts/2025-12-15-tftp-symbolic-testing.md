@@ -13,7 +13,7 @@ feed: false
 
 **Author:** [Igor Konnov][]
 
-**Date:** December 10, 2025
+**Date:** December 15, 2025
 
 *Note: I mostly stopped using LLMs for proof-reading my texts. Enjoy my typos
 and weird grammar!*
