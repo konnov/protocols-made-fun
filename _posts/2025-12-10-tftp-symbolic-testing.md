@@ -561,11 +561,10 @@ networking and managing multiple containers for potential future projects.
 └──────────────────────────────────────────────────────────────────┘
 ```
 
-**LLMs will do the work (huh).** As you could have guessed, I had no interest in
+**LLMs will do the work?** As you could have guessed, I had no interest in
 writing the Docker files and the test harness from scratch. Having heard from so
 many people that LLMs are so amazing, I have decided to give Claude a try at
-generating the test harness.  (At this point, you probably guessed that I have
-mixed feelings about the end result.)
+generating the test harness.
 
 Hence, I spent about four hours writing a very detailed prompt for Claude that
 explained how I want the test harness to look like (the above architecture
@@ -586,11 +585,10 @@ The result looked so exciting and amazing until I looked at `CHECKLIST.md`:
 - Additional 2-4 hours for polish and testing (tasks 5-8)
 ```
 
-When I read the thing above, I almost spilled my coffee. What? Claude left me
-homework? I was also baffled by the hourly estimates: Are these Claude hours or
-my hours? In the hindsight, the estimate was surprisingly accurate. It took me
-about 1.5 days to make this code do the first test run that made the harness
-exchange UDP packets with the TFTP server.
+What is going on? Claude left me homework? I was also baffled by the hourly
+estimates: Are these Claude hours or my hours? In the hindsight, the estimate
+was surprisingly accurate. It took me about 1.5 days to make this code do the
+first test run that made the harness exchange UDP packets with the TFTP server.
 
 Then I looked at `harness.py`, which was supposed to be "complete and
 production-ready". Guess what? The main loop was left as a TODO!
@@ -616,7 +614,7 @@ communicating over UDP in modern Python. I could easily lose a couple of days
 there.
 
 Of course, the exploration logic was totally broken. After all, there is not
-much for LLMs to learn from. We are trying something new here!
+much for LLMs to learn from. We are doing something new here!
 
 **1.5 days later.** Something was working, but even the happy path was not
 there. So I had to do the baby steps with Claude. Here are just a few examples
@@ -650,8 +648,8 @@ point, Claude was producing quite convoluted log parsers with regular
 expressions and python loops. Of course, it needs a human to define a simple log
 format instead.
 
-Below is an example of such a log run, visualized with the generated script in
-Mermaid:
+Below is an example of such a test run, visualized from the log by the generated
+script in Mermaid:
 
 <picture>
   <img class="responsive-img"
@@ -662,10 +660,10 @@ Mermaid:
 If you look at the above diagram carefully, you will notice that server responses
 come in two flavors:
 
- 1. The dashed arrows indicates that the client has received the UDP packet from
+ 1. The dashed arrows indicate that the client has received the UDP packet from
     the UDP socket.
 
- 1. The solid arrow indicates that the UDP packet was successfully replayed
+ 1. The solid arrows indicate that the UDP packet was successfully replayed
     with the TLA<sup>+</sup> specification.
 
 ## 8. Debugging the TLA<sup>+</sup> specification with the implementation
@@ -811,8 +809,9 @@ the extended version with option negotiation defined in RFC 2347. In combination
 with packet duplication, this produced a very interesting deviation. I've not
 saved the full trace, but here is what happened. The server processes an RRQ
 with options and sends an OACK, as per RFC 2347. After that, the TLA<sup>+</sup>
-specification of the server interprets an earlier RRQ without options and sends
-a DATA packet, as per RFC 1350. The implementation does not expect this.
+specification of the server receives an earlier RRQ without options and sends a
+DATA packet in response, as per RFC 1350. This corrupts the internal state of
+the server in the specification.
 
 Obviously, this is caused by non-determinism in the TLA<sup>+</sup>
 specification, which allows the protocol to behave according to both protocol
@@ -857,21 +856,138 @@ comparison to the mature implementation of `tftp-hpa`. I have not designed this
 protocol and did not give much thought to it. Obviously, the engineers have
 spent much more time about its behavior.
 
-## 9. Adding adversarial behavior to the clients
+## 9. Testing against adversarial behavior
 
 At some point I thought: My clients are too well-behaved! They never lose,
-duplicate, or reorder packets. What if they start to misbehave within the limits
-of the protocol? Would I be able to find more bugs in the implementation?
+duplicate, or reorder packets. What if they start to misbehave within the
+protocol boundaries? Would I be able to find bugs in the implementation? Yes, I
+did. Keep reading.
+
+Hence, I have added one more action that simply lets a client retransmit a
+previously sent packet in `Next`:
+
+{% github_embed
+  https://raw.githubusercontent.com/konnov/tftp-symbolic-testing/refs/heads/main/spec/tftp.tla
+  tlaplus 691-692
+ %}
+
+Below is the action `ClientSendDup`. It does not change the specification state
+at all. However, it produces an action that retransmits a packet in the harness:
+
+{% github_embed
+  https://raw.githubusercontent.com/konnov/tftp-symbolic-testing/refs/heads/main/spec/tftp.tla
+  tlaplus 642-649
+ %}
+
+You can find the complete specification [here][final-spec].
+
+**Protocol deviation.** It mostly worked as expected. However, a few traces were
+reporting deviations. Here is one of them. It's pretty long. Look for an
+explanation below.
+
+<picture>
+  <img class="responsive-img"
+    src="{{ site.baseurl }}/img/tftp-malformed-ack.svg"
+    alt="The implementation diverging from the specification">
+</picture>
+
+The last UDP packet is an acknowledgment for block 1 from the server. If
+you think about the protocol, the server should never send an ACK in the
+sessions associated with read requests (RRQ). ACK packets are only sent by the
+clients.  Yet, this is what was happening. To double check this, I've asked
+Claude to capture the traffic in pcap files in the Docker containers. Indeed,
+Wireshark was showing the ACK packet from the server. Moreover, the packet was
+malformed. It looked like the option acknowledgment (OACK) packet, but had the
+first bytes of an ACK packet. Sounds like memory corruption!
+
+Here is the core sequence of events that produced this behavior (a few details
+removed):
+
+ 1. The client sends `RRQ("file1", blksize=NN)` to the server (172.20.0.10:69).
+ 
+ 1. The server sends a few OACK packets to the client.
+ 
+ 1. The client erroneously sends `ACK(1)` to the server, which is a duplicate
+ packet from an earlier transfer. It could be simply a delayed packet though.
+ 
+ 1. The server responds with `ACK(1)` of length 64, which is basically the
+ `OACK` packet with the first 4 bytes coming from `ACK(1)`.
+
+**Investigation.** Luckily, the source code is readily available. I've looked
+into the function `tftp_sendfile` of `tftp-hpa` that handles read requests.
+Indeed, the option negotiation loop receives the option acknowledgment packet
+`OACK` and waits for an `ACK` from the client. There are two cases:
+
+ - When it receives an `ACK` for block 0, it breaks out of the loop and continues with sending data blocks. **This is the happy path.**
+
+ - When it receives an acknowledgment for a block other than 0, block, it simply
+ continues the loop, retransmitting `OACK`. The issue is that **the code uses
+ the same buffer** for sending `OACK` and receiving `ACK` packets via different
+ pointers! Hence, it later sends an `OACK` packet that is corrupted with the
+ contents of the `ACK` packet. **I don't think I would have found this by code
+ review!**
+ 
+Just for fun, I checked it with Claude. It could not identify this issue. The
+trick is that the same buffer is pointed to by two different pointers, so Claude
+is not clever enough to track this aliasing. When I explained the issue to
+Claude, it was ecstatic: You have found a critical!
+
+I've continued looking for the blast radius of this bug. Even though it somewhat
+of memory corruption, it cannot crash the server, as the code is still writing
+to the same buffer, allocated by the server itself. All it can do is to produce
+malformed packets. Hence, it could probably crash a sloppy client, but would not
+do much harm to a well-behaved client and itself. Moreover, if a client crashes
+in such a case, anybody else on the network could have sent the malformed ACK as
+well.
+
+So this is a bug (from the specification p.o.v.), but it does not result in a
+vulnerability. In any case, it was a deviation from the protocol specification.
+Finally, one point to the specification!
 
 | Spec bugs     | Implementation bugs     |
 |---------------|-------------------------|
 | 13            | 1                       |
 
- 
+**Contacting the author.** To be on the safe side, before writing this blog
+post, I've contacted the author of tftp-hpa. As I expected, he also replied that
+TFTP is an unencrypted unauthenticated protocol, so we should not expect much
+security there.
+
+## 10. The specification as a differential testing oracle
+
+After finding the above implementation bug, I have decided to test other TFTP
+implementations as well. This is where Claude was super useful again. I just
+asked it to generate Dockerfiles for other implementations, which it did
+quickly. It happened that a similar issue existed in another implementation. I
+could not figure out the root cause in the source code of that other
+implementation, as it is a bit harder to read than `tftp-hpa`. Hence, not giving
+the details here.
+
+Except this second deviation, the other implementations worked fine. Overall,
+the specification scored another point:
+
+| Spec bugs     | Implementation bugs     |
+|---------------|-------------------------|
+| 13            | 2                       |
+
+What I find really interesting here. Whenever I talk to engineers about formal
+specifications, they tell me that they would like to do **differential testing**
+instead of writing specifications. Meaning that they would like to compare the
+behavior of one implementation against another implementation. However,
+differential testing is not magic. It requires test inputs to compare the
+implementations. Hence, **if the test suite is missing adversarial test cases,
+both implementations may pass the tests**, even though they are both wrong.
+
+What we did here with the TLA<sup>+</sup> specification is something more than
+just differential testing. First, we have debugged the specification against
+`tftp-hpa`, so we have extracted its expected behavior into a relatively small
+and precise formal specification. Second, we have used this specification to
+produce the tests for another implementation!
+
 ## 10. Prior Work
 
 In this section, I've collected the previous work on model-based testing and
-runtime monitoring with TLA<sup>+</sup>:
+trace validation with TLA<sup>+</sup>:
 
  - Nagendra et. al. Model guided fuzzing of distributed systems (2025).
    Check [the talk][N25].
@@ -899,6 +1015,10 @@ runtime monitoring with TLA<sup>+</sup>:
 
 I am pretty sure that this list is incomplete, so please let me know if you are
 aware of any other relevant work.
+
+## 11. Conclusions
+
+TODO: fuzzing
 
 
 [Igor Konnov]: https://konnov.phd
@@ -936,6 +1056,7 @@ aware of any other relevant work.
 [gotfpd]: https://github.com/pin/tftp
 [testing repo]: https://github.com/konnov/tftp-symbolic-testing
 [initial commit]: https://github.com/konnov/tftp-symbolic-testing/tree/6fb00d1878b7e37a629868ac25b853d95b16cbdc
+[final-spec]: https://github.com/konnov/tftp-symbolic-testing/tree/main/spec
 [types-prompt]: https://github.com/apalache-mc/apalache/blob/main/prompts/type-annotation-assistant.md
 [Mermaid]: https://www.mermaidchart.com/
 [Section 6 of RFC 1350]: https://www.rfc-editor.org/rfc/rfc1350#section-6
