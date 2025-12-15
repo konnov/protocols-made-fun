@@ -1,12 +1,14 @@
 ---
 layout: post
 title: "Interactive Symbolic Testing of TFTP with TLA+ and Apalache"
-date: 2025-12-09
+date: 2025-12-15
 categories: tlaplus
 tlaplus: true
 math: true
 shell: true
 typescript: true
+hidden: true
+feed: false
 ---
 
 **Author:** [Igor Konnov][]
