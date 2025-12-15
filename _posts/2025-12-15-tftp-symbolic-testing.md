@@ -18,12 +18,53 @@ feed: false
 *Note: I mostly stopped using LLMs for proof-reading my texts. Enjoy my typos
 and weird grammar!*
 
+**Abstract.** As promised in the [blog post on small-scope
+hypothesis][small-scope], I am continuing with the main body of the talk that I
+presented at the internal Nvidia FM Week 2025. This blog post is rather long. If
+you do not want to read the whole post, here are the most exciting new
+developments:
+
+ - A new JSON-RPC server API for [Apalache][], which allows external tools and
+ AI-generated scripts to drive the symbolic execution of TLA<sup>+</sup>
+ specifications and interact with the solver.  Read the section on [The new
+ JSON-RPC API of Apalache](#4-the-new-json-rpc-api-of-apalache).
+ 
+ - A new approach to conformance testing of TLA<sup>+</sup> specifications and
+ real implementations, called **interactive symbolic testing**. This approach is
+ inspired by the work of [McMillan and Zuck (2019)][MZ19] on testing of the QUIC
+ protocol with IVy and SMT. Read the section on [Interactive symbolic testing with
+ SMT](#3-interactive-symbolic-testing-with-smt).
+ 
+ - A case study on testing multiple open-source implementations of TFTP,
+ including unexpected (but not harmful) deviations from the protocol. This case
+ study includes the experience report on using Claude to bootstrap the harness
+ for testing TFTP implementations against the TLA<sup>+</sup> specification.
+ Read the section on [Bootstrapping the testing harness with
+ Claude](#7-bootstrapping-the-testing-harness-with-claude) and [Testing against
+ adversarial behavior](#9-testing-against-adversarial-behavior).
+
+In this blog post, I am using TLA<sup>+</sup>. The same tooling and results
+equally apply to [Quint][].
+
+**Contents:**
+
+1. [Introduction](#1-introduction)
+2. [Model-based testing and trace validation](#2-model-based-testing-and-trace-validation)
+3. [Interactive symbolic testing with SMT](#3-interactive-symbolic-testing-with-smt)
+4. [The new JSON-RPC API of Apalache](#4-the-new-json-rpc-api-of-apalache)
+5. [Case study: TFTP protocol](#5-case-study-tftp-protocol)
+6. [Initial TLA<sup>+</sup> specification of TFTP](#6-initial-tla-specification-of-tftp)
+7. [Bootstrapping the testing harness with Claude](#7-bootstrapping-the-testing-harness-with-claude)
+8. [Debugging the TLA<sup>+</sup> specification with the implementation](#8-debugging-the-tla-specification-with-the-implementation)
+9. [Testing against adversarial behavior](#9-testing-against-adversarial-behavior)
+10. [The specification as a differential testing oracle](#10-the-specification-as-a-differential-testing-oracle)
+11. [Prior Work](#10-prior-work)
+12. [Conclusions](#11-conclusions)
+
 ## 1. Introduction
 
-As promised in the [blog post on small-scope hypothesis][small-scope], I am
-continuing with the main body of the talk that I presented at the internal
-Nvidia FM Week 2025. This work aims at demonstrating how to answer the
-following two questions with [Apalache][]:
+This work aims at demonstrating how to answer the following two questions with
+[Apalache][]:
 
 <p class="highlight-question"><strong><em>
   1. How to test the actual implementation against its TLA<sup>+</sup> specification?
@@ -331,7 +372,7 @@ The Wikipedia page on [TFTP][] gives us a good overview of the protocol. In
 short, TFTP is a simple protocol to transfer files over UDP. It supports reading
 and writing files from a remote server. It is mostly used for booting from the
 network. The protocol is simple enough to be specified in TLA<sup>+</sup>
-without too much effort, yet it has enough complexity to make the testing
+without too much effort, yet it has enough complexity to make the testing effort
 interesting. Actually, I've only specified reading requests (RRQ) and no writing
 requests (WRQ) to keep the scope manageable.
 
@@ -363,11 +404,11 @@ option negotiation:
     alt="Read request and transfer as per RFC 2347">
 </picture>
 
-The cool thing about TFTP is that there are multiple open-source implementations
-of TFTP clients and servers in different programming languages. Here are some
-of them that ChatGPT helped me to find:
+The cool thing about TFTP is that it has multiple open-source implementations of
+TFTP clients and servers in different programming languages. Here are some of
+them:
 
- - [tftp-hpa][] is the canonical implementation of TFTP for Linux systems in C.
+ - [tftp-hpa][] is the canonical implementation of TFTP for Linux (and UNIX?) in C.
  
  - [atftpd][] is advanced TFTP, which is intended for fast boot in large
  clusters, also in C.
@@ -375,8 +416,7 @@ of them that ChatGPT helped me to find:
  - [dnsmasq][] is a lightweight DNS and DHCP server that also includes a TFTP
  server, in C.
  
- - [rs-tftpd][] (Rust) is an implementation of a TFTP server in Rust (because
- there must be a library in Rust).
+ - [rs-tftpd][] (Rust) is an implementation of a TFTP server in Rust.
  
  - [gotfpd][] (Go) is an implementation of a TFTP server in Go.
  
@@ -404,9 +444,9 @@ which imports several several auxiliary modules:
  use [this prompt][types-prompt].
  
  - `util.tla` defines common utility definitions such as `Min`, `Max`, and
- options conversions.
+ option conversions.
  
-Finally, `MC2_tftp.tla` defines a protocol instances of two clients and one
+Finally, `MC2_tftp.tla` defines a protocol instance of two clients and one
 server. If you stumble upon the definitions that end with `View` there, ignore
 them. They are not essential for this blog post. I used them to experiment with
 more advanced symbolic exploration scripts.
@@ -1019,7 +1059,23 @@ aware of any other relevant work.
 
 ## 11. Conclusions
 
-TODO: fuzzing
+This was a lot of text! Thank you for reading it till the end. It may look like
+this project took me eternity to complete. In reality, it took me about two
+weeks of part-time work to do it from the start to the end. I could probably do
+some parts of it faster, if I did not rely too much on Claude for generating the
+test harness. To be fair, I also had to add a few features to the new Apalache
+API, as I was still experimenting with it.
+
+What I find interesting in the approach outlined here is that it presents a
+(relatively) lightweight way to testing real-world protocols. Thinking of
+fuzzing in this context, I don't think a standard fuzzer would have found the
+above deviations in TFTP. Indeed, the implementation was not crashing. Nor it
+was accessing memory out of bounds. It was just producing malformed packets
+occasionally. To detect this, we needed a test oracle that would tell us,
+whether a deviation happened. Writing such an oracle manually would be tedious and
+error-prone. Instead, we have used a formal specification as a precise and
+unambiguous oracle.
+
 
 
 [Igor Konnov]: https://konnov.phd
