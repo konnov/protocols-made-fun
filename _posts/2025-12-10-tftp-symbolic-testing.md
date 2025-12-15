@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Symbolic Testing of TFTP implementations"
+title: "Interactive Symbolic Testing of TFTP with TLA+ and Apalache"
 date: 2025-12-09
 categories: tlaplus
 tlaplus: true
@@ -35,7 +35,7 @@ For long time, these questions have been mostly ignored by the TLA<sup>+</sup>
 community. Over the last 4-5 years, researchers started to look into these two
 questions and found out that having a connection between the specification and
 the implementation is much more useful than it was initially thought. (The
-engineers were telling this to me that all the time!) Check [the prior work
+engineers were telling this to me all the time!) Check [the prior work
 section](#10-prior-work) for the papers and talks on this topic.  Roughly
 speaking, the approaches follow the two ideas:
 
@@ -45,15 +45,15 @@ speaking, the approaches follow the two ideas:
  specification. Hence, we are testing, whether the implementation matches the
  inputs and outputs, as produced by the specification.
  
- - **Trace validation (TV)**. The traces collected from the implementation are
- checked against the TLA<sup>+</sup> specification. This is an answer to
+ - **Trace validation (TV)**. The traces are collected from the implementation
+ and checked against the TLA<sup>+</sup> specification. This is an answer to
  question 2 above. State exploration is driven by the implementation, e.g., by
- executing the existing test suites, or just running the system for some time.
- Hence, we are testing whether the specification matches the inputs and outputs
- of the implementation. Alternatively, we may check whether the implementation
- states may be lifted to the specification states, in order to produce a
- feasible trace in the specification.
-
+ executing the existing test suites, or just by running the system for some
+ time. Hence, we are testing whether the specification matches the inputs and
+ outputs of the implementation. Alternatively, we may check whether the
+ implementation states may be lifted to the specification states, in order to
+ produce a feasible trace in the specification.
+ 
 If you re-read the description of MBT and TV above, you may notice that there
 are two more dimensions of how to do testing:
 
@@ -139,9 +139,9 @@ Trace validation also has its challenges:
  
  1. Someone has to instrument the SUT to trace the relevant events. In some
  cases, it easy to do, e.g., by tracing message exchanges, as presented by
- [Markus Kuppe et. al. (2024)][K24b] In other cases, it may be quite difficult
+ [Markus Kuppe et. al. (2024)][K24b]. In other cases, it may be quite difficult
  to do, e.g., when we want to dump the internal states of the SUT. In a
- multi-threaded system this may require a global lock and traversing large data
+ concurrent system this may require a global lock and traversing large data
  structures. In a distributed system, this may further require a distributed
  snapshot or using vector clocks.
  
@@ -152,18 +152,17 @@ Trace validation also has its challenges:
 
 As we can see, both model-based testing and trace validation in their above
 formulation are non-interactive. They both require a complete trace to be
-produced first, and there is no feedback loop between the specification and the
-implementation.
+produced first, and **there is no feedback loop between the specification and
+the implementation**.
 
 There is a third way to do conformance testing that leverages SMT solvers, yet
-receives feedback from the implementation during the testing. I am not sure how
-it is called exactly, so I would call it **interactive symbolic testing**.  I
-think the first time I heard about this approach was from [Giuliano Losa][],
-when he explained the paper by [Ken McMillan and Leonore Zuck (2019)][MZ19] to
-me. If you have not read this paper yet, I highly recommend doing so. On the
-naming side, McMillan and Zuck call their approach "specification-based
-testing". I find this name to be a bit non-descriptive, as MBT is also
-specification-based.
+receives feedback from the implementation during the testing. I will call it
+**interactive symbolic testing**. I think the first time I heard about this
+approach was from [Giuliano Losa][], when he explained the paper by [Ken
+McMillan and Leonore Zuck (2019)][MZ19] to me. If you have not read this paper
+yet, I highly recommend doing so. On the naming side, McMillan and Zuck call
+their approach "specification-based testing". I find this name to be a bit
+non-descriptive, as MBT is also specification-based.
 
 The idea is to generate an action with the SMT solver by following the
 specification, execute it against the implementation, and then feed the results
@@ -192,18 +191,18 @@ execution of TLA<sup>+</sup> specifications.
 [Thomas][Thomas Pani] and I wanted to have a lightweight API that we could use
 from any programming language without writing too much boilerplate code. At this
 point, every engineer would whisper: hey, you need gRPC, I've got some. Well, we
-tried gRPC in the integration of [Apalache][] with [Quint][]. Too much hassle
-for my taste.
+tried gRPC in the integration of [Apalache][] with [Quint][]. It is hard to call
+gRPC lightweight.
 
-So we have decided to go with [JSON-RPC][], which is a very simple protocol that
-works over HTTP/HTTPS. Implementing a JSON-RPC server is quite straightforward.
-Since Apalache is written in Scala, which is JVM-compatible, we can use the
-well-known and battle-tested libraries. Perhaps, a bit unexpectedly for a Scala
-project, I've decided to implement this server with [Jetty][] for serving the
-HTTP requests and [Jackson][] for JSON serialization. (The reason is that we
-have already burnt ourselves with fancy but poorly supported libraries in
-Scala.) The resulting server is lightweight and fast. Moreover, it can be tested
-with command-line tools like [curl][].
+So we have decided to go with [JSON-RPC][] this time, which is a very simple
+protocol that works over HTTP/HTTPS. Implementing a JSON-RPC server is quite
+straightforward.  Since Apalache is written in Scala, which is JVM-compatible,
+we can use the well-known and battle-tested libraries. Perhaps, a bit
+unexpectedly for a Scala project, I've decided to implement this server with
+[Jetty][] for serving the HTTP requests and [Jackson][] for JSON serialization.
+(The reason is that we have already burnt ourselves with fancy but poorly
+supported libraries in Scala.) The resulting server is lightweight and fast.
+Moreover, it can be tested with command-line tools like [curl][].
 
 The state-chart diagram of the Apalache JSON-RPC server for a single session is
 shown below.
@@ -278,7 +277,7 @@ $ curl -X POST http://localhost:8822/rpc \
        "params":{"sessionId":"1","invariantId":0},"id":3}'
 ```
 
-Since invariant `Inv3` is violated by the initial state, the server will return
+Since invariant `Inv3` is violated by the initial state, the server returns
 `VIOLATED`, along with a counter-example trace:
 
 ```json
@@ -328,11 +327,11 @@ project.
 
 The Wikipedia page on [TFTP][] gives us a good overview of the protocol. In
 short, TFTP is a simple protocol to transfer files over UDP. It supports reading
-and writing files from a remote server. The protocol is simple enough to be
-specified in TLA<sup>+</sup> without too much effort, yet it has enough
-complexity to make the testing interesting. Actually, I've only specified
-reading requests (RRQ) and no writing requests (WRQ) to keep the scope
-manageable.
+and writing files from a remote server. It is mostly used for booting from the
+network. The protocol is simple enough to be specified in TLA<sup>+</sup>
+without too much effort, yet it has enough complexity to make the testing
+interesting. Actually, I've only specified reading requests (RRQ) and no writing
+requests (WRQ) to keep the scope manageable.
 
 You can find more detailed specifications in the original [RFC 1350][], as well
 as in its extensions [RFC 2347][], [RFC 2348][], and [RFC 2349][]. RFC 1350
