@@ -16,8 +16,8 @@ feed: false
 
 **Date:** December 15, 2025
 
-*Note: I mostly stopped using LLMs for proof-reading my texts. Enjoy my typos
-and weird grammar!*
+*Note: I mostly stopped using LLMs for proof-reading my texts, so you know
+it is not all generated. Enjoy my typos and weird grammar!*
 
 **Abstract.** As promised in the [blog post on small-scope
 hypothesis][small-scope], I am continuing with the main body of the talk that I
@@ -25,25 +25,30 @@ presented at the internal Nvidia FM Week 2025. This blog post is rather long. If
 you do not want to read the whole post, here are the most exciting new
 developments:
 
- - A new JSON-RPC server API for [Apalache][], which allows external tools and
- AI-generated scripts to drive the symbolic execution of TLA<sup>+</sup>
- specifications and interact with the solver.  Read the section on [The new
- JSON-RPC API of Apalache](#4-the-new-json-rpc-api-of-apalache).
+ - A **new JSON-RPC server API** for [Apalache][], which allows external tools
+ and scripts to drive the symbolic execution of TLA<sup>+</sup> specifications
+ and interact with the solver.  Read the section on [The new JSON-RPC API of
+ Apalache](#4-the-new-json-rpc-api-of-apalache).
  
- - A new approach to conformance testing of TLA<sup>+</sup> specifications and
- real implementations, called **interactive symbolic testing**. This approach is
- inspired by the work of [McMillan and Zuck (2019)][MZ19] on testing of the QUIC
- protocol with IVy and SMT. Read the section on [Interactive symbolic testing with
- SMT](#3-interactive-symbolic-testing-with-smt).
+ - A new approach to **conformance testing of TLA<sup>+</sup> specifications and
+ real implementations**, called **interactive symbolic testing**. This approach
+ is inspired by the work of [McMillan and Zuck (2019)][MZ19] on testing of the
+ QUIC protocol with IVy and SMT. Read the section on [Interactive symbolic
+ testing with SMT](#3-interactive-symbolic-testing-with-smt).
  
- - A case study on testing multiple open-source implementations of TFTP,
+ - A case study on **testing multiple open-source implementations of TFTP**,
  including unexpected (but not harmful) deviations from the protocol. This case
  study includes the experience report on using Claude to bootstrap the harness
  for testing TFTP implementations against the TLA<sup>+</sup> specification.
  Read the section on [Bootstrapping the testing harness with
  Claude](#7-bootstrapping-the-testing-harness-with-claude) and [Testing against
- adversarial behavior](#9-testing-against-adversarial-behavior).
-
+ adversarial behavior](#9-testing-against-adversarial-behavior).  My point is
+ not **not to brainwash you into LLMs**, but to **show what works for me and
+ what does not**.
+ 
+ - The specification and the test harness are **openly available**. Check the
+ [Github repository][testing repo].
+ 
 In this blog post, I am using TLA<sup>+</sup>. The same tooling and results
 equally apply to [Quint][].
 
@@ -59,8 +64,8 @@ equally apply to [Quint][].
 8. [Debugging the TLA<sup>+</sup> specification with the implementation](#8-debugging-the-tla-specification-with-the-implementation)
 9. [Testing against adversarial behavior](#9-testing-against-adversarial-behavior)
 10. [The specification as a differential testing oracle](#10-the-specification-as-a-differential-testing-oracle)
-11. [Prior Work](#10-prior-work)
-12. [Conclusions](#11-conclusions)
+11. [Prior Work](#11-prior-work)
+12. [Conclusions](#12-conclusions)
 
 ## 1. Introduction
 
@@ -723,26 +728,26 @@ TLA<sup>+</sup> specification was wrong versus how many times the implementation
 |---------------|-------------------------|
 | 0             | 0                       |
 
-Actually, tftp-hpa is a quite mature implementation, so I was not expecting any
-bugs there. Keep reading to see what I found.
+Actually, [tftp-hpa][] is a quite mature implementation, so I was not expecting
+any bugs there. Keep reading to see what I found.
 
 ### 8.1. Sending errors on read request
 
 The first surprise came from my misunderstanding of how exactly TFTP is supposed
-to reply to a malformed read request (RRQ). Since a client sends RRQ to the
+to reply to a malformed read request (`RRQ`). Since a client sends `RRQ` to the
 control port 69 of the server, I thought that the server would reply with an
-error packet (ERROR) from the port 69, instead of introducing a new ephemeral
+error packet (`ERROR`) from the port 69, instead of introducing a new ephemeral
 port.
 
 This is what [RFC 2347][] says about option negotiation:
 
-> ...the server should simply omit the option from the OACK, respond with an
-> alternate value, or send an ERROR packet, with error code 8, to terminate the
+> ...the server should simply omit the option from the `OACK`, respond with an
+> alternate value, or send an `ERROR` packet, with error code 8, to terminate the
 > transfer.
 
-No explanation about the port from which the ERROR packet is sent. Well, my
+No explanation about the port from which the `ERROR` packet is sent. Well, my
 understanding was wrong. The server always allocates a new ephemeral port for
-sending the ERROR packet. This kind of makes sense, as the implementation simply
+sending the `ERROR` packet. This kind of makes sense, as the implementation simply
 forks on a new request. One score to the implementation:
 
 | Spec bugs     | Implementation bugs     |
@@ -755,10 +760,12 @@ always wrong, as the busybox implementation always uses port 69!"
 
 ### 8.2. The server may send duplicate packets
 
-Well, I knew that, but was lazy to write an action in the specification that would
-handle duplicate packets. So the server retransmitted a DATA packet, which produced
-a deviation in the TLA<sup>+</sup> specification. Another score to the
-implementation:
+Well, I knew that, but was lazy to write an action in the specification that
+would handle duplicate packets. This is a typical shortcut when writing a
+specification, since duplicate packets do not change the specification state and
+considered "stuttering" steps. The server implementation retransmitted a `DATA`
+packet, which produced a deviation in the TLA<sup>+</sup> specification. Another
+score to the implementation:
 
 | Spec bugs     | Implementation bugs     |
 |---------------|-------------------------|
@@ -778,7 +785,7 @@ accept any input at any time and respond to it, possibly, with an error message.
 This assumption makes sense for synchronous systems (such as vending machines?),
 where the tester can wait for the SUT to be ready to accept the input.
 
-However, TFTP is not like that at all. The client may send an ERROR packet at
+However, TFTP is not like that at all. The client may send an `ERROR` packet at
 any point in time, and the server does not have to reply to it! This is exactly
 a deviating test run I saw produced by the harness.
 
@@ -806,9 +813,10 @@ port. [RFC 1350][] explains how the server allocates ephemeral ports:
 > In order to create a connection, each end of the connection chooses a TID for
 > itself, to be used for the duration of that connection. The TID's chosen for a
 > connection should be randomly chosen, so that the probability that the same
-> number is chosen twice in immediate succession is very low.”
+> number is chosen twice in immediate succession is very low.
 
-Well, in our test run, the event of low probability happened:
+Well, in our test run, the event of low probability happened (actually, I gave
+the TFTP server a small range of ports to use):
 
 <picture>
   <img class="responsive-img"
@@ -829,7 +837,7 @@ score to the implementation:
 
 Guess what? A very similar thing happened on a successful file transfer as well.
 Here is a pruned version of the trace that shows this behavior (the initial
-sequence of RRQ-OACK-DATA-ACK is omitted for brevity):
+sequence of `RRQ`-`OACK`-`DATA`-`ACK` is omitted for brevity):
 
 <picture>
   <img class="responsive-img"
@@ -878,7 +886,7 @@ on the specification side that I fixed:
  - The server may send invalid (e.g., outdated) packets.
 
  - My understanding of TFTP timeouts was wrong. I thought that a timeout was
- meant to closes a transfer session. Instead, timeouts in TFTP are just
+ meant to close a transfer session. Instead, timeouts in TFTP are just
  triggering packet retransmissions. The number of retries is not specified in
  the RFCs. In practice, tftp-hpa seems to retry 5 times before giving up.
 
@@ -893,10 +901,11 @@ work.
 | 13            | 0                       |
  
 
-In the end, it looks like my TLA<sup>+</sup> specification was a bit sloppy, in
-comparison to the mature implementation of `tftp-hpa`. I have not designed this
-protocol and did not give much thought to it. Obviously, the engineers have
-spent much more time about its behavior.
+It looks like my TLA<sup>+</sup> specification was a bit sloppy, in comparison
+to the mature implementation of `tftp-hpa`. I have not designed this protocol
+and did not give much thought to it. Obviously, the engineers have spent much
+more time thinking about its behavior. You can check the specification in
+[the repository][testing repo].
 
 ## 9. Testing against adversarial behavior
 
@@ -1026,7 +1035,7 @@ just differential testing. First, we have debugged the specification against
 and precise formal specification. Second, we have used this specification to
 produce the tests for another implementation!
 
-## 10. Prior Work
+## 11. Prior Work
 
 In this section, I've collected the previous work on model-based testing and
 trace validation with TLA<sup>+</sup>:
@@ -1058,24 +1067,52 @@ trace validation with TLA<sup>+</sup>:
 I am pretty sure that this list is incomplete, so please let me know if you are
 aware of any other relevant work.
 
-## 11. Conclusions
+## 12. Conclusions
 
 This was a lot of text! Thank you for reading it till the end. It may look like
-this project took me eternity to complete. In reality, it took me about two
-weeks of part-time work to do it from the start to the end. I could probably do
-some parts of it faster, if I did not rely too much on Claude for generating the
-test harness. To be fair, I also had to add a few features to the new Apalache
-API, as I was still experimenting with it.
+this project took me eternity to complete. In reality, **it took me about two
+weeks of part-time work** to do it from the start to the end. On one hand, I
+could probably do some parts of it faster, if I did not rely too much on Claude
+for generating the test harness. On the other hand, **Claude quickly generates
+the code to start and stop services, parse their logs, etc.** All the things
+Docker were done by Claude, and I did not have to touch them. This is the work
+that I find annoying and LLMs just do. In this experiment, I've burned all of my
+monthly premium requests included in the Copilot plan. To be fair, I also had to
+add a few features to the new Apalache API, as I was still experimenting with
+it.
 
 What I find interesting in the approach outlined here is that it presents a
-(relatively) lightweight way to testing real-world protocols. Thinking of
-fuzzing in this context, I don't think a standard fuzzer would have found the
-above deviations in TFTP. Indeed, the implementation was not crashing. Nor it
+(relatively) **lightweight way to testing real-world protocols**. Thinking of
+fuzzing in this context, **I don't think a standard fuzzer would have found the
+above deviations in TFTP**. Indeed, the implementation was not crashing. Nor it
 was accessing memory out of bounds. It was just producing malformed packets
-occasionally. To detect this, we needed a test oracle that would tell us,
-whether a deviation happened. Writing such an oracle manually would be tedious and
-error-prone. Instead, we have used a formal specification as a precise and
-unambiguous oracle.
+occasionally. To detect this, **we needed a test oracle** that would tell us,
+whether a deviation happened. Writing such an oracle manually would be tedious
+and error-prone. Instead, we have used **a formal specification as a precise and
+unambiguous oracle**. Unambiguous does not mean deterministic though. Our oracle
+is non-deterministic, but it precisely defines the allowed behaviors of the
+protocol.
+
+In addition to that, [tftp-hpa][] is not just a piece of code that was written
+by a startup over a weekend, or generated by an LLM. It is **a very mature
+project that has been written by professionals in the times when people had time
+to think**. They took care of the [Sorcerer's Apprentice Syndrome][]. This is
+why I was quite surprised to see an unexpected packet from the server.
+
+On the Apalache side, we finally have a symbolic approach that **scales much
+better than bounded model checking**! In my experiments with TFTP, the new JSON
+RPC API was showing the signs of **slowing down only after about 200 steps** of
+symbolic execution. This is a huge improvement over the previous approach, where
+Apalache was slowing down after about 10-20 steps. It is easy to see why. We
+feed the concrete responses from the implementation into the SMT context, which
+immediately produce a lot of simplifications.
+
+We can **improve this even further to essentially unlimited number of steps**.
+All what is needed is to keep the concrete trace on the harness side and
+initialize the SMT context with the last state of the trace. We can do it every
+step, or every `N` steps. The cool thing is that it all can be done outside of
+Apalache, on the harness side! This opens the door to **quick experimentation**
+with various strategies of mixing **symbolic and concrete execution**.
 
 
 
@@ -1118,3 +1155,4 @@ unambiguous oracle.
 [types-prompt]: https://github.com/apalache-mc/apalache/blob/main/prompts/type-annotation-assistant.md
 [Mermaid]: https://www.mermaidchart.com/
 [Section 6 of RFC 1350]: https://www.rfc-editor.org/rfc/rfc1350#section-6
+[Sorcerer's Apprentice Syndrome]: https://en.wikipedia.org/wiki/Sorcerer%27s_Apprentice_syndrome
