@@ -8,8 +8,8 @@ tlaplus: true
 math: true
 shell: true
 typescript: true
-hidden: true
-feed: false
+hidden: false
+feed: true
 ---
 
 **Author:** [Igor Konnov][]
