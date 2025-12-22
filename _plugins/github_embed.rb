@@ -21,9 +21,19 @@ module Jekyll
 
       begin
         code = URI.open(@url).read
-        if @lines && @lines =~ /^\d+-\d+$/
-          start_line, end_line = @lines.split('-').map(&:to_i)
-          code = code.lines[start_line - 1..end_line - 1].join
+        if @lines
+          # Support comma-separated ranges like "5-10,15-20,30-40"
+          lines = code.lines
+          selected_lines = []
+          
+          @lines.split(',').each do |range|
+            if range =~ /^\d+-\d+$/
+              start_line, end_line = range.split('-').map(&:to_i)
+              selected_lines.concat(lines[start_line - 1..end_line - 1])
+            end
+          end
+          
+          code = selected_lines.join unless selected_lines.empty?
         end
         "```#{@lang}\n#{code}\n```"
       rescue => e
