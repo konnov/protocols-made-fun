@@ -345,6 +345,32 @@ By the way, our example was so simple, that we could encode it in [Z3][]
 directly via its python bindings. We could use other model checkers. If you do
 that, let me know!
 
+## 6. Bonus: Hypothesis + Crosshair
+
+Hypothesis offers an integration with [Crosshair][], which is a symbolic
+execution engine for Python using Z3. I did not explore this integration in
+depth. Claude told me that it is sufficient to just add this import to the test:
+
+```python
+import hypothesis_crosshair_provider
+```
+
+Well, this did not help me to find the violation of identity for `add256`.
+If you know how to make it work, please let me know!
+
+In addition, we can make sure that the identity test indeed fails when we
+a large value as an example:
+
+```python
+@given(st.integers(0))
+@settings(max_examples=100000)
+ @example(2**256)  # This should fail!
+def test_add256_unbounded_inputs_identity(a):
+    """Test identity property for add256: a + 0 = a."""
+    assert add256(a, 0) == a
+    assert add256(0, a) == a
+```
+
 <!-- References -->
 
 [^scott-talk]: I've never met Scott Wlaschin in real life, online or offline. I hope he would not mind me referring to him by his first name.
@@ -361,3 +387,4 @@ that, let me know!
 [prompt injection]: https://genai.owasp.org/llmrisk/llm01-prompt-injection/
 [example-repo]: https://github.com/konnov/pbt-example-summation
 [domain and distribution]: https://hypothesis.readthedocs.io/en/latest/explanation/domain.html
+[Crosshair]: https://crosshair.readthedocs.io/en/latest/
