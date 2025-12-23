@@ -9,8 +9,8 @@ math: true
 shell: true
 python: true
 lisp: true
-hidden: true
-feed: false
+hidden: false
+feed: true
 ---
 
 **Author:** [Igor Konnov][]
