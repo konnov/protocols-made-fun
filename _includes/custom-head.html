@@ -40,9 +40,15 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
 {%- endif -%}
 
 {%- if page.go or page.typescript or page.tlaplus or page.quint or page.rust or page.shell or page.lean -%}
-  <!-- load highlightjs -->
+  <!-- load highlightjs styles, both light and dark -->
   <link rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.0/styles/isbl-editor-light.css"></link>
+        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.0/styles/isbl-editor-light.css"
+        media="(prefers-color-scheme: light)"></link>
+  <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.0/styles/isbl-editor-dark.css"
+        media="(prefers-color-scheme: dark)"></link>
+
+  <!-- load highlightjs scripts -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.0/highlight.min.js"></script>
   {%- if page.go -%}
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.0/languages/go.min.js"></script>
