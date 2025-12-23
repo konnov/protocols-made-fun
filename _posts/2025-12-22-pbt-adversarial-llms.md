@@ -61,21 +61,21 @@ A totally valid point!
 In addition to the standard unit tests, we should also write the expected
 properties of our implementation. The PBT frameworks test the code by producing
 input values at random. For example, have a look at [Hypothesis][]. While this
-may seem to be a silly idea at first, property-based tests may uncover tricky
+may seem to be a silly idea at first, property-based tests uncovers tricky
 bugs. Moreover the input value distribution does not have to be uniform. Keep
 reading to see how this helps us catch the adversarial developer.
 
 Here are the three properties of addition that Scott used to defeat the
 adversarial developer: 
 
- - **identity**: for any number $x$, $x + 0 = x$,
-  - **commutativity**: for any numbers $x$ and $y$, $x + y = y + x$, and
-  - **associativity**: for any numbers $x$, $y$, and $z$, $(x + y) + z = x + (y +
-    z)$.
+ - **identity**: for every number $x$, we have $x + 0 = x$,
+  - **commutativity**: for every numbers $x$ and $y$, we have $x + y = y + x$, and
+  - **associativity**: for every numbers $x$, $y$, and $z$, we have
+    $(x + y) + z = x + (y + z)$.
 
-At this point of the talk, I was like: Wait a minute! I could continue this game
-of the adversarial developer. Before continuing with the game, let's look at
-where we are with respect to the code and the properties. Here is the obvious
+At this point of the talk, I was like: Wait a minute! **I could continue this
+game of the adversarial developer**. Before doing this, let's look at where we
+are with respect to the code and the properties. Here is the obvious
 implementation of integer addition in Python, since the language has built-in
 support for unbounded integers:
 
@@ -109,7 +109,7 @@ tests/test_add.py::test_associativity PASSED                                   [
 ## 3. Symbolic model checking with Apalache
 
 I decided to go even further and write a TLA<sup>+</sup> specification, to check
-the three properties with [Apalache][] and [Z3][] (only show the relevant parts):
+the three properties with [Apalache][] and [Z3][] (only showing the relevant parts):
 
 {% github_embed
   https://raw.githubusercontent.com/konnov/pbt-example-summation/2164991e4d0a9891fc4919843dabe21775421bf0/tla-spec/Add.tla
@@ -118,11 +118,12 @@ the three properties with [Apalache][] and [Z3][] (only show the relevant parts)
 
 With the above specification, we define a very simple state machine that
 non-deterministically picks three integers `x`, `y`, and `z` with `InitMath`.
-These variables do not change in the state machine, as you can see from the
-definition of `Next`. We use `x`, `y`, and `z` to define three properties of
-addition: `Identity`, `Commutativity`, and `Associativity`. As you can see,
-these definitions are parameterized by the operator `F`, which is `Add` for now.
-Our invariant `InvMath` is simply the conjunction of the three properties.
+These variables do not change their values in the state machine, as you can see
+from the definition of `Next`. We use `x`, `y`, and `z` to define three
+properties of addition: `Identity`, `Commutativity`, and `Associativity`. As you
+can see, these definitions are parameterized by the operator `F`, which is `Add`
+for now.  Our invariant `InvMath` is simply the conjunction of the three
+properties.
 
 This is how we run Apalache to check the invariant:
 
@@ -130,13 +131,13 @@ This is how we run Apalache to check the invariant:
 $ cd pbt-example-summation/tla-spec
 $ docker pull ghcr.io/apalache-mc/apalache
 $ docker run --rm -v `pwd`:/var/apalache ghcr.io/apalache-mc/apalache \
-  check --length=0 --init=InitMath --inv=InvMath Add.tla
+  check --init=InitMath --inv=InvMath --length=0 Add.tla
 ```
 
 With the above command, we tell Apalache to check the invariant `InvMath`
 starting from the initial state `InitMath`. The `--length=0` option tells
 Apalache to unroll `Next` zero times, which is sufficient in our case, since the
-state machine does not change the variables.
+state machine does not change the values of the state variables.
 
 
 ## 4. Playing adversarial
@@ -174,6 +175,10 @@ These tests also pass:
 $ poetry run pytest tests/test_add.py \
   -k "test_add32_identity or test_add32_commutativity or test_add32_associativity" \
   --verbose
+...
+tests/test_add.py::test_add32_identity PASSED                                [ 33%]
+tests/test_add.py::test_add32_commutativity PASSED                           [ 66%]
+tests/test_add.py::test_add32_associativity PASSED                           [100%]
 ```
 
 What is going on? Well, identity, commutativity, and associativity also hold for
@@ -196,9 +201,10 @@ Checker reports no error up to computation length 0
 Total time: 2.205 sec
 ```
 
-The SMT solver Z3 confirms that identity, commutativity, and associativity also
-hold for 32-bit integers with overflow semantics. This is provided that we pick
-the integers from the range $[0, 2^{32})$, which we do with `Init32`.
+Further, the SMT solver Z3 confirms that identity, commutativity, and
+associativity hold for 32-bit integers with overflow semantics. This is provided
+that we pick the integers from the range $[0, 2^{32})$, which we do with
+`Init32`.
 
 However, **this is not what we wanted initially**. Let's catch the adversarial
 developer with the PBT tests that pick unbounded non-negative integers:
@@ -282,6 +288,19 @@ Why? Hypothesis does not try $2^{256}$ as a magic number. I gave it the budget o
 100,000 examples, so it had a chance to try multiple powers of two, but it did
 not try anything above $2^{256} - 1$.
 
+We can make sure that the identity test indeed fails when we pass $2^{256}$
+as an example:
+
+```python
+@given(st.integers(0))
+@settings(max_examples=100000)
+@example(2**256)  # This should fail!
+def test_add256_unbounded_inputs_identity(a):
+    """Test identity property for add256: a + 0 = a."""
+    assert add256(a, 0) == a
+    assert add256(0, a) == a
+```
+
 ### 4.4. Catching the adversarial developer with Apalache
 
 Here is how we modify the TLA<sup>+</sup> specification to use `Add256`:
@@ -301,8 +320,8 @@ State 0: state invariant 0 violated.
 Total time: 2.272 sec
 ```
 
-If we check the counterexample, we see that the solver picks quite a large
-number for `x`:
+If we check the counterexample, we see that the solver picks the value $2^{256}$
+for `x`:
 
 ```sh
 $ head -n 14 _apalache-out/Add.tla/2025-12-22T15-20-31_8166638658721555415/violation.tla
@@ -365,12 +384,12 @@ are the crucial parts, which I've accompanied with explanations:
 ```
 
 If you want to understand what is going on, read the comments above. At first, I
-was actually surprised that the SMT constraints did not contain the addition at
-all. Then I recalled that Apalache has a bunch of rewriting rules that simplify
-the constraints. In this case, the symbolic model checker has applied the
-property `a + 0 = a` internally to get rid of the addition (yeah, it is the
-identity property!).  It was an equivalent transformation, so we are still left
-with the modulo operator.
+was actually surprised that the SMT constraints did not contain addition at all.
+Then I recalled that Apalache has a bunch of rewriting rules that simplify the
+constraints. In this case, the symbolic model checker has applied the property
+`a + 0 = a` internally to get rid of the addition (yeah, it is the identity
+property!).  It was an equivalent transformation, so we are still left with the
+modulo operator.
 
 Essentially, we are asking Z3 to solve these inequalities over integers:
 
@@ -383,12 +402,13 @@ x &\pmod{2^{256}} \neq 0
 \right.
 $$
 
-What is crucial here is that the SMT solver Z3 has the following contract.
-When we give it a set of constraints and ask it to check their satisfiability,
-it will apply sound algorithms to arrive at one of the three answers:
+What is crucial here is that the SMT solver **Z3 has a strict contract with the
+user**. When we give it a set of constraints and ask it to check their
+satisfiability, it will apply sound algorithms to arrive at one of the three
+answers:
 
  - **sat**: there is a solution to the above constraints, i.e., an assignment of
-   values to the variables that makes all the constraints true,
+   values to the variables that makes the constraints true,
 
  - **unsat**: there is no solution, and
  
@@ -399,9 +419,10 @@ In contrast to PBT, it is not just like "I tried a few random inputs and did not
 find a bug". If Z3 answers `sat`, there is indeed a solution to the constraints,
 and the solver gives it to us as a model. If it returns `unsat`, there is no
 solution. Whenever you see `unknown`, it's a bad day. Sometimes, it also
-indicates a bug in the solver itself, as I've found a few times. However, Z3 is
-pretty reliable in my experience, and producing an `unknown` is an achievement,
-unless you set very tight timeouts.
+indicates a bug in the solver itself, as I've [reported to the Z3 developers a
+few times][my-z3-issues]. However, Z3 is pretty reliable in my experience, and
+producing an `unknown` is an achievement, unless you set very tight timeouts,
+or use tricky non-linear arithmetic.
 
 If you are further interested in how Z3 actually solved the above constraints, a
 simple answer is that it used something like the [Simplex algorithm][] for
@@ -457,21 +478,23 @@ depth. Claude told me that it is sufficient to just add this import to the test:
 import hypothesis_crosshair_provider
 ```
 
-Well, this did not help me to find the violation of identity for `add256`.
-If you know how to make it work, please let me know!
+Well, this did not help me to find the violation of identity for `add256`.  If
+you know how to make Crosshair work with Hypothesis, please let me know!
 
-In addition, we can make sure that the identity test indeed fails when we
-a large value as an example:
+When we run Crosshair directly on the `add256` implementation, it finds the
+issue with identity right away:
 
-```python
-@given(st.integers(0))
-@settings(max_examples=100000)
- @example(2**256)  # This should fail!
-def test_add256_unbounded_inputs_identity(a):
-    """Test identity property for add256: a + 0 = a."""
-    assert add256(a, 0) == a
-    assert add256(0, a) == a
+```sh
+$ poetry run crosshair check tests.test_add_crosshair.check_add256_identity
+.../python/tests/test_add_crosshair.py:12: error: false when calling check_add256_identity(115792089237316195423570985008687907853269984665640564039457584007913129639936) (which returns False)
 ```
+
+The Crosshair test looks like follows:
+
+{% github_embed
+  https://raw.githubusercontent.com/konnov/pbt-example-summation/d802eccab3bda7e7b4638a9c650749e9d1fc4812/python/tests/test_add_crosshair.py
+  python 3-14
+ %}
 
 <!-- References -->
 
@@ -492,3 +515,4 @@ def test_add256_unbounded_inputs_identity(a):
 [Crosshair]: https://crosshair.readthedocs.io/en/latest/
 [Simplex algorithm]: https://en.wikipedia.org/wiki/Simplex_algorithm
 [Decision Procedures]: https://www.decision-procedures.org/
+[my-z3-issues]: https://github.com/Z3Prover/z3/issues?q=is%3Aissue%20state%3Aclosed%20author%3Akonnov
