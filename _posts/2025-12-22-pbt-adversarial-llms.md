@@ -282,7 +282,7 @@ Why? Hypothesis does not try $2^{256}$ as a magic number. I gave it the budget o
 100,000 examples, so it had a chance to try multiple powers of two, but it did
 not try anything above $2^{256} - 1$.
 
-## 4.4. Catching the adversarial developer with Apalache
+### 4.4. Catching the adversarial developer with Apalache
 
 Here is how we modify the TLA<sup>+</sup> specification to use `Add256`:
 
@@ -327,7 +327,7 @@ sure that it's not using magic numbers, go and change the modulo operator in
 `Add256` to a large prime number, e.g., $2^{256} + 297$. Rerun the model
 checker, and it will still find the issue with identity.
 
-## 4.5. For the curious: how Apalache and Z3 work together
+### 4.5. For the curious: how Apalache and Z3 work together
 
 Our example is so simple that we can even go over the actual SMT constraints
 that Apalache generates. Let's run Apalache with the option `--debug`:
