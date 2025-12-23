@@ -8,6 +8,7 @@ tlaplus: true
 math: true
 shell: true
 python: true
+lisp: true
 hidden: true
 feed: false
 ---
@@ -19,15 +20,16 @@ feed: false
 I present a simple example that illustrates how property-based testing (PBT) and
 model checking can help us catch unexpected behaviors of LLMs when they are used
 to generate code. The example is inspired by the [talk on property-based
-testing][scott-pbt] by [Scott Wlaschin][]. If you find my other blog posts too
-complicated, this one is for you!
+testing][scott-pbt] by [Scott Wlaschin][]. If you are looking for a light
+example that stresses the importance of writing good properties and having them
+checked, this post is for you.
 
 ## 1. Adversarial Developer
 
 A few days ago, I watched the [talk on property-based testing][scott-pbt] by
 [Scott Wlaschin][]. He started the talk by introducing a persona that he called
 the **Enterprise Developer from Hell**. This is basically someone who
-implements a feature to satisfy the given requirements, but they do it
+implements a feature to satisfy the given requirements, but they do it in
 creatively evil (or just stupid) and unexpected ways. I will call such a persona
 an **adversarial developer** in the rest of this post.
 
@@ -38,11 +40,17 @@ going to repeat Scott's talk. [Watch it][scott-pbt]! It's instructive and
 entertaining.
 
 Back in 2020, of course, Scott added that we are often aversarial developers
-ourselves, and our peers are rarely that evil. Now, we are a few weeks away from
-2026, and we have such a peer! It is called an LLM, or just AI, as the corporate
-marketers prefer. LLMs are not necessarily evil, but they are definitely less
-predictable than human software engineers. I am not talking about [prompt
+ourselves, and our peers are rarely that evil. It could be an enthusiastic
+junior developer, who has just started and now wants to rewrite the whole code
+base.  Now, we are a few weeks away from 2026, and **we definitely have such a
+peer**!  It is called an LLM, or just AI, as the corporate marketers prefer.
+LLMs are not necessarily evil, but they are definitely less predictable than
+experienced human software engineers. I am not talking about [prompt
 injection][] here, which is another real issue with LLMs.
+
+To be clear, in the rest of this text, I am talking about how an **LLM could
+behave like an adversarial developer when it generates code**. It does not mean
+that I ran one of the commercial LLMs and got those results.
 
 ## 2. Property-Based Testing
 
@@ -171,8 +179,10 @@ $ poetry run pytest tests/test_add.py \
 What is going on? Well, identity, commutativity, and associativity also hold for
 32-bit integers with overflow semantics. **If we let AI generate not only the
 implementation but also the properties, we may end up with a correct
-implementation, but not the one we wanted!** This is an example of the classical
-question in requirements engineering:
+implementation, but not the one we wanted!** In this case, imagine an LLM has
+added the `@given` decorators for the inputs to be in the range in $[0,
+2^{32})$, whereas we wanted unbounded integers! This is an example of the
+classical question in requirements engineering:
 *do we get things right* vs. *do we get the right things*.
 
 Just to double check that it is not the random chance, I ran Apalache on the
@@ -274,6 +284,13 @@ not try anything above $2^{256} - 1$.
 
 ## 4.4. Catching the adversarial developer with Apalache
 
+Here is how we modify the TLA<sup>+</sup> specification to use `Add256`:
+
+{% github_embed
+  https://raw.githubusercontent.com/konnov/pbt-example-summation/refs/heads/main/tla-spec/Add.tla
+  tlaplus 23-23,29-34,87-90
+ %}
+
 Apalache immediately finds the issue with identity when we run it with `Add256`:
 
 ```shell
@@ -309,6 +326,91 @@ the SMT solver [Z3][], which solves integer constraints. If you want to make
 sure that it's not using magic numbers, go and change the modulo operator in
 `Add256` to a large prime number, e.g., $2^{256} + 297$. Rerun the model
 checker, and it will still find the issue with identity.
+
+## 4.5. For the curious: how Apalache and Z3 work together
+
+Our example is so simple that we can even go over the actual SMT constraints
+that Apalache generates. Let's run Apalache with the option `--debug`:
+
+```sh
+$ docker run --rm -v `pwd`:/var/apalache ghcr.io/apalache-mc/apalache \
+  check --debug \
+  --length=0 --init=InitNat --inv=Inv256 Add.tla
+```
+
+Open the file
+`_apalache-out/Add.tla/2025-12-23T09-31-46_16436938462355564409/log0.smt` (the
+timestamp will be different on your machine). The log is pretty verbose. Here
+are the crucial parts, which I've accompanied with explanations:
+
+```lisp
+-- the initial value of `x`
+(declare-const $C$6 Int)
+-- `x` is a natural number
+(assert (>= $C$6 0))
+-- introduce a boolean variable for the identity property
+(declare-const $C$9 Bool)
+-- Encode the identity property for `Add256` and `x`.
+-- The huge number is 2^256.
+(assert (= $C$9
+   (= (mod $C$6
+           115792089237316195423570985008687907853269984665640564039457584007913129639936)
+      $C$6)))
+-- assert that the identity property is violated
+(declare-const $C$10 Bool)
+(assert (= (not $C$10) $C$9))
+(assert $C$10)
+-- check, whether the above constraints have a solution
+(check-sat)
+```
+
+If you want to understand what is going on, read the comments above. At first, I
+was actually surprised that the SMT constraints did not contain the addition at
+all. Then I recalled that Apalache has a bunch of rewriting rules that simplify
+the constraints. In this case, the symbolic model checker has applied the
+property `a + 0 = a` internally to get rid of the addition (yeah, it is the
+identity property!).  It was an equivalent transformation, so we are still left
+with the modulo operator.
+
+Essentially, we are asking Z3 to solve these inequalities over integers:
+
+$$
+\left\{
+\begin{aligned}
+x &\ge 0\\
+x &\pmod{2^{256}} \neq 0
+\end{aligned}
+\right.
+$$
+
+What is crucial here is that the SMT solver Z3 has the following contract.
+When we give it a set of constraints and ask it to check their satisfiability,
+it will apply sound algorithms to arrive at one of the three answers:
+
+ - **sat**: there is a solution to the above constraints, i.e., an assignment of
+   values to the variables that makes all the constraints true,
+
+ - **unsat**: there is no solution, and
+ 
+ - **unknown**: the constraints are too hard, or it took the solver too long to
+   solve them.
+
+In contrast to PBT, it is not just like "I tried a few random inputs and did not
+find a bug". If Z3 answers `sat`, there is indeed a solution to the constraints,
+and the solver gives it to us as a model. If it returns `unsat`, there is no
+solution. Whenever you see `unknown`, it's a bad day. Sometimes, it also
+indicates a bug in the solver itself, as I've found a few times. However, Z3 is
+pretty reliable in my experience, and producing an `unknown` is an achievement,
+unless you set very tight timeouts.
+
+If you are further interested in how Z3 actually solved the above constraints, a
+simple answer is that it used something like the [Simplex algorithm][] for
+integer linear programming. The constraints are linear in our case, so Z3 could
+apply this algorithm to find a solution. Most likely, Z3 used a more recent
+algorithm, but the idea is similar.
+
+In case you really want to know how SMT solvers work under the hood, I recommend
+starting with the book on [Decision Procedures][] by Kroening and Strichman.
 
 ## 5. Conclusions
 
@@ -388,3 +490,5 @@ def test_add256_unbounded_inputs_identity(a):
 [example-repo]: https://github.com/konnov/pbt-example-summation
 [domain and distribution]: https://hypothesis.readthedocs.io/en/latest/explanation/domain.html
 [Crosshair]: https://crosshair.readthedocs.io/en/latest/
+[Simplex algorithm]: https://en.wikipedia.org/wiki/Simplex_algorithm
+[Decision Procedures]: https://www.decision-procedures.org/
