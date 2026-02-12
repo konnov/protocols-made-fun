@@ -1,0 +1,166 @@
+---
+layout: post
+title: "AI-generated shovels or second-order slop? "
+date: 2026-02-12
+author: Igor Konnov
+categories: llms testing
+tlaplus: true
+math: true
+shell: true
+python: true
+hidden: false
+feed: true
+---
+
+**Author:** [Igor Konnov][]
+
+**Date:** February 12, 2026
+
+In 2025, we saw plenty of enthusiastic announcements about LLMs generating (or,
+more correctly, *replicating*) relatively complex projects, like web
+applications or video games. Apparently, many people got so tired of all this
+that you could hear the words "AI slop" quite often. So often that some very
+important people asked all of us not to call the output of their amazing tools
+"slop".
+
+Anyhow, by the end of 2025, the amazing AI tools became *visibly more amazing*.
+In the early 2025, I was only using ChatGPT and Copilot to produce small code
+snippets and scripts, as well as to search for design solutions. In the summer
+of 2025, I used Copilot & Sonnet to produce boilerplate code. Now, I am using
+Claude Code and Copilot (both with Opus and Sonnet) to generate code and tests
+as well as to fix linting errors (still the hardest task!). I still have to
+define the core data structures, write non-standard code and explain in detail
+what I want to achieve. It is still hit and miss (see the most notable examples
+below). However, it becomes economically feasible for me to use these tools,
+unless they get 10x more expensive. By the way, after finishing my experiment
+with [Symbolic testing of TFTP][tftp-testing], I was still not sure, whether I
+wanted to use agentic tools every day. The feedback loop was energy draining. It
+looks like the tools became better, and I've learnt how to give them more
+focused and smaller-scoped tasks.
+
+It still remains to see an AI-generated product that generates revenue. Are
+there any examples, except the AI coding assistants themselves? In any case,
+this is not what I wanted to write about. I wanted to write about something that
+looks like a new phenomenon to me. We all have heard the saying: *When everyone
+is digging for gold, sell shovels*. Just over a couple of weeks, there was an
+unusual number of announcements about development tools that were generated with
+AI. This is what I call *AI-generated shovels*.  These announcements bring so
+much joy to AI influencers that it's hard to find anything else. Do these tools
+actually work though? At a closer look, some of the shovels break on a first
+try, some happen to work only under very specific conditions. Most likely, you
+have seen some announcements, and you know what I am talking about. It is also
+very likely that you have not seen all of the announcements that I have in mind.
+Since we are talking about development tools, libraries, or even languages that
+do not actually work, not web apps, it is not just slop, it is a *second-order
+slop*!
+
+I am not going to call any names, or do any fingerpointing. This is not the
+point. What makes me seriously concerned about the second-order slop is that the
+software development industry was cutting corners everywhere even before the AI
+boom. "Move fast and break things!", [minimum-viable products][MVP] (or are they
+solutions?), [product-market-fit][PMF], etc. A couple of years ago, I was joking
+that I would rather not use an MVP compiler, operating system, or database.
+Well, AI tools generate compilers. Here we are.
+
+**Shovel ad!** Since I have been working on pre-LLM shovels like [Apalache][]
+and [Quint][] myself, I am in the shovel business, too! (Do you know that SMT
+solvers were also considered AI?) Of course, I am developing new shovels, and
+they are also AI-generated and AI-compatible, and they are the best in town, by
+the way. So if you want to talk, [drop me a message](#want-to-talk). To be fair,
+my time tracker shows that I've burnt six weeks of my time on the latest shovel,
+in addition to burning through and over my Copilot and Claude budgets, so it's
+not entirely AI-generated. Perhaps, a bit artisanal.
+
+**Good shovel or slop?** How do we distinguish a robust AI-generated shovel from
+a second-order slop? In the pre-LLM years, I could just look at the test suite
+and say, whether the team was serious or not. Those amazing days when blockchain
+engineers would nod their heads to the question: *Do you have integration
+tests?* They were proudly demonstrating a *single* integration test that was 3-5
+KLOC long. Also, by looking at the code, you could sense whether it was written
+just yesterday, or someone had time to think about it.
+
+In 2026, the code may look professionally written and follow all the best
+practices and still be completely broken. On top of that, LLMs generate
+well-looking tests, if you ask them. A lot of tests! The more tests you have,
+the more tokens you have to pay for. Win-win. Moreover, the generated
+tests may check that the code works, but this does not mean that the code does
+what you expect. This happened to me (see below).
+
+So when we evaluate an AI-generated shovel, we want to answer two questions:
+
+ 1. Does this shovel do what the authors claim it should do?
+ 
+ 1. Does this shovel work beyond a few simple tests?
+
+These are not new questions. The testing and verification communities have been
+trying to automate validation and verification for long time. Interestingly,
+these questions did not get much attention over the last two decades. It was
+expected that open source projects and products by respectable companies were
+"more or less" correct and complete. In my understanding, two factors
+contributed to that:
+
+ 1. The code was written and reviewed by highly-skilled engineers, for fun or
+ profit.
+
+ 1. The projects were extensively tested with continuous integration tools.
+
+Now, if an LLM generated the code just yesterday, and all tests pass, are we
+good? It is hard to tell. If we follow the brand new *spec-driven development*,
+we have a bunch of markdown files. Apparently, we should ask a few other LLMs to
+check whether the implemented code matches the markdown specs. Something like
+that.
+
+**Can we do better?** I believe we can. For example, if you are developing
+a distributed system, do not generate it directly. First, write or AI-generate a
+sequential reference implementation (e.g., in Python) or, even better, a formal
+specification (e.g., in TLA<sup>+</sup>). Second, use this artifact to produce
+the code for the actual distributed system.
+
+Why does this help? For two reasons:
+
+ 1. It is easier to compare the reference implementation or specification
+ against the markdown requirements than to compare the entire codebase.
+
+ 1. The reference implementation/specification is an actionable artifact.  Use
+ it to produce tests for the distributed system. Instead of generating 10 KLOC
+ tests once (and paying for loading them into the LLM context), automatically
+ produce as many tests as you can. This is where property-based testing and
+ model checking start to shine. See [Symbolic testing of TFTP][tftp-testing]
+ for an example.
+
+**Examples of LLMs hit and miss.** If you [follow me on LinkedIn][LI], you could
+have seen some of the examples. Below are the most curious instances that I would
+regret missing in a code review (by Sonnet 4.5 and Opus 4.5):
+
+ - **The set minimum.** When I asked an LLM to implement the search for the
+ minimal element of a set by using its string representation (called `repr` in
+ Python), it collected all set elements in a list, sorted them by `repr` and
+ picked the first one. It looks like my requirement was slightly non-standard.
+
+ - **Sets with duplicates.** An LLM has produced a unit test that constructed
+ the data structure called "Set" from the list `[ V(1), V(2), V(3), V(1) ]` and
+ asserted that the set cardinality was 4. The test passed, since `V` did not
+ have equality defined, and two different instances of `V(1)` had different
+ references. So it was doing the things right, but it was not doing the right
+ things!
+ 
+ - **Performance bottleneck.** An LLM translated my Python function into a Rust
+ function. Perfectly looking code. However, instead of adding a big integer `x`
+ to the big integer `y`, it used an iterator that made `y` increments of `x`.
+ Almost like a theorem prover! A logically correct solution, but my Rust code
+ was slower than the Python code. I only spotted it after running the profiler.
+ Again, a bit non-standard setup threw it off.
+ 
+ 
+## Want to talk?
+ 
+<!-- References -->
+
+[contact]: https://konnov.phd/posts/service/
+[Igor Konnov]: https://konnov.phd
+[LI]: https://www.linkedin.com/in/igor-konnov-at/
+[tftp-testing]: {% link _posts/2025-12-15-tftp-symbolic-testing.md %}
+[Apalache]: https://apalache-mc.org
+[Quint]: https://github.com/informalsystems/quint
+[MVP]: https://en.wikipedia.org/wiki/Minimum_viable_product
+[PMF]: https://en.wikipedia.org/wiki/Product-market_fit
