@@ -243,15 +243,15 @@ hard.**
 </figure>
 
 In the experiments, I am using a custom framework to represent the above
-**specifications as programs** that makes it easy to experiment with
+**specifications-as-code** that makes it easy to experiment with
 different search procedures. To make sure that these specifications faithfully
 represent the original TLA<sup>+</sup> specifications, I do the following:
 
  1. do a code review (obviously),
 
- 1. automatically translate the programmatic specifications to TLA<sup>+</sup>
-   and check them with TLC,
-
+ 1. automatically translate the specifications to TLA<sup>+</sup> and check them
+ with TLC,
+ 
  1. run a custom-tailored model checker to compute the number of distinct states
    and check the invariants.
 
@@ -394,7 +394,7 @@ Since we can measure state coverage now, the next question is: What are these
 states that we are missing? Maybe these states are not important at all. To
 check that, I ran the random walks for the two-phase commit benchmark with 2
 resource managers for 10,000 instead of 100,000 runs. Conveniently, exactly one
-state was missing from the coverage. As my framework is programmatic, I just
+state was missing from the coverage. As our specifications are code, I just
 asked Claude to instrument the search to experimentally evaluate the visit
 frequencies per run for each reachable state. Figure 6 is quite detailed. Click
 on it to see the full-size version.
@@ -501,8 +501,8 @@ memory**. We do not have to store the states directly in memory, practical model
 checkers store hashes of states. We can go as far as to store 2-3 bits per
 state, assuming that collisions are acceptable (still better than random
 walks!). Having a machine with 128 GB of memory, we can store roughly 50
-billions of states. This is significantly more than the number of states in our
-benchmarks.
+billions of states. This is way more than the number of states in our
+benchmarks -- dozens of billions vs. thousands and millions.
 
 There are cases where randomness may find bugs, where state enumeration gets
 stuck:
