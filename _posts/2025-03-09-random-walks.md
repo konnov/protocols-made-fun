@@ -1,27 +1,27 @@
 ---
 layout: post
-title: "Why model checking if we can do random walks?"
-date: 2026-03-04
+title: "All you need is a simulator? Nope"
+date: 2026-03-09
 author: Igor Konnov
 categories: testing model-checking
 tlaplus: true
 math: true
 shell: true
 python: true
-hidden: false
+hidden: true
 feed: true
 ---
 
 **Author:** [Igor Konnov][]
 
-**Date:** March 04, 2026
+**Date:** March 09, 2026
 
 **Punchline: Testing distributed protocols with random simulation and stateful
 property-based testing (PBT) is not enough!** Yes, running a simulator for days
 is better than doing manual testing or just running unit tests. But **you will
 miss states, which may expose bugs**. **Even on very small systems.** I have
 been saying exactly this to many software engineers. Many times. However,
-whiteboard arguments do not help. As humans, we have great trust in
+whiteboard arguments do not help. As humans, we have a great deal of trust in
 probabilities, and our intuitive understanding of randomness is often wrong.
 Hence, I am giving you concrete figures and plots in this blog post. I must
 admit that my own intuition was also wrong: I expected fewer random walks to be
@@ -78,9 +78,9 @@ physical, 32 logical cores), 128 GB memory.
 
 In this set of experiments, we do random walks for the minimal instances of the
 benchmarks. We start with the **meaningful default** of 100,000 random walks,
-with at most 100 steps per walk. As you can see, only in the case of two-phase
-commit and two resource managers, we achieve complete state coverage. This is
-not surprising, since the state space of this instance has only 56 states. It's
+with at most 100 steps per walk. As you can see from Figure 1, only in the case
+of two-phase commit and two resource managers, we achieve complete state
+coverage. This is not surprising, since this instance has only 56 states. It's
 tiny! For two-phase commit with three resource managers and readers-writers with
 three actors, we achieve 85-90% coverage. This is also in the reasonable range.
 On **FPaxos with two acceptors, we achieve the 77.5% coverage with 100k random
@@ -148,7 +148,7 @@ million random walks. It is clear that **in 1-2 hours of simulation we get to
 acceptors to 100 million random walks, we get to 94.5% coverage. Nice, though it
 took us 7.5 hours to get there. However, **on FPaxos with 4 acceptors, we get a
 poor coverage of 60.4% even with 100 million random walks, which took us 8.5
-hours to run**. This benchmarks has about 11 million states. So it is reasonably
+hours to run**. This benchmark has about 11 million states. So it is reasonably
 large, but, again, **not that large by the model checking standards**.
 
 Again, **it takes the model checker TLC up to 10 minutes to enumerate all the
@@ -220,10 +220,10 @@ search. Another important metric is the *diameter* of the state space, which is
 the length of the longest shortest path between any two reachable states (read
 it again!).
 
-As you can see in Table 1, these transition systems are not that tiny as in the
-workers example, but they are actually small by the model checking standards.
-Surprisingly, they are sophisticated enough to challenge random walks!
-**Distributed protocols are hard.**
+As you can see from Table 1, these transition systems are not tiny, but they are
+actually small by the model checking standards. Surprisingly, they are
+sophisticated enough to challenge random walks! **Distributed protocols are
+hard.**
 
 <figure markdown="1">
 
@@ -309,7 +309,7 @@ Next ≜ ∃ w ∈ Worker:
 Inv ≜ (count = Cardinality(active))
 ```
 
-<figcaption>Figure 1: TLA<sup>+</sup> specification for the Workers example.</figcaption>
+<figcaption>Figure 3: TLA<sup>+</sup> specification for the Workers example.</figcaption>
 </figure>
 
 If we fix the set of workers to be `Worker = {1, 2}`, we get a nice labelled
@@ -326,7 +326,7 @@ shown below.
 </picture>
 </a></div>
 
-<figcaption>Figure 2: The labelled transition system for two workers.</figcaption>
+<figcaption>Figure 4: The labelled transition system for two workers.</figcaption>
 </figure>
 
 TLA<sup>+</sup> does not have any built-in notion of randomness or
@@ -355,11 +355,11 @@ the same as in the LTS, but we also attach probabilities to the transitions.
 </picture>
 </a></div>
 
-<figcaption>Figure 3: The MDP for two workers.</figcaption>
+<figcaption>Figure 5: The MDP for two workers.</figcaption>
 </figure>
 
 Notice that we assign probabilities for choosing the value of `w` and for
-choosing the action to execute (`Add(w)` or `Remove(w)`). For example, in the
+choosing the action to execute: `Add(w)` or `Remove(w)`. For example, in the
 initial state, we choose `w=1` with probability 0.5, then the action `Add(1)`
 with probability 0.5, which gives us a transition to the state where `active =
 {1}` and `count = 1` (with probability 0.25). However, if we choose `w=1` and
@@ -379,7 +379,7 @@ PBT frameworks usually use biased coins, instead of uniform ones.
 
 {% include tip.html content="TLC also supports random simulation, but it assigns
 probabilities differently. Given a state, TLC first computes all successors of
-the state and then chooses one of successors uniformly at random. This would
+the state and then chooses one of the successors uniformly at random. This would
 give us a different MDP that filters out disabled transitions. Both approaches
 have their merits and drawbacks. The approach of TLC requires us to enumerate
 successors, unless we use reservoir sampling. It would actually work better on
@@ -396,8 +396,8 @@ check that, I ran the random walks for the two-phase commit benchmark with 2
 resource managers for 10,000 instead of 100,000 runs. Conveniently, exactly one
 state was missing from the coverage. As my framework is programmatic, I just
 asked Claude to instrument the search to experimentally evaluate the visit
-frequencies per run for each reachable state. The figure below is quite
-detailed. Click on it to see the full-size version.
+frequencies per run for each reachable state. Figure 6 is quite detailed. Click
+on it to see the full-size version.
 
 <figure markdown="1">
 
@@ -410,7 +410,7 @@ detailed. Click on it to see the full-size version.
   </a></div>
 
   <figcaption>
-    Figure 4: Reachability frequencies for the two-phase commit benchmark with
+    Figure 6: Reachability frequencies for the two-phase commit benchmark with
     2 resource managers.
   </figcaption>
 </figure>
@@ -426,12 +426,12 @@ do that.
 
 ## 5. More coverage plots
 
-Figure 3 shows the coverage evolution for the large instances of the benchmarks.
+Figure 7 shows the coverage evolution for the large instances of the benchmarks.
 With this, we can see how increasing the number of random walks helps to
 increase the coverage.  It also demonstrates the growing volume of covered and
 missing states.
 
-I wanted to share these flame plots with you, because they look cool.
+I wanted to share these flame plots with you. I find them cool.
 
 <div class="figure-grid">
   <figure>
@@ -440,7 +440,7 @@ I wanted to share these flame plots with you, because they look cool.
         src="{{ site.baseurl }}/img/random-walks/twophase-n5-overlay.png"
         alt="Overlaid coverage of random walks for the two-phase commit benchmark with 5 resource managers">
     </picture></a>
-    <figcaption>Figure 3.a: Overlaid coverage for two-phase commit, 5 RMs.</figcaption>
+    <figcaption>Figure 7.a: Overlaid coverage for two-phase commit, 5 RMs.</figcaption>
   </figure>
   <figure>
     <a href="{{ site.baseurl }}/img/random-walks/rw-inst4-overlay.png" target="_blank" title="Click to open full-size"><picture>
@@ -448,7 +448,7 @@ I wanted to share these flame plots with you, because they look cool.
         src="{{ site.baseurl }}/img/random-walks/rw-inst4-overlay.png"
         alt="Overlaid coverage of random walks for the readers-writers benchmark with 4 actors">
     </picture></a>
-    <figcaption>Figure 3.b: Overlaid coverage for readers-writers, 4 actors.</figcaption>
+    <figcaption>Figure 7.b: Overlaid coverage for readers-writers, 4 actors.</figcaption>
   </figure>
   <figure>
     <a href="{{ site.baseurl }}/img/random-walks/fpaxos-inst3-overlay.png" target="_blank" title="Click to open full-size"><picture>
@@ -456,7 +456,7 @@ I wanted to share these flame plots with you, because they look cool.
         src="{{ site.baseurl }}/img/random-walks/fpaxos-inst3-overlay.png"
         alt="Overlaid coverage of random walks for the FPaxos benchmark with 3 acceptors">
     </picture></a>
-    <figcaption>Figure 3.c: Overlaid coverage for FPaxos, 3 acceptors.</figcaption>
+    <figcaption>Figure 7.c: Overlaid coverage for FPaxos, 3 acceptors.</figcaption>
   </figure>
   <figure>
     <a href="{{ site.baseurl }}/img/random-walks/fpaxos-inst4-overlay.png" target="_blank" title="Click to open full-size"><picture>
@@ -464,7 +464,7 @@ I wanted to share these flame plots with you, because they look cool.
         src="{{ site.baseurl }}/img/random-walks/fpaxos-inst4-overlay.png"
         alt="Overlaid coverage of random walks for the FPaxos benchmark with 4 acceptors">
     </picture></a>
-    <figcaption>Figure 3.d: Overlaid coverage for FPaxos, 4 acceptors.</figcaption>
+    <figcaption>Figure 7.d: Overlaid coverage for FPaxos, 4 acceptors.</figcaption>
   </figure>
 </div>
 
@@ -486,6 +486,15 @@ of Byzantine consensus protocols (PBFT). In PBFT, the minimal configurations
 contain 4-6 replicas, depending on the protocol. Hence, **we should expect a
 significantly worse coverage by random walks on PBFT**.
 
+Why do engineers keep running randomized experiments? Well, it is relatively
+easy to write a simulator. (It is not that easy to write one that actually
+works!) I have seen people playing with action distributions in the simulator,
+just to drive the search towards "interesting" states. Whenever I was asking,
+where the distributions were coming from, they could not explain this.
+Simulators are deceptive. You have to understand what you are doing, or,
+better, incorporate feedback. The most basic feedback is state coverage, though
+we can implement more sophisticated feedback mechanisms.
+
 From our experiments it may look like **state enumeration is all we need**. I
 would argue that it is true **as long as the set of reachable states fits into
 memory**. We do not have to store the states directly in memory, practical model
@@ -501,7 +510,7 @@ stuck:
  1. **Value domains are quite large.** For example, if we choose values from the
  set of all 64-bit integers, it is not feasible to enumerate all successors even
  for a single state. A random walk can still do some progress without getting
- stuck. One can argue that choosing a value from the set $[0, 2^{64}-1]$
+ stuck. One can argue that choosing a value from the set $[0, 2^{64})$
  uniformly at random is shooting in the dark, but sometimes it helps us to find
  bugs, especially if the large set has just a few large equivalence classes.
  Arguably, one should be able to apply data abstraction in this case. Also,
