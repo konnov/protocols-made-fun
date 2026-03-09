@@ -173,6 +173,45 @@ body {
     margin-bottom: 1em;
     width: 50%;
   }
+  .responsive-img.full-width-img {
+    margin-left: 0;
+    margin-right: 0;
+    width: 100%;
+  }
+}
+
+.figure-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1em;
+  margin: 1em 0;
+
+  figure {
+    flex: 0 1 calc(33.333% - 0.667em);
+    min-width: 220px;
+    margin: 0;
+
+    .responsive-img {
+      width: 100%;
+      margin: 0;
+    }
+  }
+}
+
+@media (min-width: 1024px) {
+  .figure-grid figure .responsive-img {
+    width: 100%;
+    margin-left: 0;
+  }
+}
+
+figure figcaption {
+  text-align: center;
+  font-style: italic;
+  font-size: 0.9em;
+  color: #666;
+  margin-top: 0.4em;
+  margin-bottom: 1em;
 }
 
 /* Highlighted question text */

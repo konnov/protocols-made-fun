@@ -1,0 +1,19 @@
+flowchart LR
+    S0["active={}, count=0"]
+    S1["active={1}, count=1"]
+    S2["active={2}, count=1"]
+    S3["active={1,2}, count=2"]
+
+    S0 -->|"Add(1)"| S1
+    S0 -->|"Add(2)"| S2
+    S1 -->|"Add(2)"| S3
+    S1 -->|"Remove(1)"| S0
+    S2 -->|"Add(1)"| S3
+    S2 -->|"Remove(2)"| S0
+    S3 -->|"Remove(1)"| S2
+    S3 -->|"Remove(2)"| S1
+
+    classDef init fill:#dbeafe,stroke:#3b82f6,stroke-width:2px,font-weight:bold
+    classDef state fill:#f8fafc,stroke:#94a3b8,stroke-width:1.5px
+    class S0 init
+    class S1,S2,S3 state
