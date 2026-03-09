@@ -1,0 +1,52 @@
+flowchart LR
+    S0["S0: active={}, count=0"]
+    S1["S1: active={1}, count=1"]
+    S2["S2: active={2}, count=1"]
+    S3["S3: active={1,2}, count=2"]
+
+    C0w1(["w=1"])
+    C0w2(["w=2"])
+    C1w1(["w=1"])
+    C1w2(["w=2"])
+    C2w1(["w=1"])
+    C2w2(["w=2"])
+    C3w1(["w=1"])
+    C3w2(["w=2"])
+
+    S0 -->|"p=½"| C0w1
+    S0 -->|"p=½"| C0w2
+    C0w1 -->|"Add(1)     p=½"| S1
+    C0w1 -->|"Remove(1)  p=½  ✗"| S0
+    C0w2 -->|"Add(2)     p=½"| S2
+    C0w2 -->|"Remove(2)  p=½  ✗"| S0
+
+    S1 -->|"p=½"| C1w1
+    S1 -->|"p=½"| C1w2
+    C1w1 -->|"Remove(1)  p=½"| S0
+    C1w1 -->|"Add(1)     p=½  ✗"| S1
+    C1w2 -->|"Add(2)     p=½"| S3
+    C1w2 -->|"Remove(2)  p=½  ✗"| S1
+
+    S2 -->|"p=½"| C2w1
+    S2 -->|"p=½"| C2w2
+    C2w1 -->|"Add(1)     p=½"| S3
+    C2w1 -->|"Remove(1)  p=½  ✗"| S2
+    C2w2 -->|"Remove(2)  p=½"| S0
+    C2w2 -->|"Add(2)     p=½  ✗"| S2
+
+    S3 -->|"p=½"| C3w1
+    S3 -->|"p=½"| C3w2
+    C3w1 -->|"Remove(1)  p=½"| S2
+    C3w1 -->|"Add(1)     p=½  ✗"| S3
+    C3w2 -->|"Remove(2)  p=½"| S1
+    C3w2 -->|"Add(2)     p=½  ✗"| S3
+
+    classDef state fill:#f8fafc,stroke:#94a3b8,stroke-width:1.5px,font-size:13px
+    classDef init fill:#dbeafe,stroke:#3b82f6,stroke-width:2px,font-weight:bold,font-size:13px
+    classDef choice fill:#fef3c7,stroke:#d97706,stroke-width:1px,font-size:12px
+    class S0 init
+    class S1,S2,S3 state
+    class C0w1,C0w2,C1w1,C1w2,C2w1,C2w2,C3w1,C3w2 choice
+
+    linkStyle 0,2,7,10,18,20 stroke:#2563eb,stroke-width:3px,color:#1d4ed8
+    linkStyle 1,4,13,16 stroke:#dc2626,stroke-width:3px,color:#991b1b

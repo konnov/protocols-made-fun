@@ -25,6 +25,12 @@ plugins:
   - jekyll-feed
   - jemoji
 # https://docs.github.com/en/enterprise-cloud@latest/pages/setting-up-a-github-pages-site-with-jekyll/about-github-pages-and-jekyll#syntax-highlighting
+sass:
+  silence_deprecations:
+    - import
+    - global-builtin
+    - color-functions
+
 kramdown:
   syntax_highlighter_opts:
     disable : true
