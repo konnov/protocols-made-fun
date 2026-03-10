@@ -8,7 +8,7 @@ tlaplus: true
 math: true
 shell: true
 python: true
-hidden: true
+hidden: false
 feed: true
 ---
 
