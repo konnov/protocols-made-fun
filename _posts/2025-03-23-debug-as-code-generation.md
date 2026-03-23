@@ -16,7 +16,7 @@ feed: true
 
 **Date:** March 23, 2026
 
-This is an anecode about another useful application of Codex and Claude Code in
+This is an anecdote about another useful application of Codex and Claude Code in
 the middle of a testing project. It is another example of using LLMs to make
 distributed systems easier to test and debug, instead of generating piles of
 slop.
