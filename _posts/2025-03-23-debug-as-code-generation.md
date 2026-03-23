@@ -1,23 +1,23 @@
 ---
 layout: post
 title: "Specification debugging as code generation"
-date: 2026-03-21
+date: 2026-03-23
 author: Igor Konnov
 categories: testing model-checking
-tlaplus: true
-math: true
-shell: true
-python: true
-hidden: true
+tlaplus: false
+math: false
+shell: false
+python: false
+hidden: false
 feed: true
 ---
 
 **Author:** [Igor Konnov][]
 
-**Date:** March 21, 2026
+**Date:** March 23, 2026
 
-This is a short story about another useful application of Codex and Claude Code
-in the middle of a testing project. It is another example of using LLMs to make
+This is an anecode about another useful application of Codex and Claude Code in
+the middle of a testing project. It is another example of using LLMs to make
 distributed systems easier to test and debug, instead of generating piles of
 slop.
 
@@ -134,16 +134,4 @@ If you find this hint useful, leave a comment below.
 [Igor Konnov]: https://konnov.phd
 [LI]: https://www.linkedin.com/in/igor-konnov-at/
 [tftp-testing]: {% link _posts/2025-12-15-tftp-symbolic-testing.md %}
-[pbt-llms]: {% link _posts/2025-12-22-pbt-adversarial-llms.md %}
 [Apalache]: https://apalache-mc.org
-[TLC]: https://github.com/tlaplus/tlaplus
-[QuickCheck]: https://en.wikipedia.org/wiki/QuickCheck
-[Quint]: https://github.com/informalsystems/quint
-[TLA+ Examples]: https://github.com/tlaplus/Examples/
-[TwoPhase.tla]: https://github.com/tlaplus/Examples/blob/master/specifications/transaction_commit/TwoPhase.tla
-[GrayLamport06]: https://www.microsoft.com/en-us/research/publication/consensus-on-transaction-commit/
-[ReadersWriters.tla]: https://github.com/tlaplus/Examples/blob/master/specifications/ReadersWriters/ReadersWriters.tla
-[Readers-Writers Problem]: https://en.wikipedia.org/wiki/Readers%E2%80%93writers_problem
-[FPaxos.tla]: https://github.com/fpaxos/fpaxos-tlaplus/blob/main/FPaxos.tla
-[Flexible Paxos]: https://fpaxos.github.io/
-[learntla-parameterize]: https://learntla.com/topics/tips.html#parameterize-your-actions
