@@ -21,9 +21,9 @@ my portfolio at <a href="https://konnov.phd">konnov.phd</a>. I am based in
 Austria (CET/CEST) and have experience working with clients from the US, UK, and
 EU.  </p>
 
-[Quint]: https://konnov.phd/portfolio/quint/
+[Quint]: https://konnov.phd/posts/quint/
 [Quint License]: https://github.com/informalsystems/quint/blob/main/LICENSE
-[Apalache]: https://konnov.phd/portfolio/apalache/
+[Apalache]: https://konnov.phd/posts/apalache/
 [Apalache License]: https://github.com/apalache-mc/apalache/blob/main/LICENSE
 [Apache 2.0]: https://www.apache.org/licenses/LICENSE-2.0
 [website]: https://konnov.phd/

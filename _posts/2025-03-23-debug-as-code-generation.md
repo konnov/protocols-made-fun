@@ -130,7 +130,7 @@ If you find this hint useful, leave a comment below.
  
 <!-- References -->
 
-[contact]: https://konnov.phd/posts/service/
+[contact]: https://konnov.phd?pmf=20250323
 [Igor Konnov]: https://konnov.phd
 [LI]: https://www.linkedin.com/in/igor-konnov-at/
 [tftp-testing]: {% link _posts/2025-12-15-tftp-symbolic-testing.md %}

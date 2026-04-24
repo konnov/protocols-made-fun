@@ -18,8 +18,8 @@ from:
    * Thomas Pani: Informal Systems (Austria), 2022-2023.
    * For details, see the [Quint License][] == [Apache 2.0][].
 
-[Quint]: https://konnov.phd/portfolio/quint/
+[Quint]: https://konnov.phd/posts/quint/
 [Quint License]: https://github.com/informalsystems/quint/blob/main/LICENSE
-[Apalache]: https://konnov.phd/portfolio/apalache/
+[Apalache]: https://konnov.phd/posts/apalache/
 [Apalache License]: https://github.com/apalache-mc/apalache/blob/main/LICENSE
 [Apache 2.0]: https://www.apache.org/licenses/LICENSE-2.0

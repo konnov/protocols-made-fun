@@ -115,7 +115,7 @@ In the following posts of this series, we'll delve deeper into the world of runt
 _Development of Solarkraft was supported by the [Stellar Development Foundation][] with a generous Activation Award from the [Stellar Community Fund][] of 50,000 USD in XLM._
 
 
-[Apalache]: https://konnov.phd/portfolio/apalache/
+[Apalache]: https://konnov.phd/posts/apalache/
 [Solarkraft]: https://thpani.net/solarkraft/
 [Audits]: https://thpani.net/audits/
 [Contact]: https://thpani.net/#contact

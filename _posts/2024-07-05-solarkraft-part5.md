@@ -298,7 +298,7 @@ _Development of Solarkraft was supported by the [Stellar Development Foundation]
 
 
 [Solarkraft]: https://github.com/freespek/solarkraft
-[Apalache]: https://konnov.phd/portfolio/apalache/
+[Apalache]: https://konnov.phd/posts/apalache/
 [part1]: https://thpani.net/2024/06/why-smart-contract-bugs-matter-and-how-runtime-monitoring-saves-the-day-solarkraft-1/
 [part2]: https://thpani.net/2024/06/small-and-modular-runtime-monitors-in-tla-for-soroban-smart-contracts-solarkraft-2/
 [part3]: https://protocols-made-fun.com/solarkraft/2024/06/19/solarkraft-part3.html
