@@ -178,10 +178,11 @@ these instances.
 
 As you can see, with the meaningful default of 100,000 random walks, we achieve
 poor coverage on readers-writers and FPaxos, though the coverage on two-phase
-commit is nearly 99%. So this new TLC simulation has much better coverage than
-[random walks][], but it has comparable coverage on the readers-writers and
-FPaxos benchmarks! You can also switch between this blog post and [random
-walks][] to see the difference in coverage between the two approaches.
+commit is nearly 99%. So this TLC simulations achieve much better coverage on
+two-phase commit than [random walks][], but they have comparable coverage on the
+readers-writers and FPaxos benchmarks! You can also switch between this blog
+post and [random walks][] to see the difference in coverage between the two
+approaches.
 
 To stress the message of the previous blog post, these instances are **not that
 large by the model checking standards**.
@@ -276,7 +277,8 @@ I am not going to repeat the [conclusions from the previous blog
 post][random-walks-conclusions]. They are still valid. The new TLC simulation
 mode achieves better coverage than the random walks on two-phase commit, but it
 has comparable coverage on readers-writers and FPaxos. The running times of the
-TLC simulator are worse than the model checker and the random walks.
+TLC simulator with a single-worker are worse than the model checker and the
+random walks.
 
 ## Want to talk?
  
