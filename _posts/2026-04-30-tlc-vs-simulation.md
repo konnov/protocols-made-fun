@@ -37,7 +37,7 @@ whereas **TLC enumerates all successor states and then chooses one of them
 uniformly at random.** Markus explains the rationale behind this design choice
 in TLC:
 
-> One is that enumerating all successors is useful for more than just choosing
+> ...enumerating all successors is useful for more than just choosing
 > the next step: TLC can also check invariants on all generated successor states,
 > not only on the one that ends up being sampled. That is a meaningful benefit
 > when the goal is to catch bugs, not just drive a walk.
