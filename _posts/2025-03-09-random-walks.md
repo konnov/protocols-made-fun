@@ -482,9 +482,9 @@ model checker.
 
 Interestingly, random walks behaved badly on FPaxos with four acceptors. This is
 a relatively benign benchmark, not having a state explosion like specifications
-of Byzantine consensus protocols (PBFT). In PBFT, the minimal configurations
+of Byzantine consensus protocols (BFT). In BFT, the minimal configurations
 contain 4-6 replicas, depending on the protocol. Hence, **we should expect a
-significantly worse coverage by random walks on PBFT**.
+significantly worse coverage by random walks on BFT**.
 
 Why do engineers keep running randomized experiments? Well, it is relatively
 easy to write a simulator. (It is not that easy to write one that actually
