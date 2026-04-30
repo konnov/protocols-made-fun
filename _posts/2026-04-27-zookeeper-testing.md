@@ -294,6 +294,101 @@ Several things are impressive here:
 
 ## 2. Checking invariants and producing examples
 
+Since the AI tools write the specification and the test harness, we have to
+evaluate the quality of the specification and the harness together. To this end,
+we do two things:
+
+ 1. Add state invariants to evaluate safety.
+ 2. Add state examples to illustrate reachability of interesting states.
+
+### 2.1. State invariants
+
+To our luck, ZooKeeper already has several [TLA<sup>+</sup>
+specifications][zookeeper-tla-spec] for earlier versions. I let the AI tools
+harvest these specifications for invariants.
+
+For example, these are the shortest invariants these tools wrote:
+
+```python
+@invariant
+def leadership1(s: SystemState):
+    return s.REPLICA.forall(
+        lambda i: s.REPLICA.forall(
+            lambda j: (
+                _is_established_leader(s, i)
+                & _is_established_leader(s, j)
+                & (s.zab_accepted_epoch[i] == s.zab_accepted_epoch[j])
+            ).implies(i == j)
+        )
+    )
+
+@invariant
+def leadership2(s: SystemState):
+    return Set(Val(1), ..., Val(s.MAX_EPOCH)).forall(
+        lambda epoch: s.epoch_leader[epoch].size <= Val(1)
+    )
+
+@invariant
+def fle_wait_finalize_sound(s: SystemState):
+    return s.REPLICA.forall(
+        lambda replica: (
+            _fle_invariant_replica_live(s, replica) & s.fle_wait_finalize[replica]
+        ).implies(
+            _fle_has_proposed_recv_quorum(s, replica)
+            | _fle_has_local_ooe_quorum(s, replica)
+        )
+    )
+```
+
+Their TLA<sup>+</sup> translations look like this:
+
+```tla
+Leadership1 ==
+    \A i142 \in REPLICA: \A j143 \in REPLICA:
+        (/\ /\ /\ (fle_role[i142] = "LEADING")
+               /\ \/ (zab_state[i142] = "synchronization")
+                  \/ (zab_state[i142] = "broadcast")
+            /\ /\ (fle_role[j143] = "LEADING")
+               /\ \/ (zab_state[j143] = "synchronization")
+                  \/ (zab_state[j143] = "broadcast")
+         /\ (zab_accepted_epoch[i142] = zab_accepted_epoch[j143])) => ((i142 = j143))
+
+Leadership2 ==
+    \A epoch144 \in (1)..(MAX_EPOCH): (Cardinality(epoch_leader[epoch144]) <= 1)
+```
+
+The translation of `fle_wait_finalize_sound` is a bit longer, you can check it
+in the
+[FleWaitFinalizeSound](https://gist.github.com/konnov/38af0cbd45b68da819cd76f70859ed94#file-system-tla-L535-L559).
+
+We have 11 invariants in total. The other 8 invariants are more complex.
+
+### 2.2. Reachability examples
+
+I usually write "falsy invariants" to check reachability of interesting states.
+Again, the AI tools are quite good at writing such "examples". For instance:
+
+```python
+@example
+def committed_subtree_visible(s: SystemState):
+    return (
+        s.zab_visible_exists[Val("/p2")]
+        & s.zab_visible_exists[Val("/p2/c3")]
+        & (s.zab_visible_zxid[Val("/p2")] > Val(0))
+        & (s.zab_visible_zxid[Val("/p2/c3")] > Val(0))
+    )
+```
+
+This example is translated to the following TLA<sup>+</sup> invariant:
+
+```tla
+CommittedSubtreeVisible ==
+    ~(/\ /\ /\ zab_visible_exists["/p2"]
+            /\ zab_visible_exists["/p2/c3"]
+         /\ (zab_visible_zxid["/p2"] > 0)
+      /\ (zab_visible_zxid["/p2/c3"] > 0))
+```
+
 ## 3. Reproducing known bugs
 
 ## 4. Is this a poor man's CEGAR loop?
@@ -348,3 +443,4 @@ I would say that writing specs still should be a human job.
 [Uwe Nestmann]: https://www.tu.berlin/en/mtv/team/head/uwe-nestmann
 [multi-grained]: https://dl.acm.org/doi/abs/10.1145/3689031.3696069
 [Digital Twin]: https://en.wikipedia.org/wiki/Digital_twin
+[zookeeper-tla-spec]: https://github.com/Disalg-ICS-NJU/zookeeper-tla-spec
