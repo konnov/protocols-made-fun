@@ -274,7 +274,7 @@ states and check the invariants for these instances**, whereas we have been
 ## 5. Conclusions
 
 I am not going to repeat the [conclusions from the previous blog
-post][random-walks-conclusions]. They are still valid. The new TLC simulation
+post][random-walks-conclusions]. They are still valid. The TLC simulation
 mode achieves better coverage than the random walks on two-phase commit, but it
 has comparable coverage on readers-writers and FPaxos. The running times of the
 TLC simulator with a single-worker are worse than the model checker and the
