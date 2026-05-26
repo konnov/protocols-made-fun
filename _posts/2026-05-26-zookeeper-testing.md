@@ -8,7 +8,7 @@ tlaplus: true
 math: false
 shell: false
 python: true
-hidden: false
+hidden: true
 feed: true
 ---
 
@@ -114,7 +114,59 @@ data. Hence, I am sharing my lab book with the customers and researchers, upon
 request."
 %}
 
-## 1. Extracting formal specifications
+If you do not want to read the whole text, [jump to the
+conclusions](#conclusions).
+
+## 1. The effort
+
+This experiment took about two months, from March 2026 to April 2026. The git
+repository has 336 commits in total. Except for several initial commits, each
+new commit corresponds to a new iteration of the extraction-checking loop.
+
+You can see the statistics in the figures below:
+
+ - Figure 2 shows the number of commits per day.
+ - Figure 3 shows the number of lines added and deleted in the whole repository.
+ - Figure 4 shows the number of lines added and deleted in the specification files.
+ - Figure 5 shows the number of lines added and deleted in the test harness (zoomonkey).
+
+  <figure>
+    <a href="{{ site.baseurl }}/img/zk-testing/git_stats_commits.png" target="_blank" title="Click to open full-size"><picture>
+      <img class="responsive-img"
+        src="{{ site.baseurl }}/img/zk-testing/git_stats_commits.png"
+        alt="Git stats">
+    </picture></a>
+    <figcaption>Figure 2: Commit statistics in this experiment.</figcaption>
+  </figure>
+
+  <figure>
+    <a href="{{ site.baseurl }}/img/zk-testing/git_stats_lines.png" target="_blank" title="Click to open full-size"><picture>
+      <img class="responsive-img"
+        src="{{ site.baseurl }}/img/zk-testing/git_stats_lines.png"
+        alt="Git stats">
+    </picture></a>
+    <figcaption>Figure 3: Addition/deletion statistics in this experiment.</figcaption>
+  </figure>
+
+  <figure>
+    <a href="{{ site.baseurl }}/img/zk-testing/git_stats_spec.png" target="_blank" title="Click to open full-size"><picture>
+      <img class="responsive-img"
+        src="{{ site.baseurl }}/img/zk-testing/git_stats_spec.png"
+        alt="Git stats">
+    </picture></a>
+    <figcaption>Figure 4: Addition/deletion statistics in the specification files.</figcaption>
+  </figure>
+
+  <figure>
+    <a href="{{ site.baseurl }}/img/zk-testing/git_stats_zoomonkey.png" target="_blank" title="Click to open full-size"><picture>
+      <img class="responsive-img"
+        src="{{ site.baseurl }}/img/zk-testing/git_stats_zoomonkey.png"
+        alt="Git stats">
+    </picture></a>
+    <figcaption>Figure 5: Addition/deletion statistics in the test harness.</figcaption>
+  </figure>
+
+## 2. Extracting formal specifications
 
 As I learned with [TFTP testing][tftp-testing], AI tools need a good predefined
 architecture. Hence, I spent some time capturing this architecture in
@@ -197,7 +249,7 @@ this specification is monolithic and has no submodules.
 | system  | 9       | 1603         |          - |
 | **Total**  |      | **5774**     | **3065**   |
 
-## 2. Generating the test harness
+## 3. Generating the test harness
 
 The test harness is also written in Python. It is composed of several modules,
 which are listed in the table below.
@@ -217,7 +269,7 @@ replica of ZooKeeper**. We call this replica **implementation under test**
 its behavior. This is conceptually similar to a [Digital Twin][] of the real
 distributed system.
 
-## 3. Running the test harness
+## 4. Running the test harness
 
 Running the test harness looks quite boring:
 
@@ -242,7 +294,7 @@ specification and the test harness.
 Similar to [tftp-testing][], I have a script to convert the logs into a sequence
 chart in Mermaid. However, for a system of this complexity, these diagrams are
 hard to digest. Instead, I produce a high-level figure of the test campaign that
-shows the events in all episodes in one big picture. See Figure 2. Click on it
+shows the events in all episodes in one big picture. See Figure 6. Click on it
 to see the full-size version and examine it in detail.
 
   <figure>
@@ -251,7 +303,7 @@ to see the full-size version and examine it in detail.
         src="{{ site.baseurl }}/img/zk-testing/episodes-summary.png"
         alt="Episodes summary">
     </picture></a>
-    <figcaption>Figure 2: Episodes summary of the test campaign (view the full-size image by clicking).</figcaption>
+    <figcaption>Figure 6: Episodes summary of the test campaign (view the full-size image by clicking).</figcaption>
   </figure>
 
 If you look at the events in the figure, you will see that the most episodes
@@ -261,7 +313,7 @@ where the implementation-under-test keeps sending FLE notifications. Basically,
 the two simulated replicas keep working together and exclude the IUT from the
 quorum.
 
-## 4. Triaging conformance mismatches
+## 5. Triaging conformance mismatches
 
 Back in October 2025, Copilot + Sonnet 4.5 were quite bad at triaging
 specification mismatches. This may be attributed to better LLM models.  I also
@@ -347,7 +399,7 @@ Several things are impressive here:
 
  3. **It also proposed a fix.**
 
-## 2. Checking invariants and producing examples
+## 6. Checking invariants and producing examples
 
 Since the AI tools write the specification and the test harness, we have to
 evaluate the quality of the specification and the harness together. To this end,
@@ -356,7 +408,7 @@ we do two things:
  1. Add state invariants to evaluate safety.
  2. Add state examples to illustrate reachability of interesting states.
 
-### 2.1. State invariants
+### 6.1. State invariants
 
 To our luck, ZooKeeper already has several [TLA<sup>+</sup>
 specifications][zookeeper-tla-spec] for earlier versions. I let the AI tools
@@ -420,7 +472,7 @@ We have 11 invariants in total. The other 8 invariants are more complex. These
 invariants are checked by the test harness with Apalache. We can also check them
 against the generated TLA<sup>+</sup> specification.
 
-### 2.2. Reachability examples
+### 6.2. Reachability examples
 
 I usually write "falsy invariants" to check reachability of interesting states.
 Again, the AI tools are quite good at writing such "examples". For instance:
@@ -489,71 +541,48 @@ through it.
         src="{{ site.baseurl }}/img/zk-testing/at_least_one_committed.svg"
         alt="At least one committed">
     </picture></a>
-    <figcaption>Figure 3: A trace where at least one replica has committed (view the full-size image by clicking).</figcaption>
+    <figcaption>Figure 7: A trace where at least one replica has committed (view the full-size image by clicking).</figcaption>
 </figure>
 
-## 5. The effort
-
-This experiment took about two months, from March 2026 to April 2026. My git
-repository has 336 commits in total. Except for several initial commits, each
-new commits corresponds to a new iteration of the extraction-checking loop.
-
-You can see the statistics in the figures below:
-
- - Figure 4 shows the number of commits per day.
- - Figure 5 shows the number of lines added and deleted in the whole repository.
- - Figure 6 shows the number of lines added and deleted in the specification files.
- - Figure 7 shows the number of lines added and deleted in the test harness (zoomonkey).
-
-  <figure>
-    <a href="{{ site.baseurl }}/img/zk-testing/git_stats_commits.png" target="_blank" title="Click to open full-size"><picture>
-      <img class="responsive-img"
-        src="{{ site.baseurl }}/img/zk-testing/git_stats_commits.png"
-        alt="Git stats">
-    </picture></a>
-    <figcaption>Figure 4: Commit statistics in this experiment.</figcaption>
-  </figure>
-
-  <figure>
-    <a href="{{ site.baseurl }}/img/zk-testing/git_stats_lines.png" target="_blank" title="Click to open full-size"><picture>
-      <img class="responsive-img"
-        src="{{ site.baseurl }}/img/zk-testing/git_stats_lines.png"
-        alt="Git stats">
-    </picture></a>
-    <figcaption>Figure 5: Addition/deletion statistics in this experiment.</figcaption>
-  </figure>
-
-  <figure>
-    <a href="{{ site.baseurl }}/img/zk-testing/git_stats_spec.png" target="_blank" title="Click to open full-size"><picture>
-      <img class="responsive-img"
-        src="{{ site.baseurl }}/img/zk-testing/git_stats_spec.png"
-        alt="Git stats">
-    </picture></a>
-    <figcaption>Figure 6: Addition/deletion statistics in the specification files.</figcaption>
-  </figure>
-
-  <figure>
-    <a href="{{ site.baseurl }}/img/zk-testing/git_stats_zoomonkey.png" target="_blank" title="Click to open full-size"><picture>
-      <img class="responsive-img"
-        src="{{ site.baseurl }}/img/zk-testing/git_stats_zoomonkey.png"
-        alt="Git stats">
-    </picture></a>
-    <figcaption>Figure 7: Addition/deletion statistics in the test harness.</figcaption>
-  </figure>
+<a id="conclusions"></a>
 
 ## 7. Conclusions
 
-I have little clue about what the spec is doing now. When I write a specification by hand,
-I internalize the protocol behavior. Even after I forget the details, I can still come
-back and recover them from the spec. Here, it is much harder.
+**The good**:
 
-Workarounds in the specification
+ - It is actually possible to extract formal specifications from the source code
+ of a real distributed system and to write test harnesses with AI tools.  We
+ have to keep in mind that this requires a verification loop, which uses a tool
+ such as Apalache.
+ 
+ - In this experiment, we extracted a specification that captures five
+ protocols.
+ 
+ - If we do not try to one-shot the testing process and follow an iterative
+ process, the AI tools actually help us.
 
-Mention the missing features
+ - Comparing to [tftp-testing][], the AI tools in 2026 are much better at
+ triaging specification mismatches. The whole process is much less
+ energy-draining now.
+ 
+**The bad**:
 
-It is less energy-draining now
+ - I have no idea about the extracted specification. When I write a
+ specification by hand, I internalize the protocol behavior.  Even after I
+ forget the details, I can still come back and recover them from the spec.
+ Here, it is much harder.
 
-I would say that writing specs still should be a human job.
+ - If we focus on bug finding, it is fine to have a hard-to-understand
+ specification. However, from the maintainability perspective, it is a big
+ problem.
+
+Even though the whole development is quite exciting, my main takeaway is that
+**writing formal specifications is still a human job**. AI tools
+can assist us in producing test harness and find issues.
+
+If you need help with writing formal specifications and producing test
+harnesses, contact me. I can help you with that. It still takes time, expertise,
+and effort to do it right.
 
 ## Want to talk?
  
