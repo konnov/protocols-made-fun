@@ -223,9 +223,11 @@ figure figcaption {
 
 /* Framed AI-generated excerpts with markdown enabled in surrounding divs */
 .ai-output-frame {
-  border: 2px solid #9aa0a6;
+  border: 2px solid rgba(127, 127, 127, 0.45);
+  border-color: color-mix(in srgb, currentColor 28%, transparent);
   border-radius: 8px;
   padding: 1rem 1.2rem;
   margin: 1.2rem 0;
-  background: #fafafa;
+  background: rgba(127, 127, 127, 0.08);
+  background: color-mix(in srgb, currentColor 8%, transparent);
 }
