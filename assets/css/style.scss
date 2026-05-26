@@ -220,3 +220,12 @@ figure figcaption {
   margin: 1.5em 0;
   text-align: center;
 }
+
+/* Framed AI-generated excerpts with markdown enabled in surrounding divs */
+.ai-output-frame {
+  border: 2px solid #9aa0a6;
+  border-radius: 8px;
+  padding: 1rem 1.2rem;
+  margin: 1.2rem 0;
+  background: #fafafa;
+}
