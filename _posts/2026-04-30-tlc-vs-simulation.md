@@ -287,8 +287,8 @@ random walks.
 [contact]: https://konnov.phd?pmf=20250309
 [Igor Konnov]: https://konnov.phd
 [LI]: https://www.linkedin.com/in/igor-konnov-at/
-[random walks]: {% link _posts/2025-03-09-random-walks.md %}
-[random-walks-conclusions]: {% link _posts/2025-03-09-random-walks.md %}#6-conclusions
+[random walks]: {% link _posts/2026-03-09-random-walks.md %}
+[random-walks-conclusions]: {% link _posts/2026-03-09-random-walks.md %}#6-conclusions
 [TLC]: https://github.com/tlaplus/tlaplus
 [TLA+ Examples]: https://github.com/tlaplus/Examples/
 [tlaplus-group-message]: https://groups.google.com/g/tlaplus/c/iFUAhlsIuQQ/m/t044etF6AwAJ

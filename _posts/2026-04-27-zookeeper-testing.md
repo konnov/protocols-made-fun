@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "Extracting formal specifications from Apache ZooKeeper with AI tools and Apalache"
-date: 2026-04-27
+date: 2026-05-26
 author: Igor Konnov
 categories: testing model-checking
 tlaplus: true
@@ -14,7 +14,7 @@ feed: true
 
 **Author:** [Igor Konnov][]
 
-**Date:** April 27, 2026
+**Date:** May 26, 2026
 
 *This text is artisanally typed using a keyboard, with occasional suggestions by
 Copilot. The figures are generated with ChatGPT 5.5. The plots are produced by
