@@ -1,0 +1,524 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 599.887 4429" width="599.887" height="4429" style="--bg:#fffaf0;--fg:#1a1a2e;--line:#16213e;--accent:#e94560;--muted:#533483;--surface:#ffe8c2;--border:#a4133c;background:var(--bg)">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap');
+  text { font-family: 'Inter', system-ui, sans-serif; }
+  svg {
+    /* Derived from --bg and --fg (overridable via --line, --accent, etc.) */
+    --_text:          var(--fg);
+    --_text-sec:      var(--muted, color-mix(in srgb, var(--fg) 60%, var(--bg)));
+    --_text-muted:    var(--muted, color-mix(in srgb, var(--fg) 40%, var(--bg)));
+    --_text-faint:    color-mix(in srgb, var(--fg) 25%, var(--bg));
+    --_line:          var(--line, color-mix(in srgb, var(--fg) 50%, var(--bg)));
+    --_arrow:         var(--accent, color-mix(in srgb, var(--fg) 85%, var(--bg)));
+    --_node-fill:     var(--surface, color-mix(in srgb, var(--fg) 3%, var(--bg)));
+    --_node-stroke:   var(--border, color-mix(in srgb, var(--fg) 20%, var(--bg)));
+    --_group-fill:    var(--bg);
+    --_group-hdr:     color-mix(in srgb, var(--fg) 5%, var(--bg));
+    --_inner-stroke:  color-mix(in srgb, var(--fg) 12%, var(--bg));
+    --_key-badge:     color-mix(in srgb, var(--fg) 10%, var(--bg));
+  }
+</style>
+<defs>
+  <marker id="seq-arrow" markerWidth="8" markerHeight="5" refX="8" refY="2.5" orient="auto-start-reverse">
+    <polygon points="0 0, 8 2.5, 0 5" fill="var(--_arrow)" />
+  </marker>
+  <marker id="seq-arrow-open" markerWidth="8" markerHeight="5" refX="8" refY="2.5" orient="auto-start-reverse">
+    <polyline points="0 0, 8 2.5, 0 5" fill="none" stroke="var(--_arrow)" stroke-width="1" />
+  </marker>
+</defs>
+<line class="lifeline" data-actor="H" x1="72.91" y1="70" x2="72.91" y2="4399" stroke="var(--_line)" stroke-width="0.75" stroke-dasharray="6 4" />
+<line class="lifeline" data-actor="I" x1="212.91" y1="70" x2="212.91" y2="4399" stroke="var(--_line)" stroke-width="0.75" stroke-dasharray="6 4" />
+<line class="lifeline" data-actor="R2" x1="352.90999999999997" y1="70" x2="352.90999999999997" y2="4399" stroke="var(--_line)" stroke-width="0.75" stroke-dasharray="6 4" />
+<line class="lifeline" data-actor="R3" x1="492.90999999999997" y1="70" x2="492.90999999999997" y2="4399" stroke="var(--_line)" stroke-width="0.75" stroke-dasharray="6 4" />
+<g class="message" data-from="I" data-to="H" data-label="[1] on_started" data-line-style="dashed" data-arrow-head="filled" data-self="false">
+  <line x1="212.91" y1="90" x2="72.91" y2="90" stroke="var(--_line)" stroke-width="1" stroke-dasharray="6 4" marker-end="url(#seq-arrow)" />
+  <text x="142.91" y="80" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[1] on_started</text>
+</g>
+<g class="message" data-from="I" data-to="R2" data-label="[2] fle_rcv_notification leader=3 zxid=0 eEpoch=1 pEpoch=0 state=LOOKING [sim]" data-line-style="dashed" data-arrow-head="filled" data-self="false">
+  <line x1="212.91" y1="130" x2="352.90999999999997" y2="130" stroke="var(--_line)" stroke-width="1" stroke-dasharray="6 4" marker-end="url(#seq-arrow)" />
+  <text x="282.90999999999997" y="120" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[2] fle_rcv_notification leader=3 zxid=0 eEpoch=1 pEpoch=0 state=LOOKING [sim]</text>
+</g>
+<g class="message" data-from="R3" data-to="I" data-label="[3] tcp_connect [quorum]" data-line-style="solid" data-arrow-head="filled" data-self="false">
+  <line x1="492.90999999999997" y1="170" x2="212.91" y2="170" stroke="var(--_line)" stroke-width="1" marker-end="url(#seq-arrow)" />
+  <text x="352.90999999999997" y="160" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[3] tcp_connect [quorum]</text>
+</g>
+<g class="message" data-from="R2" data-to="R3" data-label="[5] fle_rcv_notification leader=3 zxid=0 eEpoch=1 pEpoch=0 state=LOOKING [sim]" data-line-style="dashed" data-arrow-head="filled" data-self="false">
+  <line x1="352.90999999999997" y1="225" x2="492.90999999999997" y2="225" stroke="var(--_line)" stroke-width="1" stroke-dasharray="6 4" marker-end="url(#seq-arrow)" />
+  <text x="422.90999999999997" y="215" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[5] fle_rcv_notification leader=3 zxid=0 eEpoch=1 pEpoch=0 state=LOOKING [sim]</text>
+</g>
+<g class="message" data-from="R2" data-to="R3" data-label="[6] tcp_connect [quorum] [sim]" data-line-style="dashed" data-arrow-head="filled" data-self="false">
+  <line x1="352.90999999999997" y1="265" x2="492.90999999999997" y2="265" stroke="var(--_line)" stroke-width="1" stroke-dasharray="6 4" marker-end="url(#seq-arrow)" />
+  <text x="422.90999999999997" y="255" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[6] tcp_connect [quorum] [sim]</text>
+</g>
+<g class="message" data-from="R2" data-to="R3" data-label="[7] FOLLOWERINFO epoch=8 [sim]" data-line-style="dashed" data-arrow-head="filled" data-self="false">
+  <line x1="352.90999999999997" y1="305" x2="492.90999999999997" y2="305" stroke="var(--_line)" stroke-width="1" stroke-dasharray="6 4" marker-end="url(#seq-arrow)" />
+  <text x="422.90999999999997" y="295" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[7] FOLLOWERINFO epoch=8 [sim]</text>
+</g>
+<g class="message" data-from="R3" data-to="I" data-label="[9] tcp_connect [election]" data-line-style="solid" data-arrow-head="filled" data-self="false">
+  <line x1="492.90999999999997" y1="360" x2="212.91" y2="360" stroke="var(--_line)" stroke-width="1" marker-end="url(#seq-arrow)" />
+  <text x="352.90999999999997" y="350" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[9] tcp_connect [election]</text>
+</g>
+<g class="message" data-from="R3" data-to="I" data-label="[10] tcp_accept [election]" data-line-style="solid" data-arrow-head="filled" data-self="false">
+  <line x1="492.90999999999997" y1="400" x2="212.91" y2="400" stroke="var(--_line)" stroke-width="1" marker-end="url(#seq-arrow)" />
+  <text x="352.90999999999997" y="390" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[10] tcp_accept [election]</text>
+</g>
+<g class="message" data-from="I" data-to="R3" data-label="[11] fle_send_notification leader=2 zxid=0 eEpoch=1 pEpoch=0 state=0" data-line-style="solid" data-arrow-head="filled" data-self="false">
+  <line x1="212.91" y1="440" x2="492.90999999999997" y2="440" stroke="var(--_line)" stroke-width="1" marker-end="url(#seq-arrow)" />
+  <text x="352.90999999999997" y="430" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[11] fle_send_notification leader=2 zxid=0 eEpoch=1 pEpoch=0 state=0</text>
+</g>
+<g class="message" data-from="R3" data-to="I" data-label="[12] fle_send_notification leader=2 zxid=0 eEpoch=1 pEpoch=0 state=LOOKING" data-line-style="solid" data-arrow-head="filled" data-self="false">
+  <line x1="492.90999999999997" y1="480" x2="212.91" y2="480" stroke="var(--_line)" stroke-width="1" marker-end="url(#seq-arrow)" />
+  <text x="352.90999999999997" y="470" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[12] fle_send_notification leader=2 zxid=0 eEpoch=1 pEpoch=0 state=LOOKING</text>
+</g>
+<g class="message" data-from="R3" data-to="I" data-label="[13] fle_rcv_notification leader=2 zxid=0 eEpoch=1 pEpoch=0 state=LOOKING" data-line-style="solid" data-arrow-head="filled" data-self="false">
+  <line x1="492.90999999999997" y1="520" x2="212.91" y2="520" stroke="var(--_line)" stroke-width="1" marker-end="url(#seq-arrow)" />
+  <text x="352.90999999999997" y="510" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[13] fle_rcv_notification leader=2 zxid=0 eEpoch=1 pEpoch=0 state=LOOKING</text>
+</g>
+<g class="message" data-from="I" data-to="R3" data-label="[14] fle_send_notification leader=2 zxid=0 eEpoch=1 pEpoch=0 state=0" data-line-style="solid" data-arrow-head="filled" data-self="false">
+  <line x1="212.91" y1="560" x2="492.90999999999997" y2="560" stroke="var(--_line)" stroke-width="1" marker-end="url(#seq-arrow)" />
+  <text x="352.90999999999997" y="550" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[14] fle_send_notification leader=2 zxid=0 eEpoch=1 pEpoch=0 state=0</text>
+</g>
+<g class="message" data-from="R3" data-to="I" data-label="[16] tcp_accept [quorum]" data-line-style="solid" data-arrow-head="filled" data-self="false">
+  <line x1="492.90999999999997" y1="615" x2="212.91" y2="615" stroke="var(--_line)" stroke-width="1" marker-end="url(#seq-arrow)" />
+  <text x="352.90999999999997" y="605" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[16] tcp_accept [quorum]</text>
+</g>
+<g class="message" data-from="R3" data-to="R2" data-label="[17] tcp_connect [election] [sim]" data-line-style="dashed" data-arrow-head="filled" data-self="false">
+  <line x1="492.90999999999997" y1="655" x2="352.90999999999997" y2="655" stroke="var(--_line)" stroke-width="1" stroke-dasharray="6 4" marker-end="url(#seq-arrow)" />
+  <text x="422.90999999999997" y="645" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[17] tcp_connect [election] [sim]</text>
+</g>
+<g class="message" data-from="R3" data-to="I" data-label="[18] fle_send_notification leader=3 zxid=0 eEpoch=1 pEpoch=0 state=LOOKING" data-line-style="solid" data-arrow-head="filled" data-self="false">
+  <line x1="492.90999999999997" y1="695" x2="212.91" y2="695" stroke="var(--_line)" stroke-width="1" marker-end="url(#seq-arrow)" />
+  <text x="352.90999999999997" y="685" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[18] fle_send_notification leader=3 zxid=0 eEpoch=1 pEpoch=0 state=LOOKING</text>
+</g>
+<g class="message" data-from="R3" data-to="I" data-label="[19] fle_rcv_notification leader=3 zxid=0 eEpoch=1 pEpoch=0 state=LOOKING" data-line-style="solid" data-arrow-head="filled" data-self="false">
+  <line x1="492.90999999999997" y1="735" x2="212.91" y2="735" stroke="var(--_line)" stroke-width="1" marker-end="url(#seq-arrow)" />
+  <text x="352.90999999999997" y="725" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[19] fle_rcv_notification leader=3 zxid=0 eEpoch=1 pEpoch=0 state=LOOKING</text>
+</g>
+<g class="message" data-from="I" data-to="R3" data-label="[20] fle_send_notification leader=2 zxid=0 eEpoch=1 pEpoch=0 state=2" data-line-style="solid" data-arrow-head="filled" data-self="false">
+  <line x1="212.91" y1="775" x2="492.90999999999997" y2="775" stroke="var(--_line)" stroke-width="1" marker-end="url(#seq-arrow)" />
+  <text x="352.90999999999997" y="765" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[20] fle_send_notification leader=2 zxid=0 eEpoch=1 pEpoch=0 state=2</text>
+</g>
+<g class="message" data-from="R3" data-to="I" data-label="[21] fle_send_notification leader=2 zxid=0 eEpoch=1 pEpoch=0 state=LOOKING" data-line-style="solid" data-arrow-head="filled" data-self="false">
+  <line x1="492.90999999999997" y1="815" x2="212.91" y2="815" stroke="var(--_line)" stroke-width="1" marker-end="url(#seq-arrow)" />
+  <text x="352.90999999999997" y="805" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[21] fle_send_notification leader=2 zxid=0 eEpoch=1 pEpoch=0 state=LOOKING</text>
+</g>
+<g class="message" data-from="R3" data-to="I" data-label="[22] fle_rcv_notification leader=2 zxid=0 eEpoch=1 pEpoch=0 state=LOOKING" data-line-style="solid" data-arrow-head="filled" data-self="false">
+  <line x1="492.90999999999997" y1="855" x2="212.91" y2="855" stroke="var(--_line)" stroke-width="1" marker-end="url(#seq-arrow)" />
+  <text x="352.90999999999997" y="845" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[22] fle_rcv_notification leader=2 zxid=0 eEpoch=1 pEpoch=0 state=LOOKING</text>
+</g>
+<g class="message" data-from="I" data-to="R3" data-label="[23] fle_send_notification leader=2 zxid=0 eEpoch=1 pEpoch=0 state=2" data-line-style="solid" data-arrow-head="filled" data-self="false">
+  <line x1="212.91" y1="895" x2="492.90999999999997" y2="895" stroke="var(--_line)" stroke-width="1" marker-end="url(#seq-arrow)" />
+  <text x="352.90999999999997" y="885" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[23] fle_send_notification leader=2 zxid=0 eEpoch=1 pEpoch=0 state=2</text>
+</g>
+<g class="message" data-from="R2" data-to="R3" data-label="[24] tcp_connect [election] [sim]" data-line-style="dashed" data-arrow-head="filled" data-self="false">
+  <line x1="352.90999999999997" y1="935" x2="492.90999999999997" y2="935" stroke="var(--_line)" stroke-width="1" stroke-dasharray="6 4" marker-end="url(#seq-arrow)" />
+  <text x="422.90999999999997" y="925" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[24] tcp_connect [election] [sim]</text>
+</g>
+<g class="message" data-from="R3" data-to="I" data-label="[25] fle_send_notification leader=2 zxid=0 eEpoch=1 pEpoch=0 state=LOOKING" data-line-style="solid" data-arrow-head="filled" data-self="false">
+  <line x1="492.90999999999997" y1="975" x2="212.91" y2="975" stroke="var(--_line)" stroke-width="1" marker-end="url(#seq-arrow)" />
+  <text x="352.90999999999997" y="965" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[25] fle_send_notification leader=2 zxid=0 eEpoch=1 pEpoch=0 state=LOOKING</text>
+</g>
+<g class="message" data-from="R3" data-to="I" data-label="[26] fle_rcv_notification leader=2 zxid=0 eEpoch=1 pEpoch=0 state=LOOKING" data-line-style="solid" data-arrow-head="filled" data-self="false">
+  <line x1="492.90999999999997" y1="1015" x2="212.91" y2="1015" stroke="var(--_line)" stroke-width="1" marker-end="url(#seq-arrow)" />
+  <text x="352.90999999999997" y="1005" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[26] fle_rcv_notification leader=2 zxid=0 eEpoch=1 pEpoch=0 state=LOOKING</text>
+</g>
+<g class="message" data-from="I" data-to="R3" data-label="[27] fle_send_notification leader=2 zxid=0 eEpoch=1 pEpoch=0 state=2" data-line-style="solid" data-arrow-head="filled" data-self="false">
+  <line x1="212.91" y1="1055" x2="492.90999999999997" y2="1055" stroke="var(--_line)" stroke-width="1" marker-end="url(#seq-arrow)" />
+  <text x="352.90999999999997" y="1045" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[27] fle_send_notification leader=2 zxid=0 eEpoch=1 pEpoch=0 state=2</text>
+</g>
+<g class="message" data-from="R3" data-to="I" data-label="[28] tcp_disconnect [quorum]" data-line-style="solid" data-arrow-head="filled" data-self="false">
+  <line x1="492.90999999999997" y1="1095" x2="212.91" y2="1095" stroke="var(--_line)" stroke-width="1" marker-end="url(#seq-arrow)" />
+  <text x="352.90999999999997" y="1085" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[28] tcp_disconnect [quorum]</text>
+</g>
+<g class="message" data-from="I" data-to="R3" data-label="[30] fle_send_notification leader=2 zxid=0 eEpoch=2 pEpoch=0 state=0" data-line-style="solid" data-arrow-head="filled" data-self="false">
+  <line x1="212.91" y1="1150" x2="492.90999999999997" y2="1150" stroke="var(--_line)" stroke-width="1" marker-end="url(#seq-arrow)" />
+  <text x="352.90999999999997" y="1140" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[30] fle_send_notification leader=2 zxid=0 eEpoch=2 pEpoch=0 state=0</text>
+</g>
+<g class="message" data-from="R2" data-to="I" data-label="[31] tcp_connect [quorum]" data-line-style="solid" data-arrow-head="filled" data-self="false">
+  <line x1="352.90999999999997" y1="1190" x2="212.91" y2="1190" stroke="var(--_line)" stroke-width="1" marker-end="url(#seq-arrow)" />
+  <text x="282.90999999999997" y="1180" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[31] tcp_connect [quorum]</text>
+</g>
+<g class="message" data-from="I" data-to="R3" data-label="[32] fle_send_notification leader=2 zxid=0 eEpoch=2 pEpoch=0 state=0" data-line-style="solid" data-arrow-head="filled" data-self="false">
+  <line x1="212.91" y1="1230" x2="492.90999999999997" y2="1230" stroke="var(--_line)" stroke-width="1" marker-end="url(#seq-arrow)" />
+  <text x="352.90999999999997" y="1220" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[32] fle_send_notification leader=2 zxid=0 eEpoch=2 pEpoch=0 state=0</text>
+</g>
+<g class="message" data-from="I" data-to="R3" data-label="[33] fle_send_notification leader=2 zxid=0 eEpoch=2 pEpoch=0 state=0" data-line-style="solid" data-arrow-head="filled" data-self="false">
+  <line x1="212.91" y1="1270" x2="492.90999999999997" y2="1270" stroke="var(--_line)" stroke-width="1" marker-end="url(#seq-arrow)" />
+  <text x="352.90999999999997" y="1260" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[33] fle_send_notification leader=2 zxid=0 eEpoch=2 pEpoch=0 state=0</text>
+</g>
+<g class="message" data-from="R2" data-to="R3" data-label="[34] fle_rcv_notification leader=3 zxid=0 eEpoch=1 pEpoch=0 state=LOOKING [sim]" data-line-style="dashed" data-arrow-head="filled" data-self="false">
+  <line x1="352.90999999999997" y1="1310" x2="492.90999999999997" y2="1310" stroke="var(--_line)" stroke-width="1" stroke-dasharray="6 4" marker-end="url(#seq-arrow)" />
+  <text x="422.90999999999997" y="1300" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[34] fle_rcv_notification leader=3 zxid=0 eEpoch=1 pEpoch=0 state=LOOKING [sim]</text>
+</g>
+<g class="message" data-from="I" data-to="R3" data-label="[35] fle_send_notification leader=2 zxid=0 eEpoch=2 pEpoch=0 state=0" data-line-style="solid" data-arrow-head="filled" data-self="false">
+  <line x1="212.91" y1="1350" x2="492.90999999999997" y2="1350" stroke="var(--_line)" stroke-width="1" marker-end="url(#seq-arrow)" />
+  <text x="352.90999999999997" y="1340" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[35] fle_send_notification leader=2 zxid=0 eEpoch=2 pEpoch=0 state=0</text>
+</g>
+<g class="message" data-from="R2" data-to="I" data-label="[36] tcp_connect [election]" data-line-style="solid" data-arrow-head="filled" data-self="false">
+  <line x1="352.90999999999997" y1="1390" x2="212.91" y2="1390" stroke="var(--_line)" stroke-width="1" marker-end="url(#seq-arrow)" />
+  <text x="282.90999999999997" y="1380" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[36] tcp_connect [election]</text>
+</g>
+<g class="message" data-from="R2" data-to="I" data-label="[37] tcp_accept [election]" data-line-style="solid" data-arrow-head="filled" data-self="false">
+  <line x1="352.90999999999997" y1="1430" x2="212.91" y2="1430" stroke="var(--_line)" stroke-width="1" marker-end="url(#seq-arrow)" />
+  <text x="282.90999999999997" y="1420" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[37] tcp_accept [election]</text>
+</g>
+<g class="message" data-from="I" data-to="R2" data-label="[38] fle_send_notification leader=2 zxid=0 eEpoch=1 pEpoch=0 state=0" data-line-style="solid" data-arrow-head="filled" data-self="false">
+  <line x1="212.91" y1="1470" x2="352.90999999999997" y2="1470" stroke="var(--_line)" stroke-width="1" marker-end="url(#seq-arrow)" />
+  <text x="282.90999999999997" y="1460" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[38] fle_send_notification leader=2 zxid=0 eEpoch=1 pEpoch=0 state=0</text>
+</g>
+<g class="message" data-from="I" data-to="R2" data-label="[39] fle_send_notification leader=2 zxid=0 eEpoch=1 pEpoch=0 state=0" data-line-style="solid" data-arrow-head="filled" data-self="false">
+  <line x1="212.91" y1="1510" x2="352.90999999999997" y2="1510" stroke="var(--_line)" stroke-width="1" marker-end="url(#seq-arrow)" />
+  <text x="282.90999999999997" y="1500" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[39] fle_send_notification leader=2 zxid=0 eEpoch=1 pEpoch=0 state=0</text>
+</g>
+<g class="message" data-from="I" data-to="R2" data-label="[40] fle_send_notification leader=2 zxid=0 eEpoch=1 pEpoch=0 state=0" data-line-style="solid" data-arrow-head="filled" data-self="false">
+  <line x1="212.91" y1="1550" x2="352.90999999999997" y2="1550" stroke="var(--_line)" stroke-width="1" marker-end="url(#seq-arrow)" />
+  <text x="282.90999999999997" y="1540" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[40] fle_send_notification leader=2 zxid=0 eEpoch=1 pEpoch=0 state=0</text>
+</g>
+<g class="message" data-from="I" data-to="R2" data-label="[41] fle_send_notification leader=2 zxid=0 eEpoch=1 pEpoch=0 state=0" data-line-style="solid" data-arrow-head="filled" data-self="false">
+  <line x1="212.91" y1="1590" x2="352.90999999999997" y2="1590" stroke="var(--_line)" stroke-width="1" marker-end="url(#seq-arrow)" />
+  <text x="282.90999999999997" y="1580" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[41] fle_send_notification leader=2 zxid=0 eEpoch=1 pEpoch=0 state=0</text>
+</g>
+<g class="message" data-from="I" data-to="R2" data-label="[42] fle_send_notification leader=2 zxid=0 eEpoch=1 pEpoch=0 state=0" data-line-style="solid" data-arrow-head="filled" data-self="false">
+  <line x1="212.91" y1="1630" x2="352.90999999999997" y2="1630" stroke="var(--_line)" stroke-width="1" marker-end="url(#seq-arrow)" />
+  <text x="282.90999999999997" y="1620" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[42] fle_send_notification leader=2 zxid=0 eEpoch=1 pEpoch=0 state=0</text>
+</g>
+<g class="message" data-from="I" data-to="R2" data-label="[43] fle_send_notification leader=2 zxid=0 eEpoch=1 pEpoch=0 state=0" data-line-style="solid" data-arrow-head="filled" data-self="false">
+  <line x1="212.91" y1="1670" x2="352.90999999999997" y2="1670" stroke="var(--_line)" stroke-width="1" marker-end="url(#seq-arrow)" />
+  <text x="282.90999999999997" y="1660" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[43] fle_send_notification leader=2 zxid=0 eEpoch=1 pEpoch=0 state=0</text>
+</g>
+<g class="message" data-from="I" data-to="R2" data-label="[44] fle_send_notification leader=2 zxid=0 eEpoch=1 pEpoch=0 state=0" data-line-style="solid" data-arrow-head="filled" data-self="false">
+  <line x1="212.91" y1="1710" x2="352.90999999999997" y2="1710" stroke="var(--_line)" stroke-width="1" marker-end="url(#seq-arrow)" />
+  <text x="282.90999999999997" y="1700" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[44] fle_send_notification leader=2 zxid=0 eEpoch=1 pEpoch=0 state=0</text>
+</g>
+<g class="message" data-from="I" data-to="R2" data-label="[45] fle_send_notification leader=2 zxid=0 eEpoch=1 pEpoch=0 state=0" data-line-style="solid" data-arrow-head="filled" data-self="false">
+  <line x1="212.91" y1="1750" x2="352.90999999999997" y2="1750" stroke="var(--_line)" stroke-width="1" marker-end="url(#seq-arrow)" />
+  <text x="282.90999999999997" y="1740" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[45] fle_send_notification leader=2 zxid=0 eEpoch=1 pEpoch=0 state=0</text>
+</g>
+<g class="message" data-from="I" data-to="R2" data-label="[46] fle_send_notification leader=2 zxid=0 eEpoch=1 pEpoch=0 state=0" data-line-style="solid" data-arrow-head="filled" data-self="false">
+  <line x1="212.91" y1="1790" x2="352.90999999999997" y2="1790" stroke="var(--_line)" stroke-width="1" marker-end="url(#seq-arrow)" />
+  <text x="282.90999999999997" y="1780" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[46] fle_send_notification leader=2 zxid=0 eEpoch=1 pEpoch=0 state=0</text>
+</g>
+<g class="message" data-from="I" data-to="R2" data-label="[47] fle_send_notification leader=2 zxid=0 eEpoch=2 pEpoch=0 state=0" data-line-style="solid" data-arrow-head="filled" data-self="false">
+  <line x1="212.91" y1="1830" x2="352.90999999999997" y2="1830" stroke="var(--_line)" stroke-width="1" marker-end="url(#seq-arrow)" />
+  <text x="282.90999999999997" y="1820" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[47] fle_send_notification leader=2 zxid=0 eEpoch=2 pEpoch=0 state=0</text>
+</g>
+<g class="message" data-from="I" data-to="R2" data-label="[48] fle_send_notification leader=2 zxid=0 eEpoch=2 pEpoch=0 state=0" data-line-style="solid" data-arrow-head="filled" data-self="false">
+  <line x1="212.91" y1="1870" x2="352.90999999999997" y2="1870" stroke="var(--_line)" stroke-width="1" marker-end="url(#seq-arrow)" />
+  <text x="282.90999999999997" y="1860" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[48] fle_send_notification leader=2 zxid=0 eEpoch=2 pEpoch=0 state=0</text>
+</g>
+<g class="message" data-from="I" data-to="R2" data-label="[49] fle_send_notification leader=2 zxid=0 eEpoch=2 pEpoch=0 state=0" data-line-style="solid" data-arrow-head="filled" data-self="false">
+  <line x1="212.91" y1="1910" x2="352.90999999999997" y2="1910" stroke="var(--_line)" stroke-width="1" marker-end="url(#seq-arrow)" />
+  <text x="282.90999999999997" y="1900" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[49] fle_send_notification leader=2 zxid=0 eEpoch=2 pEpoch=0 state=0</text>
+</g>
+<g class="message" data-from="I" data-to="R2" data-label="[50] fle_send_notification leader=2 zxid=0 eEpoch=2 pEpoch=0 state=0" data-line-style="solid" data-arrow-head="filled" data-self="false">
+  <line x1="212.91" y1="1950" x2="352.90999999999997" y2="1950" stroke="var(--_line)" stroke-width="1" marker-end="url(#seq-arrow)" />
+  <text x="282.90999999999997" y="1940" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[50] fle_send_notification leader=2 zxid=0 eEpoch=2 pEpoch=0 state=0</text>
+</g>
+<g class="message" data-from="I" data-to="R2" data-label="[51] fle_send_notification leader=2 zxid=0 eEpoch=2 pEpoch=0 state=0" data-line-style="solid" data-arrow-head="filled" data-self="false">
+  <line x1="212.91" y1="1990" x2="352.90999999999997" y2="1990" stroke="var(--_line)" stroke-width="1" marker-end="url(#seq-arrow)" />
+  <text x="282.90999999999997" y="1980" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[51] fle_send_notification leader=2 zxid=0 eEpoch=2 pEpoch=0 state=0</text>
+</g>
+<g class="message" data-from="I" data-to="R2" data-label="[52] fle_send_notification leader=2 zxid=0 eEpoch=2 pEpoch=0 state=0" data-line-style="solid" data-arrow-head="filled" data-self="false">
+  <line x1="212.91" y1="2030" x2="352.90999999999997" y2="2030" stroke="var(--_line)" stroke-width="1" marker-end="url(#seq-arrow)" />
+  <text x="282.90999999999997" y="2020" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[52] fle_send_notification leader=2 zxid=0 eEpoch=2 pEpoch=0 state=0</text>
+</g>
+<g class="message" data-from="I" data-to="R3" data-label="[53] fle_send_notification leader=2 zxid=0 eEpoch=2 pEpoch=0 state=0" data-line-style="solid" data-arrow-head="filled" data-self="false">
+  <line x1="212.91" y1="2070" x2="492.90999999999997" y2="2070" stroke="var(--_line)" stroke-width="1" marker-end="url(#seq-arrow)" />
+  <text x="352.90999999999997" y="2060" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[53] fle_send_notification leader=2 zxid=0 eEpoch=2 pEpoch=0 state=0</text>
+</g>
+<g class="message" data-from="R2" data-to="I" data-label="[54] fle_send_notification leader=1 zxid=0 eEpoch=1 pEpoch=0 state=LOOKING" data-line-style="solid" data-arrow-head="filled" data-self="false">
+  <line x1="352.90999999999997" y1="2110" x2="212.91" y2="2110" stroke="var(--_line)" stroke-width="1" marker-end="url(#seq-arrow)" />
+  <text x="282.90999999999997" y="2100" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[54] fle_send_notification leader=1 zxid=0 eEpoch=1 pEpoch=0 state=LOOKING</text>
+</g>
+<g class="message" data-from="R2" data-to="I" data-label="[55] fle_rcv_notification leader=1 zxid=0 eEpoch=1 pEpoch=0 state=LOOKING" data-line-style="solid" data-arrow-head="filled" data-self="false">
+  <line x1="352.90999999999997" y1="2150" x2="212.91" y2="2150" stroke="var(--_line)" stroke-width="1" marker-end="url(#seq-arrow)" />
+  <text x="282.90999999999997" y="2140" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[55] fle_rcv_notification leader=1 zxid=0 eEpoch=1 pEpoch=0 state=LOOKING</text>
+</g>
+<g class="message" data-from="I" data-to="R2" data-label="[56] fle_send_notification leader=2 zxid=0 eEpoch=2 pEpoch=0 state=0" data-line-style="solid" data-arrow-head="filled" data-self="false">
+  <line x1="212.91" y1="2190" x2="352.90999999999997" y2="2190" stroke="var(--_line)" stroke-width="1" marker-end="url(#seq-arrow)" />
+  <text x="282.90999999999997" y="2180" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[56] fle_send_notification leader=2 zxid=0 eEpoch=2 pEpoch=0 state=0</text>
+</g>
+<g class="message" data-from="I" data-to="R3" data-label="[57] fle_send_notification leader=2 zxid=0 eEpoch=2 pEpoch=0 state=0" data-line-style="solid" data-arrow-head="filled" data-self="false">
+  <line x1="212.91" y1="2230" x2="492.90999999999997" y2="2230" stroke="var(--_line)" stroke-width="1" marker-end="url(#seq-arrow)" />
+  <text x="352.90999999999997" y="2220" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[57] fle_send_notification leader=2 zxid=0 eEpoch=2 pEpoch=0 state=0</text>
+</g>
+<g class="message" data-from="R2" data-to="I" data-label="[58] fle_send_notification leader=3 zxid=0 eEpoch=1 pEpoch=0 state=FOLLOWING" data-line-style="solid" data-arrow-head="filled" data-self="false">
+  <line x1="352.90999999999997" y1="2270" x2="212.91" y2="2270" stroke="var(--_line)" stroke-width="1" marker-end="url(#seq-arrow)" />
+  <text x="282.90999999999997" y="2260" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[58] fle_send_notification leader=3 zxid=0 eEpoch=1 pEpoch=0 state=FOLLOWING</text>
+</g>
+<g class="message" data-from="R2" data-to="I" data-label="[59] fle_rcv_notification leader=3 zxid=0 eEpoch=1 pEpoch=0 state=FOLLOWING" data-line-style="solid" data-arrow-head="filled" data-self="false">
+  <line x1="352.90999999999997" y1="2310" x2="212.91" y2="2310" stroke="var(--_line)" stroke-width="1" marker-end="url(#seq-arrow)" />
+  <text x="282.90999999999997" y="2300" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[59] fle_rcv_notification leader=3 zxid=0 eEpoch=1 pEpoch=0 state=FOLLOWING</text>
+</g>
+<g class="message" data-from="R3" data-to="I" data-label="[60] tcp_connect [quorum]" data-line-style="solid" data-arrow-head="filled" data-self="false">
+  <line x1="492.90999999999997" y1="2350" x2="212.91" y2="2350" stroke="var(--_line)" stroke-width="1" marker-end="url(#seq-arrow)" />
+  <text x="352.90999999999997" y="2340" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[60] tcp_connect [quorum]</text>
+</g>
+<g class="message" data-from="I" data-to="R2" data-label="[61] fle_send_notification leader=2 zxid=0 eEpoch=2 pEpoch=0 state=0" data-line-style="solid" data-arrow-head="filled" data-self="false">
+  <line x1="212.91" y1="2390" x2="352.90999999999997" y2="2390" stroke="var(--_line)" stroke-width="1" marker-end="url(#seq-arrow)" />
+  <text x="282.90999999999997" y="2380" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[61] fle_send_notification leader=2 zxid=0 eEpoch=2 pEpoch=0 state=0</text>
+</g>
+<g class="message" data-from="I" data-to="R3" data-label="[62] fle_send_notification leader=2 zxid=0 eEpoch=2 pEpoch=0 state=0" data-line-style="solid" data-arrow-head="filled" data-self="false">
+  <line x1="212.91" y1="2430" x2="492.90999999999997" y2="2430" stroke="var(--_line)" stroke-width="1" marker-end="url(#seq-arrow)" />
+  <text x="352.90999999999997" y="2420" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[62] fle_send_notification leader=2 zxid=0 eEpoch=2 pEpoch=0 state=0</text>
+</g>
+<g class="message" data-from="R2" data-to="I" data-label="[63] fle_send_notification leader=1 zxid=0 eEpoch=1 pEpoch=0 state=LOOKING" data-line-style="solid" data-arrow-head="filled" data-self="false">
+  <line x1="352.90999999999997" y1="2470" x2="212.91" y2="2470" stroke="var(--_line)" stroke-width="1" marker-end="url(#seq-arrow)" />
+  <text x="282.90999999999997" y="2460" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[63] fle_send_notification leader=1 zxid=0 eEpoch=1 pEpoch=0 state=LOOKING</text>
+</g>
+<g class="message" data-from="R2" data-to="I" data-label="[64] fle_rcv_notification leader=1 zxid=0 eEpoch=1 pEpoch=0 state=LOOKING" data-line-style="solid" data-arrow-head="filled" data-self="false">
+  <line x1="352.90999999999997" y1="2510" x2="212.91" y2="2510" stroke="var(--_line)" stroke-width="1" marker-end="url(#seq-arrow)" />
+  <text x="282.90999999999997" y="2500" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[64] fle_rcv_notification leader=1 zxid=0 eEpoch=1 pEpoch=0 state=LOOKING</text>
+</g>
+<g class="message" data-from="I" data-to="R2" data-label="[65] fle_send_notification leader=2 zxid=0 eEpoch=2 pEpoch=0 state=0" data-line-style="solid" data-arrow-head="filled" data-self="false">
+  <line x1="212.91" y1="2550" x2="352.90999999999997" y2="2550" stroke="var(--_line)" stroke-width="1" marker-end="url(#seq-arrow)" />
+  <text x="282.90999999999997" y="2540" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[65] fle_send_notification leader=2 zxid=0 eEpoch=2 pEpoch=0 state=0</text>
+</g>
+<g class="message" data-from="R3" data-to="R2" data-label="[66] tcp_connect [quorum] [sim]" data-line-style="dashed" data-arrow-head="filled" data-self="false">
+  <line x1="492.90999999999997" y1="2590" x2="352.90999999999997" y2="2590" stroke="var(--_line)" stroke-width="1" stroke-dasharray="6 4" marker-end="url(#seq-arrow)" />
+  <text x="422.90999999999997" y="2580" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[66] tcp_connect [quorum] [sim]</text>
+</g>
+<g class="message" data-from="R3" data-to="I" data-label="[67] fle_send_notification leader=2 zxid=0 eEpoch=1 pEpoch=0 state=LOOKING" data-line-style="solid" data-arrow-head="filled" data-self="false">
+  <line x1="492.90999999999997" y1="2630" x2="212.91" y2="2630" stroke="var(--_line)" stroke-width="1" marker-end="url(#seq-arrow)" />
+  <text x="352.90999999999997" y="2620" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[67] fle_send_notification leader=2 zxid=0 eEpoch=1 pEpoch=0 state=LOOKING</text>
+</g>
+<g class="message" data-from="R3" data-to="I" data-label="[68] fle_rcv_notification leader=2 zxid=0 eEpoch=1 pEpoch=0 state=LOOKING" data-line-style="solid" data-arrow-head="filled" data-self="false">
+  <line x1="492.90999999999997" y1="2670" x2="212.91" y2="2670" stroke="var(--_line)" stroke-width="1" marker-end="url(#seq-arrow)" />
+  <text x="352.90999999999997" y="2660" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[68] fle_rcv_notification leader=2 zxid=0 eEpoch=1 pEpoch=0 state=LOOKING</text>
+</g>
+<g class="message" data-from="I" data-to="R3" data-label="[69] fle_send_notification leader=2 zxid=0 eEpoch=2 pEpoch=0 state=0" data-line-style="solid" data-arrow-head="filled" data-self="false">
+  <line x1="212.91" y1="2710" x2="492.90999999999997" y2="2710" stroke="var(--_line)" stroke-width="1" marker-end="url(#seq-arrow)" />
+  <text x="352.90999999999997" y="2700" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[69] fle_send_notification leader=2 zxid=0 eEpoch=2 pEpoch=0 state=0</text>
+</g>
+<g class="message" data-from="R2" data-to="I" data-label="[70] fle_send_notification leader=2 zxid=0 eEpoch=0 pEpoch=0 state=LOOKING" data-line-style="solid" data-arrow-head="filled" data-self="false">
+  <line x1="352.90999999999997" y1="2750" x2="212.91" y2="2750" stroke="var(--_line)" stroke-width="1" marker-end="url(#seq-arrow)" />
+  <text x="282.90999999999997" y="2740" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[70] fle_send_notification leader=2 zxid=0 eEpoch=0 pEpoch=0 state=LOOKING</text>
+</g>
+<g class="message" data-from="R2" data-to="I" data-label="[71] fle_rcv_notification leader=2 zxid=0 eEpoch=0 pEpoch=0 state=LOOKING" data-line-style="solid" data-arrow-head="filled" data-self="false">
+  <line x1="352.90999999999997" y1="2790" x2="212.91" y2="2790" stroke="var(--_line)" stroke-width="1" marker-end="url(#seq-arrow)" />
+  <text x="282.90999999999997" y="2780" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[71] fle_rcv_notification leader=2 zxid=0 eEpoch=0 pEpoch=0 state=LOOKING</text>
+</g>
+<g class="message" data-from="I" data-to="R2" data-label="[72] fle_send_notification leader=2 zxid=0 eEpoch=2 pEpoch=0 state=0" data-line-style="solid" data-arrow-head="filled" data-self="false">
+  <line x1="212.91" y1="2830" x2="352.90999999999997" y2="2830" stroke="var(--_line)" stroke-width="1" marker-end="url(#seq-arrow)" />
+  <text x="282.90999999999997" y="2820" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[72] fle_send_notification leader=2 zxid=0 eEpoch=2 pEpoch=0 state=0</text>
+</g>
+<g class="message" data-from="R3" data-to="I" data-label="[73] fle_send_notification leader=3 zxid=0 eEpoch=0 pEpoch=0 state=LOOKING" data-line-style="solid" data-arrow-head="filled" data-self="false">
+  <line x1="492.90999999999997" y1="2870" x2="212.91" y2="2870" stroke="var(--_line)" stroke-width="1" marker-end="url(#seq-arrow)" />
+  <text x="352.90999999999997" y="2860" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[73] fle_send_notification leader=3 zxid=0 eEpoch=0 pEpoch=0 state=LOOKING</text>
+</g>
+<g class="message" data-from="R3" data-to="I" data-label="[74] fle_rcv_notification leader=3 zxid=0 eEpoch=0 pEpoch=0 state=LOOKING" data-line-style="solid" data-arrow-head="filled" data-self="false">
+  <line x1="492.90999999999997" y1="2910" x2="212.91" y2="2910" stroke="var(--_line)" stroke-width="1" marker-end="url(#seq-arrow)" />
+  <text x="352.90999999999997" y="2900" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[74] fle_rcv_notification leader=3 zxid=0 eEpoch=0 pEpoch=0 state=LOOKING</text>
+</g>
+<g class="message" data-from="I" data-to="R3" data-label="[75] fle_send_notification leader=2 zxid=0 eEpoch=2 pEpoch=0 state=0" data-line-style="solid" data-arrow-head="filled" data-self="false">
+  <line x1="212.91" y1="2950" x2="492.90999999999997" y2="2950" stroke="var(--_line)" stroke-width="1" marker-end="url(#seq-arrow)" />
+  <text x="352.90999999999997" y="2940" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[75] fle_send_notification leader=2 zxid=0 eEpoch=2 pEpoch=0 state=0</text>
+</g>
+<g class="message" data-from="R2" data-to="R3" data-label="[76] tcp_disconnect [quorum] [sim]" data-line-style="dashed" data-arrow-head="filled" data-self="false">
+  <line x1="352.90999999999997" y1="2990" x2="492.90999999999997" y2="2990" stroke="var(--_line)" stroke-width="1" stroke-dasharray="6 4" marker-end="url(#seq-arrow)" />
+  <text x="422.90999999999997" y="2980" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[76] tcp_disconnect [quorum] [sim]</text>
+</g>
+<g class="message" data-from="R3" data-to="I" data-label="[77] fle_send_notification leader=3 zxid=0 eEpoch=0 pEpoch=0 state=LOOKING" data-line-style="solid" data-arrow-head="filled" data-self="false">
+  <line x1="492.90999999999997" y1="3030" x2="212.91" y2="3030" stroke="var(--_line)" stroke-width="1" marker-end="url(#seq-arrow)" />
+  <text x="352.90999999999997" y="3020" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[77] fle_send_notification leader=3 zxid=0 eEpoch=0 pEpoch=0 state=LOOKING</text>
+</g>
+<g class="message" data-from="R3" data-to="I" data-label="[78] fle_rcv_notification leader=3 zxid=0 eEpoch=0 pEpoch=0 state=LOOKING" data-line-style="solid" data-arrow-head="filled" data-self="false">
+  <line x1="492.90999999999997" y1="3070" x2="212.91" y2="3070" stroke="var(--_line)" stroke-width="1" marker-end="url(#seq-arrow)" />
+  <text x="352.90999999999997" y="3060" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[78] fle_rcv_notification leader=3 zxid=0 eEpoch=0 pEpoch=0 state=LOOKING</text>
+</g>
+<g class="message" data-from="I" data-to="R3" data-label="[79] fle_send_notification leader=2 zxid=0 eEpoch=2 pEpoch=0 state=0" data-line-style="solid" data-arrow-head="filled" data-self="false">
+  <line x1="212.91" y1="3110" x2="492.90999999999997" y2="3110" stroke="var(--_line)" stroke-width="1" marker-end="url(#seq-arrow)" />
+  <text x="352.90999999999997" y="3100" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[79] fle_send_notification leader=2 zxid=0 eEpoch=2 pEpoch=0 state=0</text>
+</g>
+<g class="message" data-from="R2" data-to="R3" data-label="[80] tcp_connect [quorum] [sim]" data-line-style="dashed" data-arrow-head="filled" data-self="false">
+  <line x1="352.90999999999997" y1="3150" x2="492.90999999999997" y2="3150" stroke="var(--_line)" stroke-width="1" stroke-dasharray="6 4" marker-end="url(#seq-arrow)" />
+  <text x="422.90999999999997" y="3140" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[80] tcp_connect [quorum] [sim]</text>
+</g>
+<g class="message" data-from="R3" data-to="I" data-label="[81] fle_send_notification leader=3 zxid=0 eEpoch=1 pEpoch=0 state=LEADING" data-line-style="solid" data-arrow-head="filled" data-self="false">
+  <line x1="492.90999999999997" y1="3190" x2="212.91" y2="3190" stroke="var(--_line)" stroke-width="1" marker-end="url(#seq-arrow)" />
+  <text x="352.90999999999997" y="3180" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[81] fle_send_notification leader=3 zxid=0 eEpoch=1 pEpoch=0 state=LEADING</text>
+</g>
+<g class="message" data-from="R3" data-to="I" data-label="[82] fle_rcv_notification leader=3 zxid=0 eEpoch=1 pEpoch=0 state=LEADING" data-line-style="solid" data-arrow-head="filled" data-self="false">
+  <line x1="492.90999999999997" y1="3230" x2="212.91" y2="3230" stroke="var(--_line)" stroke-width="1" marker-end="url(#seq-arrow)" />
+  <text x="352.90999999999997" y="3220" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[82] fle_rcv_notification leader=3 zxid=0 eEpoch=1 pEpoch=0 state=LEADING</text>
+</g>
+<g class="message" data-from="I" data-to="R3" data-label="[84] tcp_accept [quorum]" data-line-style="solid" data-arrow-head="filled" data-self="false">
+  <line x1="212.91" y1="3285" x2="492.90999999999997" y2="3285" stroke="var(--_line)" stroke-width="1" marker-end="url(#seq-arrow)" />
+  <text x="352.90999999999997" y="3275" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[84] tcp_accept [quorum]</text>
+</g>
+<g class="message" data-from="I" data-to="R3" data-label="[85] FOLLOWERINFO epoch=0" data-line-style="solid" data-arrow-head="filled" data-self="false">
+  <line x1="212.91" y1="3325" x2="492.90999999999997" y2="3325" stroke="var(--_line)" stroke-width="1" marker-end="url(#seq-arrow)" />
+  <text x="352.90999999999997" y="3315" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[85] FOLLOWERINFO epoch=0</text>
+</g>
+<g class="message" data-from="R3" data-to="I" data-label="[86] LEADERINFO epoch=1" data-line-style="solid" data-arrow-head="filled" data-self="false">
+  <line x1="492.90999999999997" y1="3365" x2="212.91" y2="3365" stroke="var(--_line)" stroke-width="1" marker-end="url(#seq-arrow)" />
+  <text x="352.90999999999997" y="3355" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[86] LEADERINFO epoch=1</text>
+</g>
+<g class="message" data-from="I" data-to="R3" data-label="[87] ACKEPOCH epoch=0 zxid=0" data-line-style="solid" data-arrow-head="filled" data-self="false">
+  <line x1="212.91" y1="3405" x2="492.90999999999997" y2="3405" stroke="var(--_line)" stroke-width="1" marker-end="url(#seq-arrow)" />
+  <text x="352.90999999999997" y="3395" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[87] ACKEPOCH epoch=0 zxid=0</text>
+</g>
+<g class="message" data-from="R3" data-to="I" data-label="[88] DIFF" data-line-style="solid" data-arrow-head="filled" data-self="false">
+  <line x1="492.90999999999997" y1="3445" x2="212.91" y2="3445" stroke="var(--_line)" stroke-width="1" marker-end="url(#seq-arrow)" />
+  <text x="352.90999999999997" y="3435" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[88] DIFF</text>
+</g>
+<g class="message" data-from="R3" data-to="R2" data-label="[89] LEADERINFO epoch=1 [sim]" data-line-style="dashed" data-arrow-head="filled" data-self="false">
+  <line x1="492.90999999999997" y1="3485" x2="352.90999999999997" y2="3485" stroke="var(--_line)" stroke-width="1" stroke-dasharray="6 4" marker-end="url(#seq-arrow)" />
+  <text x="422.90999999999997" y="3475" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[89] LEADERINFO epoch=1 [sim]</text>
+</g>
+<g class="message" data-from="R3" data-to="I" data-label="[90] NEWLEADER zxid=1" data-line-style="solid" data-arrow-head="filled" data-self="false">
+  <line x1="492.90999999999997" y1="3525" x2="212.91" y2="3525" stroke="var(--_line)" stroke-width="1" marker-end="url(#seq-arrow)" />
+  <text x="352.90999999999997" y="3515" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[90] NEWLEADER zxid=1</text>
+</g>
+<g class="message" data-from="I" data-to="R3" data-label="[91] ACK(NEWLEADER) zxid=1" data-line-style="solid" data-arrow-head="filled" data-self="false">
+  <line x1="212.91" y1="3565" x2="492.90999999999997" y2="3565" stroke="var(--_line)" stroke-width="1" marker-end="url(#seq-arrow)" />
+  <text x="352.90999999999997" y="3555" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[91] ACK(NEWLEADER) zxid=1</text>
+</g>
+<g class="message" data-from="R3" data-to="I" data-label="[92] UPTODATE" data-line-style="solid" data-arrow-head="filled" data-self="false">
+  <line x1="492.90999999999997" y1="3605" x2="212.91" y2="3605" stroke="var(--_line)" stroke-width="1" marker-end="url(#seq-arrow)" />
+  <text x="352.90999999999997" y="3595" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[92] UPTODATE</text>
+</g>
+<g class="message" data-from="I" data-to="R3" data-label="[93] ACK(NEWLEADER) zxid=1" data-line-style="solid" data-arrow-head="filled" data-self="false">
+  <line x1="212.91" y1="3645" x2="492.90999999999997" y2="3645" stroke="var(--_line)" stroke-width="1" marker-end="url(#seq-arrow)" />
+  <text x="352.90999999999997" y="3635" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[93] ACK(NEWLEADER) zxid=1</text>
+</g>
+<g class="message" data-from="R3" data-to="I" data-label="[94] fle_send_notification leader=1 zxid=0 eEpoch=0 pEpoch=0 state=LOOKING" data-line-style="solid" data-arrow-head="filled" data-self="false">
+  <line x1="492.90999999999997" y1="3685" x2="212.91" y2="3685" stroke="var(--_line)" stroke-width="1" marker-end="url(#seq-arrow)" />
+  <text x="352.90999999999997" y="3675" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[94] fle_send_notification leader=1 zxid=0 eEpoch=0 pEpoch=0 state=LOOKING</text>
+</g>
+<g class="message" data-from="R3" data-to="I" data-label="[95] fle_rcv_notification leader=1 zxid=0 eEpoch=0 pEpoch=0 state=LOOKING" data-line-style="solid" data-arrow-head="filled" data-self="false">
+  <line x1="492.90999999999997" y1="3725" x2="212.91" y2="3725" stroke="var(--_line)" stroke-width="1" marker-end="url(#seq-arrow)" />
+  <text x="352.90999999999997" y="3715" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[95] fle_rcv_notification leader=1 zxid=0 eEpoch=0 pEpoch=0 state=LOOKING</text>
+</g>
+<g class="message" data-from="I" data-to="R3" data-label="[96] fle_send_notification leader=3 zxid=0 eEpoch=1 pEpoch=1 state=1" data-line-style="solid" data-arrow-head="filled" data-self="false">
+  <line x1="212.91" y1="3765" x2="492.90999999999997" y2="3765" stroke="var(--_line)" stroke-width="1" marker-end="url(#seq-arrow)" />
+  <text x="352.90999999999997" y="3755" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[96] fle_send_notification leader=3 zxid=0 eEpoch=1 pEpoch=1 state=1</text>
+</g>
+<g class="message" data-from="R2" data-to="R3" data-label="[97] ACKEPOCH epoch=0 zxid=0 [sim]" data-line-style="dashed" data-arrow-head="filled" data-self="false">
+  <line x1="352.90999999999997" y1="3805" x2="492.90999999999997" y2="3805" stroke="var(--_line)" stroke-width="1" stroke-dasharray="6 4" marker-end="url(#seq-arrow)" />
+  <text x="422.90999999999997" y="3795" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[97] ACKEPOCH epoch=0 zxid=0 [sim]</text>
+</g>
+<g class="message" data-from="R3" data-to="R2" data-label="[98] SNAP zxid=0 [sim]" data-line-style="dashed" data-arrow-head="filled" data-self="false">
+  <line x1="492.90999999999997" y1="3845" x2="352.90999999999997" y2="3845" stroke="var(--_line)" stroke-width="1" stroke-dasharray="6 4" marker-end="url(#seq-arrow)" />
+  <text x="422.90999999999997" y="3835" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[98] SNAP zxid=0 [sim]</text>
+</g>
+<g class="message" data-from="R3" data-to="R2" data-label="[99] NEWLEADER zxid=1 [sim]" data-line-style="dashed" data-arrow-head="filled" data-self="false">
+  <line x1="492.90999999999997" y1="3885" x2="352.90999999999997" y2="3885" stroke="var(--_line)" stroke-width="1" stroke-dasharray="6 4" marker-end="url(#seq-arrow)" />
+  <text x="422.90999999999997" y="3875" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[99] NEWLEADER zxid=1 [sim]</text>
+</g>
+<g class="message" data-from="R2" data-to="R3" data-label="[101] ACK(NEWLEADER) zxid=1 [sim]" data-line-style="dashed" data-arrow-head="filled" data-self="false">
+  <line x1="352.90999999999997" y1="3940" x2="492.90999999999997" y2="3940" stroke="var(--_line)" stroke-width="1" stroke-dasharray="6 4" marker-end="url(#seq-arrow)" />
+  <text x="422.90999999999997" y="3930" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[101] ACK(NEWLEADER) zxid=1 [sim]</text>
+</g>
+<g class="message" data-from="R3" data-to="R2" data-label="[107] UPTODATE [sim]" data-line-style="dashed" data-arrow-head="filled" data-self="false">
+  <line x1="492.90999999999997" y1="4103" x2="352.90999999999997" y2="4103" stroke="var(--_line)" stroke-width="1" stroke-dasharray="6 4" marker-end="url(#seq-arrow)" />
+  <text x="422.90999999999997" y="4093" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[107] UPTODATE [sim]</text>
+</g>
+<g class="message" data-from="R2" data-to="R3" data-label="[108] ACK(NEWLEADER) zxid=1 [sim]" data-line-style="dashed" data-arrow-head="filled" data-self="false">
+  <line x1="352.90999999999997" y1="4143" x2="492.90999999999997" y2="4143" stroke="var(--_line)" stroke-width="1" stroke-dasharray="6 4" marker-end="url(#seq-arrow)" />
+  <text x="422.90999999999997" y="4133" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[108] ACK(NEWLEADER) zxid=1 [sim]</text>
+</g>
+<g class="message" data-from="R3" data-to="I" data-label="[113] PROPOSAL zxid=1" data-line-style="solid" data-arrow-head="filled" data-self="false">
+  <line x1="492.90999999999997" y1="4279" x2="212.91" y2="4279" stroke="var(--_line)" stroke-width="1" marker-end="url(#seq-arrow)" />
+  <text x="352.90999999999997" y="4269" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[113] PROPOSAL zxid=1</text>
+</g>
+<g class="message" data-from="I" data-to="R3" data-label="[114] ACK(PROPOSAL) zxid=1" data-line-style="solid" data-arrow-head="filled" data-self="false">
+  <line x1="212.91" y1="4319" x2="492.90999999999997" y2="4319" stroke="var(--_line)" stroke-width="1" marker-end="url(#seq-arrow)" />
+  <text x="352.90999999999997" y="4309" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[114] ACK(PROPOSAL) zxid=1</text>
+</g>
+<g class="message" data-from="I" data-to="H" data-label="[115] on_stopped" data-line-style="dashed" data-arrow-head="filled" data-self="false">
+  <line x1="212.91" y1="4359" x2="72.91" y2="4359" stroke="var(--_line)" stroke-width="1" stroke-dasharray="6 4" marker-end="url(#seq-arrow)" />
+  <text x="142.91" y="4349" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[115] on_stopped</text>
+</g>
+<g class="note" data-position="over" data-actors="R2">
+  <polygon points="283.95199999999994,178 415.86799999999994,178 421.86799999999994,184 421.86799999999994,201 283.95199999999994,201" fill="var(--bg)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <polygon points="415.86799999999994,178 421.86799999999994,184 415.86799999999994,184" fill="var(--_inner-stroke)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="352.90999999999997" y="189.5" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[4] become follower [sim]</text>
+</g>
+<g class="note" data-position="over" data-actors="R3">
+  <polygon points="426.92199999999997,313 552.898,313 558.898,319 558.898,336 426.92199999999997,336" fill="var(--bg)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <polygon points="552.898,313 558.898,319 552.898,319" fill="var(--_inner-stroke)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="492.90999999999997" y="324.5" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[8] become leader [sim]</text>
+</g>
+<g class="note" data-position="over" data-actors="I">
+  <polygon points="157.31699999999998,568 262.503,568 268.503,574 268.503,591 157.31699999999998,591" fill="var(--bg)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <polygon points="262.503,568 268.503,574 262.503,574" fill="var(--_inner-stroke)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="212.91" y="579.5" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[15] become leader</text>
+</g>
+<g class="note" data-position="over" data-actors="I">
+  <polygon points="154.94099999999997,1103 264.879,1103 270.879,1109 270.879,1126 154.94099999999997,1126" fill="var(--bg)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <polygon points="264.879,1103 270.879,1109 264.879,1109" fill="var(--_inner-stroke)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="212.91" y="1114.5" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[29] restart election</text>
+</g>
+<g class="note" data-position="over" data-actors="I">
+  <polygon points="152.565,3238 267.255,3238 273.255,3244 273.255,3261 152.565,3261" fill="var(--bg)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <polygon points="267.255,3238 273.255,3244 267.255,3244" fill="var(--_inner-stroke)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="212.91" y="3249.5" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[83] become follower</text>
+</g>
+<g class="note" data-position="over" data-actors="I">
+  <polygon points="154.64399999999998,3893 265.176,3893 271.176,3899 271.176,3916 154.64399999999998,3916" fill="var(--bg)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <polygon points="265.176,3893 271.176,3899 265.176,3899" fill="var(--_inner-stroke)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="212.91" y="3904.5" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[100] client_connect</text>
+</g>
+<g class="note" data-position="over" data-actors="I">
+  <polygon points="153.456,3948 266.36400000000003,3948 272.36400000000003,3954 272.36400000000003,3971 153.456,3971" fill="var(--bg)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <polygon points="266.36400000000003,3948 272.36400000000003,3954 266.36400000000003,3954" fill="var(--_inner-stroke)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="212.91" y="3959.5" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[102] client_get_data</text>
+</g>
+<g class="note" data-position="over" data-actors="I">
+  <polygon points="143.952,3975 275.86800000000005,3975 281.86800000000005,3981 281.86800000000005,3998 143.952,3998" fill="var(--bg)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <polygon points="275.86800000000005,3975 281.86800000000005,3981 275.86800000000005,3981" fill="var(--_inner-stroke)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="212.91000000000003" y="3986.5" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[103] client_get_children</text>
+</g>
+<g class="note" data-position="over" data-actors="I">
+  <polygon points="159.396,4002 260.424,4002 266.424,4008 266.424,4025 159.396,4025" fill="var(--bg)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <polygon points="260.424,4002 266.424,4008 260.424,4008" fill="var(--_inner-stroke)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="212.91" y="4013.5" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[104] client_exists</text>
+</g>
+<g class="note" data-position="over" data-actors="I">
+  <polygon points="143.952,4029 275.86800000000005,4029 281.86800000000005,4035 281.86800000000005,4052 143.952,4052" fill="var(--bg)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <polygon points="275.86800000000005,4029 281.86800000000005,4035 275.86800000000005,4035" fill="var(--_inner-stroke)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="212.91000000000003" y="4040.5" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[105] client_get_children</text>
+</g>
+<g class="note" data-position="over" data-actors="I">
+  <polygon points="159.396,4056 260.424,4056 266.424,4062 266.424,4079 159.396,4079" fill="var(--bg)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <polygon points="260.424,4056 266.424,4062 260.424,4062" fill="var(--_inner-stroke)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="212.91" y="4067.5" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[106] client_exists</text>
+</g>
+<g class="note" data-position="over" data-actors="I">
+  <polygon points="143.952,4151 275.86800000000005,4151 281.86800000000005,4157 281.86800000000005,4174 143.952,4174" fill="var(--bg)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <polygon points="275.86800000000005,4151 281.86800000000005,4157 275.86800000000005,4157" fill="var(--_inner-stroke)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="212.91000000000003" y="4162.5" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[109] client_get_children</text>
+</g>
+<g class="note" data-position="over" data-actors="R3">
+  <polygon points="424.84299999999996,4178 554.977,4178 560.977,4184 560.977,4201 424.84299999999996,4201" fill="var(--bg)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <polygon points="554.977,4178 560.977,4184 554.977,4184" fill="var(--_inner-stroke)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="492.90999999999997" y="4189.5" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[110] client_connect [sim]</text>
+</g>
+<g class="note" data-position="over" data-actors="R3">
+  <polygon points="415.93299999999994,4205 563.887,4205 569.887,4211 569.887,4228 415.93299999999994,4228" fill="var(--bg)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <polygon points="563.887,4205 569.887,4211 563.887,4211" fill="var(--_inner-stroke)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="492.90999999999997" y="4216.5" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[111] client_get_children [sim]</text>
+</g>
+<g class="note" data-position="over" data-actors="R3">
+  <polygon points="428.4069999999999,4232 551.413,4232 557.413,4238 557.413,4255 428.4069999999999,4255" fill="var(--bg)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <polygon points="551.413,4232 557.413,4238 551.413,4238" fill="var(--_inner-stroke)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="492.90999999999997" y="4243.5" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">[112] client_create [sim]</text>
+</g>
+<g class="actor" data-id="H" data-label="Harness" data-type="participant">
+  <rect x="30" y="30" width="85.82" height="40" rx="4" ry="4" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="1" />
+  <text x="72.91" y="50" font-size="13" text-anchor="middle" font-weight="500" fill="var(--_text)" dy="4.55">Harness</text>
+</g>
+<g class="actor" data-id="I" data-label="IUT" data-type="participant">
+  <rect x="172.91" y="30" width="80" height="40" rx="4" ry="4" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="1" />
+  <text x="212.91" y="50" font-size="13" text-anchor="middle" font-weight="500" fill="var(--_text)" dy="4.55">IUT</text>
+</g>
+<g class="actor" data-id="R2" data-label="Replica 2" data-type="participant">
+  <rect x="308.88849999999996" y="30" width="88.04299999999999" height="40" rx="4" ry="4" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="1" />
+  <text x="352.90999999999997" y="50" font-size="13" text-anchor="middle" font-weight="500" fill="var(--_text)" dy="4.55">Replica 2</text>
+</g>
+<g class="actor" data-id="R3" data-label="Replica 3" data-type="participant">
+  <rect x="448.88849999999996" y="30" width="88.04299999999999" height="40" rx="4" ry="4" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="1" />
+  <text x="492.90999999999997" y="50" font-size="13" text-anchor="middle" font-weight="500" fill="var(--_text)" dy="4.55">Replica 3</text>
+</g>
+</svg>

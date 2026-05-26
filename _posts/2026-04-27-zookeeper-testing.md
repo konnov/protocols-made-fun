@@ -16,12 +16,14 @@ feed: true
 
 **Date:** April 27, 2026
 
-*This text is artisanally typed using a keyboard. The figures are generated with
-ChatGPT 5.5. By AI tools, I refer to Codex GPT 5.4/5.5
-and Claude Code Sonnet/Opus 4.6/4.7.*
+*This text is artisanally typed using a keyboard, with occasional suggestions by
+Copilot. The figures are generated with ChatGPT 5.5. The plots are produced by
+AI-generated scripts from the experimental data. By AI tools, I refer to Codex
+GPT 5.4/5.5 and Claude Code Sonnet/Opus 4.6/4.7.*
 
 Recently, I gave a talk on "*Interactive symbolic testing with TLA<sup>+</sup>,
-Apalache, and LLMs*" at the [TLA+ Community Meeting 2026][tla2026]. I talked
+Apalache, and LLMs*" at the [TLA+ Community Meeting 2026][tla2026]. If you
+prefer watching talks, see [the talk recording][tla2026-recording]. I talked
 about the new [Apalache JSON-RPC][] and how it can be used to test real
 distributed protocols. As the first example, I presented the case study on
 [symbolic testing of TFTP protocol][tftp-testing], which was published in
@@ -99,6 +101,10 @@ an experiment**. I am pretty sure that [Ouyang et. al.][multi-grained] had much
 more time to write their TLA<sup>+</sup> specifications of ZooKeeper and to
 conduct their experiments.
 
+If you read the blog post carefully, you will probably find some points that
+could be investigated further. I have decided to time box this experiment and
+report about it where it is.
+
 {% include tip.html content="As I mentioned earlier, I stopped accompaying my
 blog posts with complete artifacts. AI slop forks are real. It takes me time to
 design and conduct the experiments on a beefy machine, as well as to find the
@@ -107,10 +113,6 @@ repackage the benchmarks and results with an AI tool, having the experimental
 data. Hence, I am sharing my lab book with the customers and researchers, upon
 request."
 %}
-
-If you read the blog post carefully, you will probably find some points that
-could be investigated further. I have decided to time box this experiment and
-report about it where it is.
 
 ## 1. Extracting formal specifications
 
@@ -255,8 +257,9 @@ to see the full-size version and examine it in detail.
 If you look at the events in the figure, you will see that the most episodes
 have productive events such as ZAB proposals, commits, diffs, snapshots, client
 operations, etc. However, a few episodes degrade into permanent leader election,
-where the implementation-under-test keeps sending FLE notifications. **TODO: did
-the simulated replicas crash there?**
+where the implementation-under-test keeps sending FLE notifications. Basically,
+the two simulated replicas keep working together and exclude the IUT from the
+quorum.
 
 ## 4. Triaging conformance mismatches
 
@@ -476,10 +479,67 @@ Violation state (spec replica 3 only):
 
 </div>
 
+Below is the sequence diagram of this full episode. Click on it to see the full-size
+version and examine it in detail. It is quite long, so feel free to scroll
+through it.
+
+<figure>
+    <a href="{{ site.baseurl }}/img/zk-testing/at_least_one_committed.svg" target="_blank" title="Click to open full-size"><picture>
+      <img class="responsive-img"
+        src="{{ site.baseurl }}/img/zk-testing/at_least_one_committed.svg"
+        alt="At least one committed">
+    </picture></a>
+    <figcaption>Figure 3: A trace where at least one replica has committed (view the full-size image by clicking).</figcaption>
+</figure>
 
 ## 5. The effort
 
-Nr. of commits, calendar time, my time.
+This experiment took about two months, from March 2026 to April 2026. My git
+repository has 336 commits in total. Except for several initial commits, each
+new commits corresponds to a new iteration of the extraction-checking loop.
+
+You can see the statistics in the figures below:
+
+ - Figure 4 shows the number of commits per day.
+ - Figure 5 shows the number of lines added and deleted in the whole repository.
+ - Figure 6 shows the number of lines added and deleted in the specification files.
+ - Figure 7 shows the number of lines added and deleted in the test harness (zoomonkey).
+
+  <figure>
+    <a href="{{ site.baseurl }}/img/zk-testing/git_stats_commits.png" target="_blank" title="Click to open full-size"><picture>
+      <img class="responsive-img"
+        src="{{ site.baseurl }}/img/zk-testing/git_stats_commits.png"
+        alt="Git stats">
+    </picture></a>
+    <figcaption>Figure 4: Commit statistics in this experiment.</figcaption>
+  </figure>
+
+  <figure>
+    <a href="{{ site.baseurl }}/img/zk-testing/git_stats_lines.png" target="_blank" title="Click to open full-size"><picture>
+      <img class="responsive-img"
+        src="{{ site.baseurl }}/img/zk-testing/git_stats_lines.png"
+        alt="Git stats">
+    </picture></a>
+    <figcaption>Figure 5: Addition/deletion statistics in this experiment.</figcaption>
+  </figure>
+
+  <figure>
+    <a href="{{ site.baseurl }}/img/zk-testing/git_stats_spec.png" target="_blank" title="Click to open full-size"><picture>
+      <img class="responsive-img"
+        src="{{ site.baseurl }}/img/zk-testing/git_stats_spec.png"
+        alt="Git stats">
+    </picture></a>
+    <figcaption>Figure 6: Addition/deletion statistics in the specification files.</figcaption>
+  </figure>
+
+  <figure>
+    <a href="{{ site.baseurl }}/img/zk-testing/git_stats_zoomonkey.png" target="_blank" title="Click to open full-size"><picture>
+      <img class="responsive-img"
+        src="{{ site.baseurl }}/img/zk-testing/git_stats_zoomonkey.png"
+        alt="Git stats">
+    </picture></a>
+    <figcaption>Figure 7: Addition/deletion statistics in the test harness.</figcaption>
+  </figure>
 
 ## 7. Conclusions
 
@@ -518,3 +578,4 @@ I would say that writing specs still should be a human job.
 [Digital Twin]: https://en.wikipedia.org/wiki/Digital_twin
 [zookeeper-tla-spec]: https://github.com/Disalg-ICS-NJU/zookeeper-tla-spec
 [ITF Format]: https://apalache-mc.org/docs/adr/015adr-trace.html
+[tla2026-recording]: https://www.youtube.com/watch?v=CQPhAfi-6Uk
