@@ -21,6 +21,8 @@ Copilot. The figures are generated with ChatGPT 5.5. The plots are produced by
 AI-generated scripts from the experimental data. By AI tools, I refer to Codex
 GPT 5.4/5.5 and Claude Code Sonnet/Opus 4.6/4.7.*
 
+<img class="zm-logo" src="{{ site.baseurl }}/img/zk-testing/zm-logo.png" alt="ZooKeeper logo">
+
 Recently, I gave a talk on "*Interactive symbolic testing with TLA<sup>+</sup>,
 Apalache, and LLMs*" at the [TLA+ Community Meeting 2026][tla2026]. If you
 prefer watching talks, see [the talk recording][tla2026-recording]. I talked

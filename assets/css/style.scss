@@ -165,6 +165,15 @@ body {
   margin-bottom: 1em;
 }
 
+.zm-logo {
+  display: block;
+  width: 30vw;
+  max-width: 280px;
+  min-width: 180px;
+  height: auto;
+  margin: 1em auto 1.5em;
+}
+
 @media (min-width: 1024px) {
   .responsive-img {
     margin-left: 25%;
@@ -177,6 +186,13 @@ body {
     margin-left: 0;
     margin-right: 0;
     width: 100%;
+  }
+}
+
+@media (max-width: 600px) {
+  .zm-logo {
+    width: 80vw;
+    min-width: 0;
   }
 }
 
