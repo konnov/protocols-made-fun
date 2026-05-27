@@ -636,7 +636,7 @@ test harness.
  
 Even though the whole development is quite exciting, my main takeaway is that
 **writing formal specifications is still a human job**. AI tools
-can assist us in producing test harness and find issues.
+can assist us in producing test harness and finding issues.
 
 If you need help with writing formal specifications and producing test
 harnesses, contact me. I can help you with that. It still takes time, expertise,
