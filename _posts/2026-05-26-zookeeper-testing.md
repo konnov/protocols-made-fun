@@ -85,6 +85,13 @@ commit, so we could keep track of regressions in the specification and harness.
 Having said that, I admit that my reviews were high-level and intuitive, not
 Github-level reviews.
 
+What I believe is the killer feature of this approach is that **it does not need
+any pre-existing test suites**. We do not mutate the existing tests. The model
+checker **finds new tests**, including timeouts, crashes, TPC disconnects, etc.
+Moreover, this approach requires **zero code instrumentation**. We do not have
+to add any hooks or logging to the implementation. **The test harness operates at
+the TCP boundary**.
+
 **Did I burn thousands of dollars on this?** Not at all. I did this case study
 with two lowest-tier subscriptions to Codex and Claude Code, which cost me
 **about $80 for two months** in total. (Given the news about [Claude price
@@ -114,7 +121,7 @@ data. Hence, I am sharing my lab book with the customers and researchers, upon
 request."
 %}
 
-If you do not want to read the whole text, [jump to the
+**Want to skip the long text?** [Jump to the
 conclusions](#conclusions).
 
 ## 1. The effort
@@ -129,6 +136,12 @@ You can see the statistics in the figures below:
  - Figure 3 shows the number of lines added and deleted in the whole repository.
  - Figure 4 shows the number of lines added and deleted in the specification files.
  - Figure 5 shows the number of lines added and deleted in the test harness (zoomonkey).
+
+You can see that the commit volume decays with time. This is a sign of
+convergence. The first week has the most commits and the most code added and
+deleted. This was the bootstrapping phase. It's also interesting to observe a
+big splash around the first-second week of April. This is where we start to
+reach a new class of behaviors that did not match the implementation.
 
   <figure>
     <a href="{{ site.baseurl }}/img/zk-testing/git_stats_commits.png" target="_blank" title="Click to open full-size"><picture>
@@ -269,6 +282,19 @@ replica of ZooKeeper**. We call this replica **implementation under test**
 its behavior. This is conceptually similar to a [Digital Twin][] of the real
 distributed system.
 
+Since most of the behavior exists only in the specification, this approach is
+sensitive to **quick and accurate** choice of events. I believe that a random
+simulator would not help us much here, as it would keep crunching through a very
+large set of unproductive events.
+
+This is where the new [Apalache JSON-RPC][] comes into play. The test harness
+chooses the next action to execute and asks the symbolic model checker to find
+the action parameters that would enable it. It also calls Apalache to check the
+state invariants and find out whether the implementation's output matches the
+specification. Since the complexity of SMT solving grows with the number of
+steps very quickly, we use the new method [compact][] to prune the symbolic
+context and keep it manageable.
+
 ## 4. Running the test harness
 
 Running the test harness looks quite boring:
@@ -280,10 +306,10 @@ $ ./scripts/run-parallel.sh 8 -- --replicas 3 --episodes 20 --steps 500 \
 
 It basically runs 20 episodes of 500 steps in parallel, with 3 replicas and a
 number of parameters to control the test scenario generation. The script is
-using GNU Parallel to run the episodes in parallel. Since each test runs **a
+using [GNU Parallel][] to run the episodes in parallel. Since each test runs **a
 single actual replica** and simulates the rest of the distributed system with
 the specification, running multiple experiments in parallel is easy. We only
-have to make sure that different replicas get assigned different ports.
+have to make sure that different experiments get assigned different ports.
 
 Every episode produces a detailed log of events. If it finds an invariant
 violation or a mismatch between the behavior of the real replica and the
@@ -316,10 +342,10 @@ quorum.
 ## 5. Triaging conformance mismatches
 
 Back in October 2025, Copilot + Sonnet 4.5 were quite bad at triaging
-specification mismatches. This may be attributed to better LLM models.  I also
-believe that my effort of definining a good architecture for the test harness
-paid off this time. Below are fragments of a triage report by Claude Code Opus
-4.7:
+specification mismatches. Now, the frontier models are quite good at it. This is
+definitely an improvement in the frontier models.  I also believe that my effort
+of definining a good architecture for the test harness paid off this time. Below
+are fragments of a triage report by Claude Code Opus 4.7:
 
 <div markdown="1" class="ai-output-frame">
 
@@ -544,45 +570,80 @@ through it.
     <figcaption>Figure 7: A trace where at least one replica has committed (view the full-size image by clicking).</figcaption>
 </figure>
 
-<a id="conclusions"></a>
+The table below shows the example coverage in two test campaigns (20 episodes of
+100 steps and 20 episodes of 200 steps).
 
+| Example | Times found | Min step | Max step |
+|---|---:|---:|---:|
+| at_least_one_committed | 1 | 48 | 48 |
+| at_least_two_committed | 1 | 74 | 74 |
+| some_follower_synced | 4 | 26 | 43 |
+| quorum_recovery_completed | 7 | 21 | 185 |
+| newleader_sent | 3 | 23 | 42 |
+| forwarded_request_sent | 1 | 46 | 46 |
+| forwarded_request_received | 1 | 68 | 68 |
+| forwarded_write_committed | 1 | 74 | 74 |
+| proposal_in_flight | 2 | 46 | 47 |
+| proposal_has_quorum_acks | 1 | 74 | 74 |
+| two_proposals_in_flight | 1 | 72 | 72 |
+| first_write_committed_on_quorum | 1 | 48 | 48 |
+| two_distinct_znodes_committed | 1 | 74 | 74 |
+
+
+<a id="conclusions"></a>
 ## 7. Conclusions
+
+Obviously, the AI tools change the way we should test distributed systems.
+Interestingly, my conversations with these tools show that they have very little
+understanding of distributed computations. Funny enough, even though they have
+all the knowledge about TCP/IP at their fingertips, if you ask them right, they
+cannot efficiently operate with this knowledge. However, when they have plenty
+of counterexamples to learn from, they improve the quality of the testing
+harness very quickly. This is where the interplay of formal verification and AI
+tools becomes really powerful. The model checker produces negative and positive
+examples, and the AI tools learn from them and improve the specification and the
+test harness.
 
 **The good**:
 
- - It is actually possible to extract formal specifications from the source code
- of a real distributed system and to write test harnesses with AI tools.  We
- have to keep in mind that this requires a verification loop, which uses a tool
- such as Apalache.
+ - It is actually **possible to extract formal specifications from the source
+ code** of a real distributed system and to write test harnesses with AI tools.
+ We have to keep in mind that this requires a verification loop, which uses a
+ tool such as [Apalache][].
  
- - In this experiment, we extracted a specification that captures five
- protocols.
+ - In this experiment, we extracted a **modular specification that captures five
+ protocols**.
  
- - If we do not try to one-shot the testing process and follow an iterative
- process, the AI tools actually help us.
-
- - Comparing to [tftp-testing][], the AI tools in 2026 are much better at
- triaging specification mismatches. The whole process is much less
- energy-draining now.
+ - If we do not try to one-shot the testing process and **follow an iterative
+ process with a clear pre-defined architecture**, the AI tools actually help us.
+ **"Test it and make no mistakes" obviously does not work**.
+ 
+ - Comparing to [tftp-testing][], the **AI tools in 2026 are much better** at
+ triaging specification mismatches and producing fixes. The whole process is
+ **much less energy-draining now**.
  
 **The bad**:
 
- - I have no idea about the extracted specification. When I write a
+ - I have **no idea about the extracted specification**. When I write a
  specification by hand, I internalize the protocol behavior.  Even after I
  forget the details, I can still come back and recover them from the spec.
  Here, it is much harder.
-
+ 
  - If we focus on bug finding, it is fine to have a hard-to-understand
- specification. However, from the maintainability perspective, it is a big
- problem.
-
+ specification. However, **from the maintainability perspective, it is a big
+ problem**. This is probably why we see such a spike in security bugs, but no so
+ much in real software products.
+ 
 Even though the whole development is quite exciting, my main takeaway is that
 **writing formal specifications is still a human job**. AI tools
 can assist us in producing test harness and find issues.
 
 If you need help with writing formal specifications and producing test
 harnesses, contact me. I can help you with that. It still takes time, expertise,
-and effort to do it right.
+and effort to do it right. Also, coming up with the right architecture is not as
+easy as it may seem. Of course, you can hire an intern and spend several months
+learning from your own mistakes together. Or you can fast-forward it and hire
+me.
 
 ## Want to talk?
  
@@ -608,3 +669,5 @@ and effort to do it right.
 [zookeeper-tla-spec]: https://github.com/Disalg-ICS-NJU/zookeeper-tla-spec
 [ITF Format]: https://apalache-mc.org/docs/adr/015adr-trace.html
 [tla2026-recording]: https://www.youtube.com/watch?v=CQPhAfi-6Uk
+[compact]: https://github.com/apalache-mc/apalache/tree/main/json-rpc#311-method-compact
+[GNU parallel]: https://www.gnu.org/software/parallel/
