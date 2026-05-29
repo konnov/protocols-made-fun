@@ -496,7 +496,7 @@ A natural next step would be to **connect the formal protocol specification** wi
 [Aztec Labs]: https://aztec-labs.com
 [Aztec Network]: https://aztec.network/
 [Thomas Pani]: https://blltprf.xyz/
-[Igor Konnov]: https://konnov.phd
+[Igor Konnov]: https://konnov.phd?utm_source=protocols_made_fun&utm_medium=referral&utm_campaign=pmf_site
 [Aztec Governance]: https://docs.aztec.network/the_aztec_network/concepts/governance
 [RFC]: https://forum.aztec.network/t/request-for-comments-aztec-governance/7413
 [Governance.sol]: https://github.com/AztecProtocol/aztec-packages/blob/8b10b2b220de38c9e2e2e2b7d05d7383701ba070/l1-contracts/src/governance/Governance.sol

@@ -135,7 +135,7 @@ _Development of Solarkraft was supported by the [Stellar Development Foundation]
 [part1]: https://thpani.net/2024/06/why-smart-contract-bugs-matter-and-how-runtime-monitoring-saves-the-day-solarkraft-1/
 [part2]: https://thpani.net/2024/06/small-and-modular-runtime-monitors-in-tla-for-soroban-smart-contracts-solarkraft-2/
 
-[Igor Konnov]: https://konnov.phd
+[Igor Konnov]: https://konnov.phd?utm_source=protocols_made_fun&utm_medium=referral&utm_campaign=pmf_site
 [Jure Kukovec]: https://www.linkedin.com/in/jure-kukovec/
 [Andrey Kuprianov]: https://www.linkedin.com/in/andrey-kuprianov/
 [Thomas Pani]: https://thpani.net

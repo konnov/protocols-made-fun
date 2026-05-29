@@ -130,8 +130,8 @@ If you find this hint useful, leave a comment below.
  
 <!-- References -->
 
-[contact]: https://konnov.phd?pmf=20250323
-[Igor Konnov]: https://konnov.phd
+[contact]: https://konnov.phd?pmf=20250323&utm_source=protocols_made_fun&utm_medium=referral&utm_campaign=pmf_site
+[Igor Konnov]: https://konnov.phd?utm_source=protocols_made_fun&utm_medium=referral&utm_campaign=pmf_site
 [LI]: https://www.linkedin.com/in/igor-konnov-at/
 [tftp-testing]: {% link _posts/2025-12-15-tftp-symbolic-testing.md %}
 [Apalache]: https://apalache-mc.org

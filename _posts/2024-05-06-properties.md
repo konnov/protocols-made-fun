@@ -746,7 +746,7 @@ Watch the latest talks from [TLA+ Conference 2024][].
  
 [^1]: I found TLA<sup>+</sup> specs to be more accessible in this blog post when they are written in Unicode, as produced by the tool [tlauc][] by [Andrew Helwer][].
 
-[Solarkraft]: https://konnov.phd?pmf=solarkraft
+[Solarkraft]: https://konnov.phd?pmf=solarkraft&utm_source=protocols_made_fun&utm_medium=referral&utm_campaign=pmf_site
 [Stellar Community Fund]: https://communityfund.stellar.org/
 [UniStaker Infrastructure]: https://code4rena.com/reports/2024-02-uniswap-foundation
 [Mento]: https://audits.sherlock.xyz/contests/187

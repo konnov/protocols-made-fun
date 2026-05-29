@@ -838,7 +838,7 @@ about which level is the right one. We could simply write both functional and
 propositional definitions and connect them via (hopefully!) simple proofs.
 
 
-[Igor Konnov]: https://konnov.phd
+[Igor Konnov]: https://konnov.phd?utm_source=protocols_made_fun&utm_medium=referral&utm_campaign=pmf_site
 [Lean]: https://github.com/leanprover/lean4
 [Veil]: https://github.com/verse-lab/veil/
 [Ilya Sergey]: https://ilyasergey.net/
@@ -865,7 +865,7 @@ propositional definitions and connect them via (hopefully!) simple proofs.
 [Twophase4_pbt_failing.lean]: https://github.com/konnov/leanda/blob/main/twophase/Twophase4_pbt_failing.lean
 [sim-is-fast]: #34-our-simulator-is-really-fast
 [lean monads]: https://lean-lang.org/functional_programming_in_lean/monads.html
-[Quint]: https://konnov.phd/quint
+[Quint]: https://konnov.phd/quint?utm_source=protocols_made_fun&utm_medium=referral&utm_campaign=pmf_site
 [hn]: https://news.ycombinator.com/
 [Plausible]: https://github.com/leanprover-community/plausible
 [Apalache]: https://apalache-mc.org/

@@ -217,7 +217,7 @@ update this blog post accordingly.
 
 <!-- references -->
   
-[Igor Konnov]: https://konnov.phd
+[Igor Konnov]: https://konnov.phd?utm_source=protocols_made_fun&utm_medium=referral&utm_campaign=pmf_site
 [Markus Kuppe]: https://github.com/lemmy
 [Thomas Pani]: https://blltprf.xyz/
 [TLC]: https://github.com/tlaplus/tlaplus

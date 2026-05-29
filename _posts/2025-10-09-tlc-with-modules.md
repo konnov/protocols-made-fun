@@ -84,7 +84,7 @@ State 11: <Next line 16, col 1 to line 16, col 22 of module MC3_TwoPhaseTyped>
 This is it! If you have any questions, please feel free to reach out. I'm
 [happy to help][].
 
-[Igor Konnov]: https://konnov.phd
+[Igor Konnov]: https://konnov.phd?utm_source=protocols_made_fun&utm_medium=referral&utm_campaign=pmf_site
 [Hans Kamp]: https://en.wikipedia.org/wiki/Hans_Kamp
 [Apalache]: https://apalache-mc.org/
 [TLC]: https://github.com/tlaplus/tlaplus

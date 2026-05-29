@@ -175,7 +175,7 @@ _Development of Solarkraft was supported by the [Stellar Development Foundation]
 [part4]: https://systems-made-simple.dev/solarkraft/2024/06/24/solarkraft-hybrid-monitors.html
 [part5]: https://systems-made-simple.dev/solarkraft/2024/07/04/solarkraft-monitor-verification.html
 
-[Igor Konnov]: https://konnov.phd
+[Igor Konnov]: https://konnov.phd?utm_source=protocols_made_fun&utm_medium=referral&utm_campaign=pmf_site
 [Jure Kukovec]: https://www.linkedin.com/in/jure-kukovec/
 [Andrey Kuprianov]: https://www.linkedin.com/in/andrey-kuprianov/
 [Thomas Pani]: https://thpani.net

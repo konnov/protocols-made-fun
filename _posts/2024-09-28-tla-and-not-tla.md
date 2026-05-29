@@ -343,7 +343,7 @@ As always, this text became too long. You will find the rest of the story in
 Part 2.
 
 
-[konnov.phd]: https://www.konnov.phd
+[konnov.phd]: https://www.konnov.phd?utm_source=protocols_made_fun&utm_medium=referral&utm_campaign=pmf_site
 [protocols-made-fun.com]: https://protocols-made-fun.com
 [TLA+]: https://lamport.azurewebsites.net/tla/tla.html
 [ByMC]: https://github.com/konnov/bymc

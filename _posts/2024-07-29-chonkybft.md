@@ -1003,7 +1003,7 @@ twice, if I really have something!).
 
 
 
-[Igor Konnov]: https://konnov.phd
+[Igor Konnov]: https://konnov.phd?utm_source=protocols_made_fun&utm_medium=referral&utm_campaign=pmf_site
 [MatterLabs]: https://matter-labs.io/
 [Era Consensus]: https://github.com/matter-labs/era-consensus
 [Tendermint Spec]: https://github.com/cometbft/cometbft/blob/main/spec/light-client/accountability/Synopsis.md

@@ -11,10 +11,10 @@ github_username:  konnov
 disqus:
   shortname: protocols-made-fun
 author:
-  igor:
-    name: Igor Konnov
-    url: https://konnov.phd
-    email: "igor@konnov.phd"
+  name: Igor Konnov
+  url: https://konnov.phd?utm_source=protocols_made_fun&utm_medium=referral&utm_campaign=pmf_site
+  uri: https://konnov.phd?utm_source=protocols_made_fun&utm_medium=referral&utm_campaign=pmf_site
+  email: "igor@konnov.phd"
 title: Protocols Made Fun
 minima:
   skin: auto

@@ -284,8 +284,8 @@ random walks.
  
 <!-- References -->
 
-[contact]: https://konnov.phd?pmf=20250309
-[Igor Konnov]: https://konnov.phd
+[contact]: https://konnov.phd?pmf=20250309&utm_source=protocols_made_fun&utm_medium=referral&utm_campaign=pmf_site
+[Igor Konnov]: https://konnov.phd?utm_source=protocols_made_fun&utm_medium=referral&utm_campaign=pmf_site
 [LI]: https://www.linkedin.com/in/igor-konnov-at/
 [random walks]: {% link _posts/2026-03-09-random-walks.md %}
 [random-walks-conclusions]: {% link _posts/2026-03-09-random-walks.md %}#6-conclusions

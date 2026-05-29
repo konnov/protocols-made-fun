@@ -10,7 +10,7 @@ math: true
 **Authors: Denis Kolegov ([Matter Labs][]), [Igor Konnov][]**
 
 **Update:** We have also given a talk at DeFi Security Summit 2024.
-Check the details [here](https://konnov.phd/talks/).
+Check the details [here](https://konnov.phd/talks/?utm_source=protocols_made_fun&utm_medium=referral&utm_campaign=pmf_site).
 
 After our success in [specification and model checking of the ChonkyBFT
 consensus][chonky-quint] in [Quint][], we have decided to apply Quint and its tools
@@ -769,7 +769,7 @@ machines, invariants, and the temporal logic of TLA<sup>+</sup>.
 [zksync-gov-procedures]: https://docs.zknation.io/zksync-governance/zksync-governance-procedures-overview
 [emergency-response]: https://docs.zknation.io/zksync-governance/schedule-2-emergency-response-procedures
 [chonky-quint]: https://protocols-made-fun.com/consensus/matterlabs/quint/specification/modelchecking/2024/07/29/chonkybft.html
-[Igor Konnov]: https://konnov.phd
+[Igor Konnov]: https://konnov.phd?utm_source=protocols_made_fun&utm_medium=referral&utm_campaign=pmf_site
 [Matter Labs]: https://matter-labs.io/
 [z3]: https://www.microsoft.com/en-us/research/project/z3-3/
 [Invariant Testing in Foundry]: https://book.getfoundry.sh/forge/invariant-testing

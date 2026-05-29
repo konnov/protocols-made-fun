@@ -651,8 +651,8 @@ me.
  
 <!-- References -->
 
-[contact]: https://konnov.phd?pmf=20260427
-[Igor Konnov]: https://konnov.phd
+[contact]: https://konnov.phd?pmf=20260427&utm_source=protocols_made_fun&utm_medium=referral&utm_campaign=pmf_site
+[Igor Konnov]: https://konnov.phd?utm_source=protocols_made_fun&utm_medium=referral&utm_campaign=pmf_site
 [tla2026]: https://conf.tlapl.us/2026-etaps/
 [Apalache JSON-RPC]: https://github.com/apalache-mc/apalache/tree/main/json-rpc
 [tftp-testing]: {% link _posts/2025-12-15-tftp-symbolic-testing.md %}

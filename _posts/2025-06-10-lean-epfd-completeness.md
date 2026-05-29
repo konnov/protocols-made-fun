@@ -1242,7 +1242,7 @@ really want to know, whether anyone manages to read the whole writeup.
 ## Footnotes
 
 [^1]: Christian Cachin, Rachid Guerraoui, and Luís Rodrigues. Introduction to Reliable and Secure Distributed Programming. Second Edition, Springer, 2011, XIX, 320 pages
-[Igor Konnov]: https://konnov.phd
+[Igor Konnov]: https://konnov.phd?utm_source=protocols_made_fun&utm_medium=referral&utm_campaign=pmf_site
 [Hans Kamp]: https://en.wikipedia.org/wiki/Hans_Kamp
 [Knaster-Tarski]: https://en.wikipedia.org/wiki/Knaster%E2%80%93Tarski_theorem
 [Well-founded induction]: https://en.wikipedia.org/wiki/Well-founded_relation

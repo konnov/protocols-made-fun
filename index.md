@@ -20,9 +20,8 @@ layout: home
 <hr>
 
 <p style="font-size: 140%;">
-    <a href="https://konnov.phd">Igor Konnov</a> and friends writing
+    <a href="https://konnov.phd?utm_source=protocols_made_fun&amp;utm_medium=referral&amp;utm_campaign=pmf_site">Igor Konnov</a> and friends writing
         about protocol specification, testing, and verification
 </p>
 
 <div style="height: 1em;"></div>
-

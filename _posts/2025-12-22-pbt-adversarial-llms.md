@@ -499,7 +499,7 @@ The Crosshair test looks like follows:
 <!-- References -->
 
 [^scott-talk]: I've never met Scott Wlaschin in real life, online or offline. I hope he would not mind me referring to him by his first name.
-[Igor Konnov]: https://konnov.phd
+[Igor Konnov]: https://konnov.phd?utm_source=protocols_made_fun&utm_medium=referral&utm_campaign=pmf_site
 [scott-pbt]: https://youtu.be/IYzDFHx6QPY
 [Scott Wlaschin]: https://scottwlaschin.com/
 [Lean]: https://lean-lang.org/

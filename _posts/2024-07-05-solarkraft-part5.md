@@ -298,7 +298,7 @@ _Development of Solarkraft was supported by the [Stellar Development Foundation]
 
 
 [Solarkraft]: https://github.com/freespek/solarkraft
-[Apalache]: https://konnov.phd/posts/apalache/
+[Apalache]: https://konnov.phd/posts/apalache/?utm_source=protocols_made_fun&utm_medium=referral&utm_campaign=pmf_site
 [part1]: https://thpani.net/2024/06/why-smart-contract-bugs-matter-and-how-runtime-monitoring-saves-the-day-solarkraft-1/
 [part2]: https://thpani.net/2024/06/small-and-modular-runtime-monitors-in-tla-for-soroban-smart-contracts-solarkraft-2/
 [part3]: https://protocols-made-fun.com/solarkraft/2024/06/19/solarkraft-part3.html
@@ -308,7 +308,7 @@ _Development of Solarkraft was supported by the [Stellar Development Foundation]
 [part4reversemonitors]: https://systems-made-simple.dev/solarkraft/2024/06/24/solarkraft-hybrid-monitors.html#reverse-monitors
 [depositVCs]: https://github.com/freespek/solarkraft/blob/cf26a544ab204220eab62a3545300cb689aa899b/doc/case-studies/timelock/deposit.tla#L66-L104
 [balanceRecordVCs]: https://github.com/freespek/solarkraft/blob/cf26a544ab204220eab62a3545300cb689aa899b/doc/case-studies/timelock/balance_record.tla#L31-L39
-[Igor Konnov]: https://konnov.phd
+[Igor Konnov]: https://konnov.phd?utm_source=protocols_made_fun&utm_medium=referral&utm_campaign=pmf_site
 [Jure Kukovec]: https://www.linkedin.com/in/jure-kukovec/
 [Andrey Kuprianov]: https://www.linkedin.com/in/andrey-kuprianov/
 [Thomas Pani]: https://thpani.net

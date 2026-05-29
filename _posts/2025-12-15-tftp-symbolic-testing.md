@@ -1116,7 +1116,7 @@ with various strategies of mixing **symbolic and concrete execution**.
 
 
 
-[Igor Konnov]: https://konnov.phd
+[Igor Konnov]: https://konnov.phd?utm_source=protocols_made_fun&utm_medium=referral&utm_campaign=pmf_site
 [Thomas Pani]: https://blltprf.xyz
 [Lean]: https://lean-lang.org/
 [TLC]: https://github.com/tlaplus/tlaplus
