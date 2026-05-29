@@ -113,6 +113,32 @@ body {
   color: #ffffff;
 }
 
+.post-cta {
+  border: 2px solid #007BFF;
+  border-radius: 8px;
+  padding: 1.1em 1.25em;
+  margin: 2em 0;
+  background-color: #007BFF12;
+}
+
+.post-cta p {
+  margin: 0 0 0.75em;
+}
+
+.post-cta p:last-of-type {
+  margin-bottom: 1em;
+}
+
+.post-cta__title {
+  font-size: 1.15em;
+  font-weight: 700;
+}
+
+.post-cta__link {
+  display: inline-block;
+  font-weight: 700;
+}
+
 .tip-header {
   float: left;
   padding: .5em .5em 1em 1.5em;

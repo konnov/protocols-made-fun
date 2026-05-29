@@ -33,7 +33,24 @@ layout: base
   </header>
 
   <div class="post-content e-content" itemprop="articleBody">
-    {{ content }}
+    {% if page.cta == false %}
+      {{ content }}
+    {% else %}
+      {% assign post_sections = content | split: '<h2' %}
+      {% if post_sections.size > 2 %}
+        {% for section in post_sections %}
+          {% if forloop.first %}
+            {{ section }}
+            {% include post-cta.html %}
+          {% else %}
+            <h2{{ section }}
+          {% endif %}
+        {% endfor %}
+      {% else %}
+        {{ content }}
+        {% include post-cta.html %}
+      {% endif %}
+    {% endif %}
   </div>
 
   {% unless page.no_footer %}

@@ -19,7 +19,7 @@ title: Protocols Made Fun
 minima:
   skin: auto
   nav_pages:
-    - about.md
+    - contact.md
 plugins:
   - jekyll-remote-theme
   - jekyll-feed
