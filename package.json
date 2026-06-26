@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "private": true,
   "description": "Static blog for protocols-made-fun.com",
+  "engines": {
+    "node": ">=24"
+  },
   "scripts": {
     "prebuild": "node scripts/clean-site.mjs",
     "build": "eleventy",

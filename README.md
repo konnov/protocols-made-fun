@@ -8,7 +8,7 @@ Eleventy compatibility layer in `.eleventy.js`.
 
 ## Requirements
 
-- Node.js 22 or newer
+- Node.js 24 or newer
 - npm
 
 Install dependencies:
