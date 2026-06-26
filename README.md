@@ -90,8 +90,9 @@ loads two CSS themes:
 - `assets/css/highlight-light.css`
 - `assets/css/highlight-dark.css`
 
-They are selected with `prefers-color-scheme`. Do not add client-side
-Highlight.js scripts to posts or layouts.
+They are selected with `prefers-color-scheme` by default and follow the site's
+manual light/dark theme switcher when a reader chooses a theme. Do not add
+client-side Highlight.js scripts to posts or layouts.
 
 ## GitHub Embeds
 

@@ -7,9 +7,58 @@
     <meta name="description" content="{{ site.description | escape }}">
     <link rel="canonical" href="{{ page.url | absolute_url }}">
     <link rel="alternate" type="application/atom+xml" href="{{ '/feed.xml' | absolute_url }}" title="{{ site.title | escape }}">
+    <script>
+      (function () {
+        var key = "pmf-theme";
+        var stored = null;
+        try {
+          stored = localStorage.getItem(key);
+        } catch (_error) {}
+        function preferredTheme() {
+          return window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+        }
+        function syncHighlight(theme) {
+          var light = document.getElementById("highlight-light-theme");
+          var dark = document.getElementById("highlight-dark-theme");
+          if (light) {
+            light.media = theme === "light" ? "all" : "not all";
+          }
+          if (dark) {
+            dark.media = theme === "dark" ? "all" : "not all";
+          }
+        }
+        function syncButtons(theme) {
+          var label = theme === "dark" ? "Switch to light theme" : "Switch to dark theme";
+          document.querySelectorAll("[data-theme-toggle]").forEach(function (button) {
+            button.dataset.theme = theme;
+            button.setAttribute("aria-label", label);
+            button.setAttribute("title", label);
+          });
+        }
+        window.__setPmfTheme = function (theme, persist) {
+          document.documentElement.dataset.theme = theme;
+          document.documentElement.style.colorScheme = theme;
+          syncHighlight(theme);
+          syncButtons(theme);
+          if (persist) {
+            try {
+              localStorage.setItem(key, theme);
+            } catch (_error) {}
+          }
+        };
+        window.__getPmfTheme = function () {
+          var theme = document.documentElement.dataset.theme;
+          return theme === "dark" || theme === "light" ? theme : preferredTheme();
+        };
+        window.__setPmfTheme(stored === "dark" || stored === "light" ? stored : preferredTheme(), false);
+      })();
+    </script>
     <link rel="stylesheet" href="/assets/css/style.css">
-    <link rel="stylesheet" href="/assets/css/highlight-light.css" media="(prefers-color-scheme: light)">
-    <link rel="stylesheet" href="/assets/css/highlight-dark.css" media="(prefers-color-scheme: dark)">
+    <link id="highlight-light-theme" rel="stylesheet" href="/assets/css/highlight-light.css" media="(prefers-color-scheme: light)">
+    <link id="highlight-dark-theme" rel="stylesheet" href="/assets/css/highlight-dark.css" media="(prefers-color-scheme: dark)">
+    <script>
+      window.__setPmfTheme(window.__getPmfTheme(), false);
+    </script>
     <link rel="icon" type="image/png" href="/assets/images/favicons/favicon-96x96.png" sizes="96x96">
     <link rel="icon" type="image/svg+xml" href="/assets/images/favicons/favicon.svg">
     <link rel="shortcut icon" href="/assets/images/favicons/favicon.ico">
@@ -39,6 +88,9 @@
         <a class="site-title" rel="author" href="/">{{ site.title | escape }}</a>
         <nav class="site-nav" aria-label="Main navigation">
           <a class="nav-item" href="/contact.html">Contact</a>
+          <button class="theme-toggle" type="button" data-theme-toggle aria-label="Switch theme" title="Switch theme">
+            <span class="theme-toggle__icon" aria-hidden="true"></span>
+          </button>
         </nav>
       </div>
     </header>
@@ -82,5 +134,34 @@
         </div>
       </div>
     </footer>
+    <script>
+      (function () {
+        function currentTheme() {
+          return window.__getPmfTheme ? window.__getPmfTheme() : "light";
+        }
+        function toggleTheme() {
+          var next = currentTheme() === "dark" ? "light" : "dark";
+          if (window.__setPmfTheme) {
+            window.__setPmfTheme(next, true);
+          }
+        }
+        document.querySelectorAll("[data-theme-toggle]").forEach(function (button) {
+          button.addEventListener("click", toggleTheme);
+        });
+        if (window.__setPmfTheme) {
+          window.__setPmfTheme(currentTheme(), false);
+        }
+        if (window.matchMedia) {
+          var query = window.matchMedia("(prefers-color-scheme: dark)");
+          query.addEventListener("change", function () {
+            try {
+              if (!localStorage.getItem("pmf-theme") && window.__setPmfTheme) {
+                window.__setPmfTheme(query.matches ? "dark" : "light", false);
+              }
+            } catch (_error) {}
+          });
+        }
+      })();
+    </script>
   </body>
 </html>
