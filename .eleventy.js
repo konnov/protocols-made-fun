@@ -11,6 +11,7 @@ const hljs = require("highlight.js");
 const siteUrl = "https://protocols-made-fun.com";
 const outputDir = "_site";
 const embedCachePath = path.join(__dirname, ".cache", "github-embeds.json");
+const markdownEscapedChars = new Set("\\!\"#$%&'()*+,./:;<=>?@[]^_`{|}~-".split(""));
 
 const feedUtm = {
   utm_source: "protocols_made_fun",
@@ -79,6 +80,70 @@ function escapeHtml(value) {
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
+}
+
+function isMarkdownSpace(code) {
+  return code === 0x09 || code === 0x0A || code === 0x0B || code === 0x0C || code === 0x0D || code === 0x20;
+}
+
+function preserveTexBraceEscapeRule(state, silent) {
+  let pos = state.pos;
+  const max = state.posMax;
+
+  if (state.src.charCodeAt(pos) !== 0x5C) {
+    return false;
+  }
+  pos++;
+
+  if (pos >= max) {
+    return false;
+  }
+
+  let ch1 = state.src.charCodeAt(pos);
+
+  if (ch1 === 0x0A) {
+    if (!silent) {
+      state.push("hardbreak", "br", 0);
+    }
+
+    pos++;
+    while (pos < max) {
+      ch1 = state.src.charCodeAt(pos);
+      if (!isMarkdownSpace(ch1)) {
+        break;
+      }
+      pos++;
+    }
+
+    state.pos = pos;
+    return true;
+  }
+
+  let escapedStr = state.src[pos];
+
+  if (ch1 >= 0xD800 && ch1 <= 0xDBFF && pos + 1 < max) {
+    const ch2 = state.src.charCodeAt(pos + 1);
+
+    if (ch2 >= 0xDC00 && ch2 <= 0xDFFF) {
+      escapedStr += state.src[pos + 1];
+      pos++;
+    }
+  }
+
+  const origStr = `\\${escapedStr}`;
+
+  if (!silent) {
+    const token = state.push("text_special", "", 0);
+    token.content =
+      escapedStr === "{" || escapedStr === "}" || !markdownEscapedChars.has(escapedStr)
+        ? origStr
+        : escapedStr;
+    token.markup = origStr;
+    token.info = "escape";
+  }
+
+  state.pos = pos + 1;
+  return true;
 }
 
 function escapeXml(value) {
@@ -314,6 +379,7 @@ module.exports = function (eleventyConfig) {
     .use(markdownItAttrs)
     .use(markdownItEmoji)
     .use(markdownItFootnote);
+  mdLib.inline.ruler.at("escape", preserveTexBraceEscapeRule);
 
   const originalRender = mdLib.render.bind(mdLib);
   mdLib.render = (source, env) => {
