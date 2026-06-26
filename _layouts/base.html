@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% if title %}{{ title | escape }} | {% endif %}{{ site.title | escape }}</title>
+    <meta name="description" content="{{ site.description | escape }}">
+    <link rel="canonical" href="{{ page.url | absolute_url }}">
+    <link rel="alternate" type="application/atom+xml" href="{{ '/feed.xml' | absolute_url }}" title="{{ site.title | escape }}">
+    <link rel="stylesheet" href="/assets/css/style.css">
+    <link rel="stylesheet" href="/assets/css/highlight-light.css" media="(prefers-color-scheme: light)">
+    <link rel="stylesheet" href="/assets/css/highlight-dark.css" media="(prefers-color-scheme: dark)">
+    <link rel="icon" type="image/png" href="/assets/images/favicons/favicon-96x96.png" sizes="96x96">
+    <link rel="icon" type="image/svg+xml" href="/assets/images/favicons/favicon.svg">
+    <link rel="shortcut icon" href="/assets/images/favicons/favicon.ico">
+    <link rel="apple-touch-icon" sizes="180x180" href="/assets/images/favicons/apple-touch-icon.png">
+    {% if math %}
+    <script>
+      MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          macros: {
+            bold: ["{\\bf #1}", 1],
+            tla: ["{\\textsf{TLA}^+}", 0]
+          }
+        },
+        svg: { fontCache: 'global' }
+      };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    {% endif %}
+    {% if eleventy.env.runMode == "build" %}
+    <script data-goatcounter="https://pmf.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+    {% endif %}
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="wrapper">
+        <a class="site-title" rel="author" href="/">{{ site.title | escape }}</a>
+        <nav class="site-nav" aria-label="Main navigation">
+          <a class="nav-item" href="/contact.html">Contact</a>
+        </nav>
+      </div>
+    </header>
+    <main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        {{ content }}
+      </div>
+    </main>
+    <footer class="site-footer h-card">
+      <div class="wrapper footer-col-wrapper">
+        <div class="footer-col">
+          <ul class="contact-list">
+            <li class="p-name">{{ site.author.name | escape }}</li>
+            <li>
+              <a class="u-email" href="mailto:{{ site.author.email }}">{{ site.author.email }}</a>
+              <a href="{{ site.feed.path | absolute_url }}">RSS feed</a>
+            </li>
+          </ul>
+          <p>
+            <a href="/datenschutz.html">Privacy Policy - Datenschutz</a>
+            | <a href="/impressum.html">Impressum</a>
+            | <a href="/disclaimer.html">Disclaimer</a>
+          </p>
+        </div>
+        <div class="footer-col">
+          <form
+            action="https://buttondown.email/api/emails/embed-subscribe/protocols-made-fun"
+            method="post"
+            target="popupwindow"
+            onsubmit="window.open('https://buttondown.email/protocols-made-fun', 'popupwindow')"
+            class="embeddable-buttondown-form"
+          >
+            <label for="bd-email">Enter your email</label>
+            <input type="email" name="email" id="bd-email">
+            <input type="submit" value="Subscribe">
+            <p><a href="https://buttondown.email/refer/protocols-made-fun" target="_blank">Powered by Buttondown.</a></p>
+          </form>
+        </div>
+        <div class="footer-col">
+          <p>{{ site.description | escape }}</p>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

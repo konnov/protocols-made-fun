@@ -1,0 +1,385 @@
+:root {
+  color-scheme: light dark;
+  --background: #ffffff;
+  --text: #1f2328;
+  --muted: #57606a;
+  --border: #d0d7de;
+  --link: #0969da;
+  --accent: #0a7f36;
+  --code-bg: #f6f8fa;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0d1117;
+    --text: #e6edf3;
+    --muted: #8b949e;
+    --border: #30363d;
+    --link: #58a6ff;
+    --accent: #3fb950;
+    --code-bg: #161b22;
+  }
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: var(--background);
+  color: var(--text);
+  font: 16px/1.6 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+a {
+  color: var(--link);
+}
+
+.wrapper {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 0 1.25rem;
+}
+
+.site-header {
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 2rem;
+}
+
+.site-header .wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  min-height: 3.5rem;
+}
+
+.site-title {
+  color: var(--text);
+  font-size: 1.2rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.site-nav {
+  display: flex;
+  gap: 1rem;
+}
+
+.nav-item {
+  color: var(--muted);
+  text-decoration: none;
+}
+
+.page-content {
+  min-height: 65vh;
+}
+
+.post-title,
+.page-heading {
+  line-height: 1.2;
+  margin-bottom: 0.4rem;
+}
+
+.post-meta,
+.post-list .post-meta {
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.post-list {
+  list-style: none;
+  margin: 2rem 0;
+  padding: 0;
+}
+
+.post-list li {
+  border-bottom: 1px solid var(--border);
+  padding: 0.85rem 0;
+}
+
+.post-list h3 {
+  margin: 0.15rem 0 0;
+  line-height: 1.25;
+}
+
+.post-link {
+  text-decoration: none;
+}
+
+.post-content img,
+.page-content-body img {
+  max-width: 100%;
+  height: auto;
+}
+
+pre {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--code-bg);
+  padding: 0.9rem 1rem;
+}
+
+code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  font-size: 0.92em;
+}
+
+.math-display,
+mjx-container[display="true"] {
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.math-display {
+  margin: 1rem 0;
+  padding: 0.25rem 0;
+  white-space: pre-wrap;
+}
+
+mjx-container[display="true"] {
+  padding: 0.25rem 0;
+}
+
+sup {
+  line-height: 0;
+}
+
+.sidebar {
+  float: right;
+  margin-left: 50px;
+  margin-bottom: 10px;
+  width: 200px;
+}
+
+.photo {
+  border: 2px solid #99bbff;
+}
+
+.float-photo {
+  float: right;
+  margin: 0 0 1em 1.5em;
+  min-width: 150px;
+  max-width: 15%;
+  height: auto;
+  border-radius: 8px;
+  border: 2px solid #99bbff;
+}
+
+ul.spaced-list li {
+  margin-bottom: 0.75em;
+}
+
+.kw-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 2em;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.kw-grid {
+  display: grid;
+  grid-auto-flow: row;
+  grid-template-columns: repeat(auto-fit, minmax(10em, 1fr));
+  gap: 0.5em 1em;
+  font-size: 1.1em;
+  color: var(--muted);
+  margin-top: 5px;
+  margin-left: 10px;
+  width: 80%;
+}
+
+.kw-button {
+  width: 20%;
+}
+
+.contact-link-button {
+  display: inline-block;
+  background-color: var(--link);
+  color: #fff;
+  text-decoration: none;
+  padding: 1em .5em;
+  font-size: 1.05rem;
+  border-radius: 8px;
+}
+
+.post-cta {
+  border: 2px solid var(--link);
+  border-radius: 8px;
+  padding: 1.1em 1.25em;
+  margin: 2em 0;
+  background-color: color-mix(in srgb, var(--link) 8%, transparent);
+}
+
+.post-cta p {
+  margin: 0 0 0.75em;
+}
+
+.post-cta__title {
+  font-size: 1.15em;
+  font-weight: 700;
+}
+
+.post-cta__link {
+  font-weight: 700;
+}
+
+.tip-header {
+  float: left;
+  padding: .5em .5em 1em 1.5em;
+}
+
+.tip {
+  background-color: color-mix(in srgb, var(--accent) 13%, transparent);
+  border-radius: 10px;
+  padding: .5em 1em;
+  margin: 0 1em;
+}
+
+.giscus-notice {
+  color: var(--muted);
+  font-size: 90%;
+  font-style: italic;
+}
+
+.timeline-table {
+  border-collapse: collapse;
+  text-align: center;
+  margin: 1em auto;
+}
+
+.timeline-table th,
+.timeline-table td {
+  padding: 4px 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.responsive-img {
+  width: 100%;
+  margin-top: 1em;
+  margin-bottom: 1em;
+}
+
+.zm-logo {
+  display: block;
+  width: 30vw;
+  max-width: 280px;
+  min-width: 180px;
+  height: auto;
+  margin: 1em auto 1.5em;
+}
+
+.figure-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1em;
+  margin: 1em 0;
+}
+
+.figure-grid figure {
+  flex: 0 1 calc(33.333% - 0.667em);
+  min-width: 220px;
+  margin: 0;
+}
+
+figure figcaption {
+  text-align: center;
+  font-style: italic;
+  font-size: 0.9em;
+  color: var(--muted);
+  margin-top: 0.4em;
+  margin-bottom: 1em;
+}
+
+.highlight-question {
+  font-size: 1.3em;
+  margin: 1.5em 0;
+  text-align: center;
+}
+
+.ai-output-frame {
+  border: 2px solid color-mix(in srgb, currentColor 28%, transparent);
+  border-radius: 8px;
+  padding: 1rem 1.2rem;
+  margin: 1.2rem 0;
+  background: color-mix(in srgb, currentColor 8%, transparent);
+}
+
+.embed-container {
+  position: relative;
+  padding-bottom: 56.25%;
+  height: 0;
+  overflow: hidden;
+  max-width: 100%;
+}
+
+.embed-container iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.site-footer {
+  border-top: 1px solid var(--border);
+  color: var(--muted);
+  margin-top: 3rem;
+  padding: 1.5rem 0;
+}
+
+.footer-col-wrapper {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.5rem;
+}
+
+.contact-list {
+  list-style: none;
+  padding: 0;
+}
+
+@media (min-width: 1024px) {
+  .responsive-img {
+    margin-left: 25%;
+    margin-right: auto;
+    width: 50%;
+  }
+
+  .responsive-img.full-width-img,
+  .figure-grid figure .responsive-img {
+    margin-left: 0;
+    width: 100%;
+  }
+}
+
+@media (max-width: 700px) {
+  .site-header .wrapper,
+  .kw-container,
+  .footer-col-wrapper {
+    display: block;
+  }
+
+  .float-photo {
+    display: none;
+  }
+
+  .kw-grid,
+  .kw-button {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .kw-grid {
+    font-size: 0.95em;
+  }
+
+  .zm-logo {
+    width: 80vw;
+    min-width: 0;
+  }
+}

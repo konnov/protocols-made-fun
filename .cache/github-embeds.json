@@ -1,0 +1,626 @@
+{
+  "https://raw.githubusercontent.com/informalsystems/quint/8eca8a2db4f088130c8d485436c365384d3f4c6b/quint/src/rng.ts ts 80-108": {
+    "url": "https://raw.githubusercontent.com/informalsystems/quint/8eca8a2db4f088130c8d485436c365384d3f4c6b/quint/src/rng.ts",
+    "lang": "ts",
+    "lines": "80-108",
+    "code": "    next: (bound: bigint): bigint => {\n      assert(bound > 0n)\n      let input: bigint = bound\n      let output: bigint = 0n\n      let base: bigint = 1n\n      while (input >= U32) {\n        // produce pseudo-random least significant 32 bits,\n        // while shifting the previous output to the left\n        output = output * U32 + squares64(state)\n        // advance the RNG state, while staying within 64 bits\n        state = (state + 1n) % U64\n        // forget the least significant 32 bits of the input\n        input /= U32\n        // shift the base by 32 bits to the left\n        base *= U32\n      }\n      // Now we have to be careful to make `output` in the range [0, bound).\n      // Produce 32 bits. Since we are using the modulo operator here,\n      // the result is not exactly the uniform distribution.\n      // It may be biased towards some values, especially for\n      // the small values of `bound. If it becomes a problem in the future,\n      // we should figure out, how to make the distribution uniform.\n      output = (squares64(state) % input) * base + output\n      // advance the RNG state, while staying within 64 bits\n      state = (state + 1n) % U64\n      return output\n    },\n  }\n}"
+  },
+  "https://raw.githubusercontent.com/tlaplus/Examples/refs/heads/master/specifications/transaction_commit/TwoPhase.tla tlaplus 19-40": {
+    "url": "https://raw.githubusercontent.com/tlaplus/Examples/refs/heads/master/specifications/transaction_commit/TwoPhase.tla",
+    "lang": "tlaplus",
+    "lines": "19-40",
+    "code": "CONSTANT RM \\* The set of resource managers\n\nVARIABLES\n  rmState,       \\* $rmState[rm]$ is the state of resource manager RM.\n  tmState,       \\* The state of the transaction manager.\n  tmPrepared,    \\* The set of RMs from which the TM has received $\"Prepared\"$\n                 \\* messages.\n  msgs           \n    (***********************************************************************)\n    (* In the protocol, processes communicate with one another by sending  *)\n    (* messages.  Since we are specifying only safety, a process is not    *)\n    (* required to receive a message, so there is no need to model message *)\n    (* loss.  (There's no difference between a process not being able to   *)\n    (* receive a message because the message was lost and a process simply *)\n    (* ignoring the message.)  We therefore represent message passing with *)\n    (* a variable $msgs$ whose value is the set of all messages that have  *)\n    (* been sent.  Messages are never removed from $msgs$.  An action      *)\n    (* that, in an implementation, would be enabled by the receipt of a    *)\n    (* certain message is here enabled by the existence of that message in *)\n    (* $msgs$.  (Receipt of the same message twice is therefore allowed;   *)\n    (* but in this particular protocol, receiving a message for the second *)\n    (* time has no effect.)                                                *)"
+  },
+  "https://raw.githubusercontent.com/tlaplus/Examples/refs/heads/master/specifications/transaction_commit/TwoPhase.tla tlaplus 43-60": {
+    "url": "https://raw.githubusercontent.com/tlaplus/Examples/refs/heads/master/specifications/transaction_commit/TwoPhase.tla",
+    "lang": "tlaplus",
+    "lines": "43-60",
+    "code": "Message ==\n  (*************************************************************************)\n  (* The set of all possible messages.  Messages of type $\"Prepared\"$ are  *)\n  (* sent from the RM indicated by the message's $rm$ field to the TM\\@.   *)\n  (* Messages of type $\"Commit\"$ and $\"Abort\"$ are broadcast by the TM, to *)\n  (* be received by all RMs.  The set $msgs$ contains just a single copy   *)\n  (* of such a message.                                                    *)\n  (*************************************************************************)\n  [type : {\"Prepared\"}, rm : RM]  \\cup  [type : {\"Commit\", \"Abort\"}]\n   \nTPTypeOK ==  \n  (*************************************************************************)\n  (* The type-correctness invariant                                        *)\n  (*************************************************************************)\n  /\\ rmState \\in [RM -> {\"working\", \"prepared\", \"committed\", \"aborted\"}]\n  /\\ tmState \\in {\"init\", \"committed\", \"aborted\"}\n  /\\ tmPrepared \\subseteq RM\n  /\\ msgs \\subseteq Message"
+  },
+  "https://raw.githubusercontent.com/tlaplus/Examples/refs/heads/master/specifications/transaction_commit/TwoPhase.tla tlaplus 104-111": {
+    "url": "https://raw.githubusercontent.com/tlaplus/Examples/refs/heads/master/specifications/transaction_commit/TwoPhase.tla",
+    "lang": "tlaplus",
+    "lines": "104-111",
+    "code": "RMPrepare(rm) == \n  (*************************************************************************)\n  (* Resource manager $rm$ prepares.                                       *)\n  (*************************************************************************)\n  /\\ rmState[rm] = \"working\"\n  /\\ rmState' = [rmState EXCEPT ![rm] = \"prepared\"]\n  /\\ msgs' = msgs \\cup {[type |-> \"Prepared\", rm |-> rm]}\n  /\\ UNCHANGED <<tmState, tmPrepared>>"
+  },
+  "https://raw.githubusercontent.com/tlaplus/Examples/refs/heads/master/specifications/transaction_commit/TwoPhase.tla tlaplus 75-82": {
+    "url": "https://raw.githubusercontent.com/tlaplus/Examples/refs/heads/master/specifications/transaction_commit/TwoPhase.tla",
+    "lang": "tlaplus",
+    "lines": "75-82",
+    "code": "TMRcvPrepared(rm) ==\n  (*************************************************************************)\n  (* The TM receives a $\"Prepared\"$ message from resource manager $rm$.    *)\n  (*************************************************************************)\n  /\\ tmState = \"init\"\n  /\\ [type |-> \"Prepared\", rm |-> rm] \\in msgs\n  /\\ tmPrepared' = tmPrepared \\cup {rm}\n  /\\ UNCHANGED <<rmState, tmState, msgs>>"
+  },
+  "https://raw.githubusercontent.com/tlaplus/Examples/refs/heads/master/specifications/transaction_commit/TwoPhase.tla tlaplus 138-142": {
+    "url": "https://raw.githubusercontent.com/tlaplus/Examples/refs/heads/master/specifications/transaction_commit/TwoPhase.tla",
+    "lang": "tlaplus",
+    "lines": "138-142",
+    "code": "TPNext ==\n  \\/ TMCommit \\/ TMAbort\n  \\/ \\E rm \\in RM : \n       TMRcvPrepared(rm) \\/ RMPrepare(rm) \\/ RMChooseToAbort(rm)\n         \\/ RMRcvCommitMsg(rm) \\/ RMRcvAbortMsg(rm)"
+  },
+  "https://raw.githubusercontent.com/konnov/leanda/2b0c9202753b19d731fffb3ae23df65da118d9dd/twophase/Twophase/Functional.lean lean 21-22": {
+    "url": "https://raw.githubusercontent.com/konnov/leanda/2b0c9202753b19d731fffb3ae23df65da118d9dd/twophase/Twophase/Functional.lean",
+    "lang": "lean",
+    "lines": "21-22",
+    "code": "-- The abstract type of resource managers.\nvariable (RM : Type) [DecidableEq RM] [Hashable RM] [Repr RM]"
+  },
+  "https://raw.githubusercontent.com/konnov/leanda/2b0c9202753b19d731fffb3ae23df65da118d9dd/twophase/Twophase/Functional.lean lean 24-37": {
+    "url": "https://raw.githubusercontent.com/konnov/leanda/2b0c9202753b19d731fffb3ae23df65da118d9dd/twophase/Twophase/Functional.lean",
+    "lang": "lean",
+    "lines": "24-37",
+    "code": "/-- A state of a resource manager. -/\ninductive RMState where\n    | Working\n    | Prepared\n    | Committed\n    | Aborted\n    deriving DecidableEq, Repr\n\n/-- A state of the transaction manager. -/\ninductive TMState where\n    | Init\n    | Committed\n    | Aborted\n    deriving DecidableEq, Repr"
+  },
+  "https://raw.githubusercontent.com/konnov/leanda/2b0c9202753b19d731fffb3ae23df65da118d9dd/twophase/Twophase/Functional.lean lean 39-44": {
+    "url": "https://raw.githubusercontent.com/konnov/leanda/2b0c9202753b19d731fffb3ae23df65da118d9dd/twophase/Twophase/Functional.lean",
+    "lang": "lean",
+    "lines": "39-44",
+    "code": "/-- A message that sent by either the transaction manager or a resource manager. -/\ninductive Message where\n    | Commit\n    | Abort\n    | Prepared(rm: RM)\n    deriving DecidableEq, Repr"
+  },
+  "https://raw.githubusercontent.com/konnov/leanda/2b0c9202753b19d731fffb3ae23df65da118d9dd/twophase/Twophase/Functional.lean lean 46-54": {
+    "url": "https://raw.githubusercontent.com/konnov/leanda/2b0c9202753b19d731fffb3ae23df65da118d9dd/twophase/Twophase/Functional.lean",
+    "lang": "lean",
+    "lines": "46-54",
+    "code": "/-- A state of the Two-phase commit protocol. -/\nstructure ProtocolState where\n    -- The set of the resource managers.\n    -- It may differ from run to run, but remains constant during a run.\n    all: Finset RM\n    rmState: Std.HashMap RM RMState\n    tmState: TMState\n    tmPrepared: Finset RM\n    msgs: Finset (Message RM)"
+  },
+  "https://raw.githubusercontent.com/konnov/leanda/3bf2ec93640c5f7650f17cf909a0b9ae4978b8d9/twophase/Twophase/Functional.lean lean 61-65": {
+    "url": "https://raw.githubusercontent.com/konnov/leanda/3bf2ec93640c5f7650f17cf909a0b9ae4978b8d9/twophase/Twophase/Functional.lean",
+    "lang": "lean",
+    "lines": "61-65",
+    "code": "/-- The transaction manager receives a `Prepared` message from a resource manager `rm`. -/\ndef tmRcvPrepared (rm: RM) :=\n    if s.tmState = TMState.Init && Message.Prepared rm ∈ s.msgs then some {\n        s with tmPrepared := s.tmPrepared ∪ { rm },\n    } else none"
+  },
+  "https://raw.githubusercontent.com/konnov/leanda/2b0c9202753b19d731fffb3ae23df65da118d9dd/twophase/Twophase/Functional.lean lean 86-92": {
+    "url": "https://raw.githubusercontent.com/konnov/leanda/2b0c9202753b19d731fffb3ae23df65da118d9dd/twophase/Twophase/Functional.lean",
+    "lang": "lean",
+    "lines": "86-92",
+    "code": "/-- Resource manager `rm` prepares. -/\ndef rmPrepare (rm: RM) :=\n    if s.rmState.get? rm = RMState.Working then some {\n        s with\n        rmState := s.rmState.insert rm RMState.Prepared,\n        msgs := s.msgs ∪ { Message.Prepared rm }\n    } else none"
+  },
+  "https://raw.githubusercontent.com/konnov/leanda/2b0c9202753b19d731fffb3ae23df65da118d9dd/twophase/Twophase/Propositional.lean lean 25-29": {
+    "url": "https://raw.githubusercontent.com/konnov/leanda/2b0c9202753b19d731fffb3ae23df65da118d9dd/twophase/Twophase/Propositional.lean",
+    "lang": "lean",
+    "lines": "25-29",
+    "code": "/-- The proposition version of `tmRcvPrepared`. -/\ndef tm_rcv_prepared (rm: RM): Prop :=\n    s.tmState = TMState.Init\n  ∧ Message.Prepared rm ∈ s.msgs\n  ∧ s'.tmPrepared = s.tmPrepared ∪ { rm }"
+  },
+  "https://raw.githubusercontent.com/tlaplus/Examples/refs/heads/master/specifications/transaction_commit/TwoPhase.tla tlaplus 62-69": {
+    "url": "https://raw.githubusercontent.com/tlaplus/Examples/refs/heads/master/specifications/transaction_commit/TwoPhase.tla",
+    "lang": "tlaplus",
+    "lines": "62-69",
+    "code": "TPInit ==   \n  (*************************************************************************)\n  (* The initial predicate.                                                *)\n  (*************************************************************************)\n  /\\ rmState = [rm \\in RM |-> \"working\"]\n  /\\ tmState = \"init\"\n  /\\ tmPrepared   = {}\n  /\\ msgs = {}"
+  },
+  "https://raw.githubusercontent.com/konnov/leanda/2b0c9202753b19d731fffb3ae23df65da118d9dd/twophase/Twophase/System.lean lean 29-42": {
+    "url": "https://raw.githubusercontent.com/konnov/leanda/2b0c9202753b19d731fffb3ae23df65da118d9dd/twophase/Twophase/System.lean",
+    "lang": "lean",
+    "lines": "29-42",
+    "code": "/-- initialize the state of all resource managers to `Working` -/\ndef init_rm_state (all: List RM) :=\n  all.foldl\n    (fun m rm => m.insert rm RMState.Working)\n    (Std.HashMap.emptyWithCapacity 0)\n\n/-- The initial state of the protocol -/\ndef init (all: List RM): ProtocolState RM := {\n    all := all.toFinset,\n    rmState := init_rm_state all,\n    tmState := TMState.Init,\n    tmPrepared := ∅,\n    msgs := ∅\n}"
+  },
+  "https://raw.githubusercontent.com/konnov/leanda/2b0c9202753b19d731fffb3ae23df65da118d9dd/twophase/Twophase/System.lean lean 13-27": {
+    "url": "https://raw.githubusercontent.com/konnov/leanda/2b0c9202753b19d731fffb3ae23df65da118d9dd/twophase/Twophase/System.lean",
+    "lang": "lean",
+    "lines": "13-27",
+    "code": "/--\nSince Lean4 is not TLA+, it does not have a built-in syntax for actions.\nHence, we introduce the type that essentially turns control and data\nnon-deterministm into inputs. This trick is usually called a \"schedule\"\nor \"adversary\" in the literature.\n-/\ninductive Action where\n  | TMCommit\n  | TMAbort\n  | TMRcvPrepared(rm: RM)\n  | RMPrepare(rm: RM)\n  | RMChooseToAbort(rm: RM)\n  | RMRcvCommitMsg(rm: RM)\n  | RMRcvAbortMsg(rm: RM)\n  deriving DecidableEq, Repr"
+  },
+  "https://raw.githubusercontent.com/konnov/leanda/2b0c9202753b19d731fffb3ae23df65da118d9dd/twophase/Twophase/System.lean lean 44-54": {
+    "url": "https://raw.githubusercontent.com/konnov/leanda/2b0c9202753b19d731fffb3ae23df65da118d9dd/twophase/Twophase/System.lean",
+    "lang": "lean",
+    "lines": "44-54",
+    "code": "/-- The transition function (!) of the protocol. Since we provide `next` with\nthe action as an argument, `next` is a function, not a relation. -/\ndef next s a :=\n  match a with\n  | Action.TMCommit => tmCommit RM s\n  | Action.TMAbort => tmAbort _ s\n  | Action.TMRcvPrepared rm => tmRcvPrepared _ s rm\n  | Action.RMPrepare rm => rmPrepare _ s rm\n  | Action.RMChooseToAbort rm => rmChooseToAbort _ s rm\n  | Action.RMRcvCommitMsg rm => rmRcvCommitMsg _ s rm\n  | Action.RMRcvAbortMsg rm => rmRcvAbortMsg _ s rm"
+  },
+  "https://raw.githubusercontent.com/konnov/leanda/2b0c9202753b19d731fffb3ae23df65da118d9dd/twophase/Twophase4_run.lean lean 58-64": {
+    "url": "https://raw.githubusercontent.com/konnov/leanda/2b0c9202753b19d731fffb3ae23df65da118d9dd/twophase/Twophase4_run.lean",
+    "lang": "lean",
+    "lines": "58-64",
+    "code": "-- the main invariant of the protocol, namely, that resource managers cannot disagree\ndef consistentInv (s: ProtocolState RM): Bool :=\n  let existsAborted :=\n    ∅ ≠ (Finset.filter (fun rm => s.rmState.get? rm = RMState.Aborted) s.all)\n  let existsCommitted :=\n    ∅ ≠ (Finset.filter (fun rm => s.rmState.get? rm = RMState.Committed) s.all)\n  ¬existsAborted ∨ ¬existsCommitted"
+  },
+  "https://raw.githubusercontent.com/konnov/leanda/2b0c9202753b19d731fffb3ae23df65da118d9dd/twophase/Twophase4_run.lean lean 45-56": {
+    "url": "https://raw.githubusercontent.com/konnov/leanda/2b0c9202753b19d731fffb3ae23df65da118d9dd/twophase/Twophase4_run.lean",
+    "lang": "lean",
+    "lines": "45-56",
+    "code": "-- This is a false invariant to demonstrate that TM can abort.\ndef noAbortEx (s: ProtocolState RM): Bool :=\n  s.tmState ≠ TMState.Aborted\n\n-- This is a false invariant to demonstrate that TM can commit.\ndef noCommitEx (s: ProtocolState RM): Bool :=\n  s.tmState ≠ TMState.Committed\n\n-- This is a false invariant for a trickier property:\n-- Even though all resource managers are prepared, the TM can still abort.\ndef noAbortOnAllPreparedEx (s: ProtocolState RM): Bool :=\n  s.tmState = TMState.Aborted → s.tmPrepared ≠ s.all"
+  },
+  "https://raw.githubusercontent.com/konnov/leanda/2b0c9202753b19d731fffb3ae23df65da118d9dd/twophase/Twophase4_run.lean lean 14-20": {
+    "url": "https://raw.githubusercontent.com/konnov/leanda/2b0c9202753b19d731fffb3ae23df65da118d9dd/twophase/Twophase4_run.lean",
+    "lang": "lean",
+    "lines": "14-20",
+    "code": "-- An instance of four resource managers.\ninductive RM\n  | RM1\n  | RM2\n  | RM3\n  | RM4\n  deriving Repr, DecidableEq, Hashable, Inhabited"
+  },
+  "https://raw.githubusercontent.com/konnov/leanda/2b0c9202753b19d731fffb3ae23df65da118d9dd/twophase/Twophase4_run.lean lean 22-35": {
+    "url": "https://raw.githubusercontent.com/konnov/leanda/2b0c9202753b19d731fffb3ae23df65da118d9dd/twophase/Twophase4_run.lean",
+    "lang": "lean",
+    "lines": "22-35",
+    "code": "def mkAction (action_no: Nat) (rm_no: Nat): @Action RM :=\n  let rm := match rm_no with\n    | 0 => RM.RM1\n    | 1 => RM.RM2\n    | 2 => RM.RM3\n    | _ => RM.RM4\n  match action_no with\n  | 0 => Action.TMCommit\n  | 1 => Action.TMAbort\n  | 2 => Action.TMRcvPrepared rm\n  | 3 => Action.RMPrepare rm\n  | 4 => Action.RMChooseToAbort rm\n  | 5 => Action.RMRcvCommitMsg rm\n  | _ => Action.RMRcvAbortMsg rm"
+  },
+  "https://raw.githubusercontent.com/konnov/leanda/2b0c9202753b19d731fffb3ae23df65da118d9dd/twophase/Twophase4_run.lean lean 90-112": {
+    "url": "https://raw.githubusercontent.com/konnov/leanda/2b0c9202753b19d731fffb3ae23df65da118d9dd/twophase/Twophase4_run.lean",
+    "lang": "lean",
+    "lines": "90-112",
+    "code": "  -- run a loop of `maxSamples`\n  let mut rng := mkStdGen seed\n  for trial in [0:maxSamples] do\n    let mut state := init [ RM.RM1, RM.RM2, RM.RM3, RM.RM4 ]\n    -- run a loop of `maxSteps` steps\n    let mut trace: List (@Action RM) := []\n    for _ in [0:maxSteps] do\n      let (action_no, next_rng) := randNat rng 0 6\n      let (rm_no, next_rng) := randNat next_rng 0 3\n      rng := next_rng\n      let action := mkAction action_no rm_no\n      match next state action with\n      | some new_state =>\n        state := new_state\n        trace := action::trace\n      | none => pure ()\n\n      -- check our invariant\n      if ¬inv state then\n        IO.println s!\"❌ Counterexample found after {trial} trials\"\n        for (a, i) in trace.reverse.zipIdx 0 do\n          IO.println s!\"#{i}: {repr a}\"\n        return 1"
+  },
+  "https://raw.githubusercontent.com/konnov/leanda/2b0c9202753b19d731fffb3ae23df65da118d9dd/twophase/Twophase4_pbt.lean lean 15-30": {
+    "url": "https://raw.githubusercontent.com/konnov/leanda/2b0c9202753b19d731fffb3ae23df65da118d9dd/twophase/Twophase4_pbt.lean",
+    "lang": "lean",
+    "lines": "15-30",
+    "code": "-- An instance of three resource managers.\ninductive RM\n  | RM1\n  | RM2\n  | RM3\n  | RM4\n  deriving Repr, DecidableEq, Hashable, Inhabited\n\n-- define a generator for RM\ninstance RM.shrinkable: Shrinkable RM where\n  shrink := fun (_: RM) => []\n\ndef genRm: Gen RM := (Gen.elements [ RM.RM1, RM.RM2, RM.RM3, RM.RM4 ] (by decide))\n\ninstance : SampleableExt RM :=\n  SampleableExt.mkSelfContained genRm"
+  },
+  "https://raw.githubusercontent.com/konnov/leanda/2b0c9202753b19d731fffb3ae23df65da118d9dd/twophase/Twophase4_pbt.lean lean 34-50": {
+    "url": "https://raw.githubusercontent.com/konnov/leanda/2b0c9202753b19d731fffb3ae23df65da118d9dd/twophase/Twophase4_pbt.lean",
+    "lang": "lean",
+    "lines": "34-50",
+    "code": "-- define a generator for Action RM\ninstance Action.shrinkable: Shrinkable (@Action RM) where\n  shrink := fun (_: @Action RM) => []\n\ndef genAction: Gen (@Action RM) :=\n  Gen.oneOf #[\n    Gen.elements [ Action.TMCommit, Action.TMAbort] (by decide),\n    (do return (Action.TMRcvPrepared (← genRm))),\n    (do return (Action.RMPrepare (← genRm))),\n    (do return (Action.RMChooseToAbort (← genRm))),\n    (do return (Action.RMRcvCommitMsg (← genRm))),\n    (do return (Action.RMRcvAbortMsg (← genRm)))\n  ]\n  (by decide)\n\ninstance : SampleableExt (@Action RM) :=\n  SampleableExt.mkSelfContained genAction"
+  },
+  "https://raw.githubusercontent.com/konnov/leanda/2b0c9202753b19d731fffb3ae23df65da118d9dd/twophase/Twophase4_pbt.lean lean 54-55": {
+    "url": "https://raw.githubusercontent.com/konnov/leanda/2b0c9202753b19d731fffb3ae23df65da118d9dd/twophase/Twophase4_pbt.lean",
+    "lang": "lean",
+    "lines": "54-55",
+    "code": "def genSchedule: Gen (List (@Action RM)) :=\n  Gen.listOf genAction"
+  },
+  "https://raw.githubusercontent.com/konnov/leanda/2b0c9202753b19d731fffb3ae23df65da118d9dd/twophase/Twophase4_pbt.lean lean 57-66": {
+    "url": "https://raw.githubusercontent.com/konnov/leanda/2b0c9202753b19d731fffb3ae23df65da118d9dd/twophase/Twophase4_pbt.lean",
+    "lang": "lean",
+    "lines": "57-66",
+    "code": "-- given a concrete schedule, inductively apply the schedule and check the invariant\ndef applySchedule (s: ProtocolState RM) (schedule: List (@Action RM))\n    (inv: ProtocolState RM → Bool): ProtocolState RM :=\n  schedule.foldl (fun s a => if inv s then (next s a).getD s else s) s\n\n-- apply a schedule to the initial state\ndef checkInvariant (schedule: List (@Action RM)) (inv: ProtocolState RM → Bool): Bool :=\n  let init_s := init [ RM.RM1, RM.RM2, RM.RM3, RM.RM4 ]\n  let last_s := applySchedule init_s schedule inv\n  inv last_s"
+  },
+  "https://raw.githubusercontent.com/konnov/leanda/2b0c9202753b19d731fffb3ae23df65da118d9dd/twophase/Twophase4_pbt.lean lean 68-73": {
+    "url": "https://raw.githubusercontent.com/konnov/leanda/2b0c9202753b19d731fffb3ae23df65da118d9dd/twophase/Twophase4_pbt.lean",
+    "lang": "lean",
+    "lines": "68-73",
+    "code": "-- noAbortEx\nexample schedule:\n    let inv := fun (s: ProtocolState RM) =>\n      s.tmState ≠ TMState.Aborted\n    checkInvariant schedule inv\n  := by plausible (config := { numInst := 3000, maxSize := 100 })"
+  },
+  "https://raw.githubusercontent.com/konnov/leanda/2b0c9202753b19d731fffb3ae23df65da118d9dd/twophase/Twophase4_pbt.lean lean 75-87": {
+    "url": "https://raw.githubusercontent.com/konnov/leanda/2b0c9202753b19d731fffb3ae23df65da118d9dd/twophase/Twophase4_pbt.lean",
+    "lang": "lean",
+    "lines": "75-87",
+    "code": "-- noCommitEx\nexample schedule:\n    let inv := fun (s: ProtocolState RM) =>\n      s.tmState ≠ TMState.Committed\n    checkInvariant schedule inv\n  := by plausible (config := { numInst := 3000, maxSize := 100 })\n\n-- noAbortOnAllPreparedEx\nexample schedule:\n    let inv := fun (s: ProtocolState RM) =>\n      s.tmState = TMState.Aborted → s.tmPrepared ≠ { RM.RM1, RM.RM2, RM.RM3, RM.RM4 }\n    checkInvariant schedule inv\n  := by plausible (config := { numInst := 3000, maxSize := 100 })"
+  },
+  "https://raw.githubusercontent.com/konnov/leanda/2b0c9202753b19d731fffb3ae23df65da118d9dd/twophase/Twophase4_pbt.lean lean 89-97": {
+    "url": "https://raw.githubusercontent.com/konnov/leanda/2b0c9202753b19d731fffb3ae23df65da118d9dd/twophase/Twophase4_pbt.lean",
+    "lang": "lean",
+    "lines": "89-97",
+    "code": "-- consistentInv\n#eval Testable.check <| ∀ (schedule: List (@Action RM)),\n    let inv := fun (s: ProtocolState RM) =>\n      let existsAborted :=\n        ∅ ≠ (Finset.filter (fun rm => s.rmState.get? rm = RMState.Aborted) s.all)\n      let existsCommitted :=\n        ∅ ≠ (Finset.filter (fun rm => s.rmState.get? rm = RMState.Committed) s.all)\n      ¬existsAborted ∨ ¬existsCommitted\n    checkInvariant schedule inv"
+  },
+  "https://raw.githubusercontent.com/konnov/leanda/2b0c9202753b19d731fffb3ae23df65da118d9dd/twophase/Twophase/Propositional.lean lean 20-23": {
+    "url": "https://raw.githubusercontent.com/konnov/leanda/2b0c9202753b19d731fffb3ae23df65da118d9dd/twophase/Twophase/Propositional.lean",
+    "lang": "lean",
+    "lines": "20-23",
+    "code": "-- The state `s` is the \"current\" state of the protocol.\nvariable (s: ProtocolState RM)\n-- The state `s'` is the \"next\" state of the protocol.\nvariable (s': ProtocolState RM)"
+  },
+  "https://raw.githubusercontent.com/konnov/leanda/2b0c9202753b19d731fffb3ae23df65da118d9dd/twophase/Twophase/Propositional.lean lean 68-71": {
+    "url": "https://raw.githubusercontent.com/konnov/leanda/2b0c9202753b19d731fffb3ae23df65da118d9dd/twophase/Twophase/Propositional.lean",
+    "lang": "lean",
+    "lines": "68-71",
+    "code": "theorem tm_rcv_prepared_correct (rm: RM):\n    tm_rcv_prepared s s' rm ↔\n      tmRcvPrepared RM s rm = some s' := by sorry\n"
+  },
+  "https://raw.githubusercontent.com/tlaplus/Examples/37236893f14527b4fc9f3963891eb2316c3de62e/specifications/transaction_commit/TCommit.tla tlaplus 54-60": {
+    "url": "https://raw.githubusercontent.com/tlaplus/Examples/37236893f14527b4fc9f3963891eb2316c3de62e/specifications/transaction_commit/TCommit.tla",
+    "lang": "tlaplus",
+    "lines": "54-60",
+    "code": "TCConsistent ==  \n  (*************************************************************************)\n  (* A state predicate asserting that two RMs have not arrived at          *)\n  (* conflicting decisions.                                                *)\n  (*************************************************************************)\n  \\A rm1, rm2 \\in RM : ~ /\\ rmState[rm1] = \"aborted\"\n                         /\\ rmState[rm2] = \"committed\""
+  },
+  "https://raw.githubusercontent.com/konnov/leanda/199b26cb022dfa05c3e7c1576384dcea8a0bd648/twophase/Twophase/InductiveProofs.lean lean 65-67": {
+    "url": "https://raw.githubusercontent.com/konnov/leanda/199b26cb022dfa05c3e7c1576384dcea8a0bd648/twophase/Twophase/InductiveProofs.lean",
+    "lang": "lean",
+    "lines": "65-67",
+    "code": "def consistency (s: ProtocolState RM) : Prop :=\n  ∀ rm₁ rm₂: RM,\n    s.rmState[rm₁]? ≠ some RMState.Committed ∨ s.rmState[rm₂]? ≠ some RMState.Aborted"
+  },
+  "https://raw.githubusercontent.com/konnov/leanda/199b26cb022dfa05c3e7c1576384dcea8a0bd648/twophase/Twophase/PropositionalProofs.lean lean 172-173": {
+    "url": "https://raw.githubusercontent.com/konnov/leanda/199b26cb022dfa05c3e7c1576384dcea8a0bd648/twophase/Twophase/PropositionalProofs.lean",
+    "lang": "lean",
+    "lines": "172-173",
+    "code": "theorem tp_init_correct (all: List RM) (s: ProtocolState RM):\n    tp_init all s ↔ init all = s := by"
+  },
+  "https://raw.githubusercontent.com/konnov/leanda/199b26cb022dfa05c3e7c1576384dcea8a0bd648/twophase/Twophase/PropositionalProofs.lean lean 191-192": {
+    "url": "https://raw.githubusercontent.com/konnov/leanda/199b26cb022dfa05c3e7c1576384dcea8a0bd648/twophase/Twophase/PropositionalProofs.lean",
+    "lang": "lean",
+    "lines": "191-192",
+    "code": "theorem tp_next_correct (s: ProtocolState RM) (s': ProtocolState RM):\n    tp_next s s' ↔ ∃ a: Action, next s a = some s' := by"
+  },
+  "https://raw.githubusercontent.com/konnov/leanda/199b26cb022dfa05c3e7c1576384dcea8a0bd648/twophase/Twophase/Functional.lean lean 68-77": {
+    "url": "https://raw.githubusercontent.com/konnov/leanda/199b26cb022dfa05c3e7c1576384dcea8a0bd648/twophase/Twophase/Functional.lean",
+    "lang": "lean",
+    "lines": "68-77",
+    "code": "/--\n  The transaction manager commits the transaction. Enabled iff the TM is its initial\n  state and every RM has sent a `Prepared` message.\n -/\ndef tmCommit :=\n    if s.tmState = TMState.Init && s.tmPrepared = s.all then some {\n        s with\n        tmState := TMState.Committed,\n        msgs := s.msgs ∪ { Message.Commit }\n    } else none"
+  },
+  "https://raw.githubusercontent.com/konnov/leanda/199b26cb022dfa05c3e7c1576384dcea8a0bd648/twophase/Twophase/Propositional.lean lean 38-46": {
+    "url": "https://raw.githubusercontent.com/konnov/leanda/199b26cb022dfa05c3e7c1576384dcea8a0bd648/twophase/Twophase/Propositional.lean",
+    "lang": "lean",
+    "lines": "38-46",
+    "code": "/-- The proposition version of `tmCommit`. -/\ndef tm_commit: Prop :=\n    s.tmState = TMState.Init\n  ∧ s.tmPrepared = s.all\n  ∧ s'.tmState = TMState.Committed\n  ∧ s'.msgs = s.msgs ∪ { Message.Commit }\n  ∧ s'.tmPrepared = s.tmPrepared\n  ∧ s'.rmState = s.rmState\n  ∧ s'.all = s.all"
+  },
+  "https://raw.githubusercontent.com/konnov/leanda/199b26cb022dfa05c3e7c1576384dcea8a0bd648/twophase/Twophase/PropositionalProofs.lean lean 39-58": {
+    "url": "https://raw.githubusercontent.com/konnov/leanda/199b26cb022dfa05c3e7c1576384dcea8a0bd648/twophase/Twophase/PropositionalProofs.lean",
+    "lang": "lean",
+    "lines": "39-58",
+    "code": "theorem tm_commit_correct (s: ProtocolState RM) (s': ProtocolState RM):\n    tm_commit s s' ↔ tmCommit RM s = some s' := by\n  apply Iff.intro\n  case mp =>\n    intro hrel\n    simp [tm_commit] at hrel\n    rcases hrel with ⟨ h_tmState, h_tmPrepared, h_tmState', h_msgs',\n      h_tmPrepared', h_rmState', h_all' ⟩\n    simp [tmCommit, h_tmState, h_tmPrepared]\n    apply ProtocolState.ext\n    repeat simp [*]\n\n  case mpr =>\n    intro heq\n    simp [tmCommit] at heq\n    rcases heq with ⟨ ⟨ h_tmState, h_tmPrepared ⟩, h_seq ⟩\n    unfold tm_commit\n    simp [h_tmState, h_tmPrepared]\n    cases h_seq\n    repeat simp [*]"
+  },
+  "https://raw.githubusercontent.com/apalache-mc/apalache/984f380c3f24b754f0809064ec8e203a873543dc/test/tla/TwoPhaseTypedInv.tla lean 4-31": {
+    "url": "https://raw.githubusercontent.com/apalache-mc/apalache/984f380c3f24b754f0809064ec8e203a873543dc/test/tla/TwoPhaseTypedInv.tla",
+    "lang": "lean",
+    "lines": "4-31",
+    "code": "IndInv ==\n    /\\ TPTypeOK\n    /\\ TCConsistent \n    /\\ (\\E rm \\in RM: rmState[rm] = \"committed\") => tmState = \"committed\"\n    /\\ tmState = \"committed\" => /\\ tmPrepared = RM\n                                /\\ \\A rm \\in RM: rmState[rm] \\notin {\"working\", \"aborted\"}\n                                /\\ MkCommit \\in msgs\n    /\\ tmState = \"aborted\" => MkAbort \\in msgs\n    /\\ \\A rm \\in RM:\n      /\\ rm \\in tmPrepared =>\n        /\\ rmState[rm] /= \"working\"\n        /\\ MkPrepared(rm) \\in msgs\n      /\\ rmState[rm] = \"working\" => MkPrepared(rm) \\notin msgs\n      /\\ MkPrepared(rm) \\in msgs => rmState[rm] /= \"working\" \n      /\\ rmState[rm] = \"aborted\" =>\n        \\/ MkAbort \\in msgs\n        \\/ MkPrepared(rm) \\notin msgs\n    /\\ MkAbort \\in msgs =>\n        \\* it is either the TM or an RM who was in the \"working\" state\n        \\/ tmState = \"aborted\"\n        \\/ \\E rm \\in RM:\n          /\\ rmState[rm] = \"aborted\"\n          /\\ rm \\notin tmPrepared\n          /\\ MkPrepared(rm) \\notin msgs                 \n    /\\ MkCommit \\in msgs =>\n        /\\ tmPrepared = RM\n        /\\ \\/ tmState = \"committed\"\n           \\/ \\E rm \\in RM: rmState[rm] = \"committed\" "
+  },
+  "https://raw.githubusercontent.com/konnov/leanda/199b26cb022dfa05c3e7c1576384dcea8a0bd648/twophase/Twophase/InductiveProofs.lean lean 69-71": {
+    "url": "https://raw.githubusercontent.com/konnov/leanda/199b26cb022dfa05c3e7c1576384dcea8a0bd648/twophase/Twophase/InductiveProofs.lean",
+    "lang": "lean",
+    "lines": "69-71",
+    "code": "-- Our inductive invariant that we use to prove the consistency property.\ndef invariant (s: ProtocolState RM) : Prop :=\n  lemma1 s ∧ lemma2 s ∧ lemma3 s ∧ lemma4 s ∧ lemma5 s ∧ lemma6 s"
+  },
+  "https://raw.githubusercontent.com/konnov/leanda/199b26cb022dfa05c3e7c1576384dcea8a0bd648/twophase/Twophase/InductiveProofs.lean lean 23-24": {
+    "url": "https://raw.githubusercontent.com/konnov/leanda/199b26cb022dfa05c3e7c1576384dcea8a0bd648/twophase/Twophase/InductiveProofs.lean",
+    "lang": "lean",
+    "lines": "23-24",
+    "code": "def lemma1 (s: ProtocolState RM): Prop :=\n  (∃ rm: RM, s.rmState[rm]? = some RMState.Committed) → s.tmState = TMState.Committed"
+  },
+  "https://raw.githubusercontent.com/konnov/leanda/199b26cb022dfa05c3e7c1576384dcea8a0bd648/twophase/Twophase/InductiveProofs.lean lean 1120-1144": {
+    "url": "https://raw.githubusercontent.com/konnov/leanda/199b26cb022dfa05c3e7c1576384dcea8a0bd648/twophase/Twophase/InductiveProofs.lean",
+    "lang": "lean",
+    "lines": "1120-1144",
+    "code": "/--\n Showing that `invariant` is inductive, that is, it is preserved by the transition relation.\n-/\ntheorem invariant_is_inductive (s: ProtocolState RM) (s': ProtocolState RM)\n  (h_all: ∀ rm: RM, rm ∈ s.all) (h_inv: invariant s) (h_next: tp_next s s'):\n    invariant s' := by\n  unfold tp_next at h_next\n  cases h_next\n  case inl h_tm_commit =>\n    -- action tm_commit\n    unfold invariant\n    -- prove the lemmas one by one\n    apply And.intro\n    . exact invariant_is_inductive_tm_commit_lemma1 s s' h_tm_commit\n    . apply And.intro\n      . exact invariant_is_inductive_tm_commit_lemma2 s s' h_all h_inv h_tm_commit\n      . apply And.intro\n        . apply invariant_is_inductive_tm_commit_lemma3 s s' h_tm_commit\n        . apply And.intro\n          . exact invariant_is_inductive_tm_commit_lemma4 s s' h_inv h_tm_commit\n          . apply And.intro\n            . exact invariant_is_inductive_tm_commit_lemma5 s s' h_inv h_tm_commit\n            . exact invariant_is_inductive_tm_commit_lemma6 s s' h_tm_commit\n\n  case inr h_rest =>"
+  },
+  "https://raw.githubusercontent.com/konnov/leanda/199b26cb022dfa05c3e7c1576384dcea8a0bd648/twophase/Twophase/InductiveProofs.lean lean 198-206": {
+    "url": "https://raw.githubusercontent.com/konnov/leanda/199b26cb022dfa05c3e7c1576384dcea8a0bd648/twophase/Twophase/InductiveProofs.lean",
+    "lang": "lean",
+    "lines": "198-206",
+    "code": "-- Effort: 10m\nlemma invariant_is_inductive_tm_commit_lemma1 (s: ProtocolState RM) (s': ProtocolState RM)\n  (h_tm_commit: tm_commit s s'):\n    lemma1 s' := by\n    unfold lemma1\n    intro h_committed\n    exact show s'.tmState = TMState.Committed by\n      unfold tm_commit at h_tm_commit\n      simp [h_tm_commit]"
+  },
+  "https://raw.githubusercontent.com/konnov/leanda/199b26cb022dfa05c3e7c1576384dcea8a0bd648/twophase/Twophase/InductiveProofs.lean lean 44-53": {
+    "url": "https://raw.githubusercontent.com/konnov/leanda/199b26cb022dfa05c3e7c1576384dcea8a0bd648/twophase/Twophase/InductiveProofs.lean",
+    "lang": "lean",
+    "lines": "44-53",
+    "code": "def lemma5 (s: ProtocolState RM) : Prop :=\n  Message.Abort ∈ s.msgs → s.tmState = TMState.Aborted\n  /- Added when discovering the invariant with the model checker.\n      It was redundant and complicated the proof.\n  (s.tmState = TMState.Aborted\n    ∨ ∃ rm: RM,\n        s.rmState[rm]? = some RMState.Aborted\n      ∧ rm ∉ s.tmPrepared\n      ∧ Message.Prepared rm ∉ s.msgs)\n  -/"
+  },
+  "https://raw.githubusercontent.com/konnov/leanda/199b26cb022dfa05c3e7c1576384dcea8a0bd648/twophase/Twophase/InductiveProofs.lean lean 968-977": {
+    "url": "https://raw.githubusercontent.com/konnov/leanda/199b26cb022dfa05c3e7c1576384dcea8a0bd648/twophase/Twophase/InductiveProofs.lean",
+    "lang": "lean",
+    "lines": "968-977",
+    "code": "lemma invariant_is_inductive_rm_rcv_commit_msg_lemma5 (s: ProtocolState RM) (s': ProtocolState RM)\n  (rm: RM) (h_inv: invariant s) (h_rm_rcv_commit_msg: rm_rcv_commit_msg s s' rm): lemma5 s' := by\n    unfold lemma5\n    unfold rm_rcv_commit_msg at h_rm_rcv_commit_msg\n    have h_unchanged_msgs: s'.msgs = s.msgs := by simp [h_rm_rcv_commit_msg]\n    have h_unchanged_tm_state: s'.tmState = s.tmState := by simp [h_rm_rcv_commit_msg]\n    simp [h_unchanged_tm_state, h_unchanged_msgs]\n    rcases h_inv with ⟨_, _, _, _, h_lemma5_s, _⟩\n    unfold lemma5 at h_lemma5_s\n    exact h_lemma5_s"
+  },
+  "https://raw.githubusercontent.com/konnov/leanda/199b26cb022dfa05c3e7c1576384dcea8a0bd648/twophase/Twophase/InductiveProofs.lean lean 55-62": {
+    "url": "https://raw.githubusercontent.com/konnov/leanda/199b26cb022dfa05c3e7c1576384dcea8a0bd648/twophase/Twophase/InductiveProofs.lean",
+    "lang": "lean",
+    "lines": "55-62",
+    "code": "def lemma6 (s: ProtocolState RM) : Prop :=\n  Message.Commit ∈ s.msgs →\n    s.tmPrepared = s.all ∧ s.tmState = TMState.Committed\n    /- Added when discovering the invariant with the model checker.\n        It was redundant and complicated the proof.\n        (s.tmState = TMState.Committed\n      ∨ ∃ rm: RM, s.rmState[rm]? = some RMState.Committed)\n      -/"
+  },
+  "https://raw.githubusercontent.com/konnov/leanda/199b26cb022dfa05c3e7c1576384dcea8a0bd648/twophase/Twophase/InductiveProofs.lean lean 73-93": {
+    "url": "https://raw.githubusercontent.com/konnov/leanda/199b26cb022dfa05c3e7c1576384dcea8a0bd648/twophase/Twophase/InductiveProofs.lean",
+    "lang": "lean",
+    "lines": "73-93",
+    "code": "-- Proving that the inductive invariant implies the consistency property.\n-- Effort: 15m\ntheorem invariant_implies_consistency (s: ProtocolState RM) (h_inv: invariant s):\n    consistency s := by\n  unfold consistency\n  intro rm₁ rm₂\n  by_contra h_committed_and_aborted -- assume the opposite\n  simp at h_committed_and_aborted\n  rcases h_committed_and_aborted with ⟨h_rm1_committed, h_rm2_aborted⟩\n  have h_ex_committed: ∃ rm: RM, s.rmState[rm]? = some RMState.Committed := by use rm₁\n  unfold invariant at h_inv\n  rcases h_inv with ⟨h_lemma1_s, h_lemma2_s, _⟩\n  unfold lemma1 at h_lemma1_s\n  unfold lemma2 at h_lemma2_s\n  have h_tm_committed: s.tmState = TMState.Committed := by exact h_lemma1_s h_ex_committed\n  simp [h_tm_committed] at h_lemma2_s\n  rcases h_lemma2_s with ⟨_, _, h_no_working_or_aborted⟩\n  specialize h_no_working_or_aborted rm₂\n  rcases h_no_working_or_aborted with ⟨_, h_rm2_not_aborted⟩\n  rw [h_rm2_aborted] at h_rm2_not_aborted\n  exact h_rm2_not_aborted rfl"
+  },
+  "https://raw.githubusercontent.com/konnov/leanda/199b26cb022dfa05c3e7c1576384dcea8a0bd648/twophase/Twophase/InductiveProofs.lean lean 153-154": {
+    "url": "https://raw.githubusercontent.com/konnov/leanda/199b26cb022dfa05c3e7c1576384dcea8a0bd648/twophase/Twophase/InductiveProofs.lean",
+    "lang": "lean",
+    "lines": "153-154",
+    "code": "theorem init_implies_invariant (all: List RM) (s: ProtocolState RM)\n    (h_all: ∀ rm: RM, rm ∈ s.all) (h_init: tp_init all s): invariant s := by"
+  },
+  "https://raw.githubusercontent.com/konnov/leanda/199b26cb022dfa05c3e7c1576384dcea8a0bd648/twophase/Twophase/InductiveProofs.lean lean 138-141": {
+    "url": "https://raw.githubusercontent.com/konnov/leanda/199b26cb022dfa05c3e7c1576384dcea8a0bd648/twophase/Twophase/InductiveProofs.lean",
+    "lang": "lean",
+    "lines": "138-141",
+    "code": "-- show that the initialization predicate sets all the resource managers to `Working`\nlemma init_rm_state_post (all: List RM) (s: ProtocolState RM)\n    (h_init: tp_init all s):\n    ∀ rm ∈ s.all, s.rmState.get? rm = RMState.Working := by"
+  },
+  "https://raw.githubusercontent.com/konnov/leanda/199b26cb022dfa05c3e7c1576384dcea8a0bd648/twophase/Twophase/InductiveProofs.lean lean 97-103": {
+    "url": "https://raw.githubusercontent.com/konnov/leanda/199b26cb022dfa05c3e7c1576384dcea8a0bd648/twophase/Twophase/InductiveProofs.lean",
+    "lang": "lean",
+    "lines": "97-103",
+    "code": "-- An additional lemma to reason about map initialization.\n-- Figuring out that we need this lemma was probably the hardest part of the proof.\nlemma init_rm_keys (rm: RM):\n    ∀ all: List RM,\n      ∀ hashmap: Std.HashMap RM RMState,\n        (all.foldl (fun m rm' => m.insert rm' RMState.Working) hashmap)[rm]? =\n          if rm ∈ all then some RMState.Working else hashmap[rm]? := by"
+  },
+  "https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/Basic.lean lean 17-17": {
+    "url": "https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/Basic.lean",
+    "lang": "lean",
+    "lines": "17-17",
+    "code": "variable (Proc : Type) [Fintype Proc] [DecidableEq Proc] [Hashable Proc] [Repr Proc]"
+  },
+  "https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/Basic.lean lean 19-35": {
+    "url": "https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/Basic.lean",
+    "lang": "lean",
+    "lines": "19-35",
+    "code": "/-- A message tag: `HeartbeatRequest` or `HeartbeatReply`. -/\ninductive MsgTag where\n  | HeartbeatRequest\n  | HeartbeatReply\n  deriving DecidableEq, Repr\n\n/-- A message that is sent by one process (src) to another process (dst).\n    Every message is equipped with a timestamp, which is equal to the\n    clock value at the time of sending the message.\n -/\n@[ext]\nstructure Msg where\n  kind: MsgTag\n  src: Proc\n  dst: Proc\n  timestamp: ℕ\n  deriving DecidableEq, Repr"
+  },
+  "https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/Basic.lean lean 51-59": {
+    "url": "https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/Basic.lean",
+    "lang": "lean",
+    "lines": "51-59",
+    "code": "structure ProtocolState where\n  alive: Std.HashMap Proc (Finset Proc)\n  suspected: Std.HashMap Proc (Finset Proc)\n  delay: Std.HashMap Proc Nat\n  nextTimeout: Std.HashMap Proc Nat\n  sent: Finset (Msg Proc)\n  rcvd: Finset (Msg Proc)\n  clock: Nat\n  crashed: Finset Proc"
+  },
+  "https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/Basic.lean lean 61-65": {
+    "url": "https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/Basic.lean",
+    "lang": "lean",
+    "lines": "61-65",
+    "code": "/--\n  Given a message that was sent at `timestamp`, can a process receive it at time `clock`.\n  -/\ndef isMsgTimely (GST: Nat) (MsgDelay: Nat) (timestamp: Nat) (clock: Nat): Bool :=\n  clock ≥ timestamp && clock ≤ (max GST timestamp) + MsgDelay"
+  },
+  "https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/Propositional.lean lean 20-36": {
+    "url": "https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/Propositional.lean",
+    "lang": "lean",
+    "lines": "20-36",
+    "code": "-- The abstract type of processes\nvariable (Proc : Type) [Fintype Proc] [DecidableEq Proc] [Hashable Proc] [Repr Proc]\n\n-- The initial delay Δ used by the processes\nvariable (InitDelay: ℕ)\n\n-- The global stabilization time GST, unknown to the processes\nvariable (GST: ℕ)\n\n-- The message delay after GST, unknown to the processes\nvariable (MsgDelay: ℕ)\n\n-- The state `s` is a state of the protocol, explicitly added to all the functions.\nvariable (s: ProtocolState Proc)\n\n-- The state `s'` is the \"next\" state of the protocol.\nvariable (s': ProtocolState Proc)"
+  },
+  "https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/Propositional.lean lean 38-55": {
+    "url": "https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/Propositional.lean",
+    "lang": "lean",
+    "lines": "38-55",
+    "code": "/--\n  A process `dst` receives a heartbeat request from `src`.\n  -/\ndef rcv_heartbeat_request (src: Proc) (dst: Proc) (timestamp: ℕ) :=\n  let req := { kind := MsgTag.HeartbeatRequest, src, dst, timestamp }\n  dst ∉ s.crashed\n  ∧ req ∈ s.sent\n  ∧ isMsgTimely GST MsgDelay timestamp s.clock\n  ∧ s'.rcvd = s.rcvd ∪ { req }\n  ∧ let reply :=\n      { kind := MsgTag.HeartbeatReply, src := dst, dst := src, timestamp := s.clock }\n    s'.sent = s.sent ∪ { reply }\n  ∧ s'.crashed = s.crashed\n  ∧ s'.clock = s.clock\n  ∧ s'.alive = s.alive\n  ∧ s'.suspected = s.suspected\n  ∧ s'.delay = s.delay\n  ∧ s'.nextTimeout = s.nextTimeout"
+  },
+  "https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/Propositional.lean lean 57-73": {
+    "url": "https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/Propositional.lean",
+    "lang": "lean",
+    "lines": "57-73",
+    "code": "/--\n  A process `dst` receives a heartbeat reply from `src`.\n  -/\ndef rcv_heartbeat_reply (src: Proc) (dst: Proc) (timestamp: ℕ) :=\n  let reply := { kind := MsgTag.HeartbeatReply, src, dst, timestamp }\n  dst ∉ s.crashed\n  ∧ reply ∈ s.sent\n  ∧ isMsgTimely GST MsgDelay timestamp s.clock\n  ∧ s'.rcvd = s.rcvd ∪ { reply }\n  ∧ let nextAlive := s.alive[dst]! ∪ { src }\n    s'.alive = s.alive.insert dst nextAlive\n  ∧ s'.sent = s.sent\n  ∧ s'.crashed = s.crashed\n  ∧ s'.clock = s.clock\n  ∧ s'.suspected = s.suspected\n  ∧ s'.delay = s.delay\n  ∧ s'.nextTimeout = s.nextTimeout"
+  },
+  "https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/Propositional.lean lean 75-105": {
+    "url": "https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/Propositional.lean",
+    "lang": "lean",
+    "lines": "75-105",
+    "code": "/--\n  A process `p` timeouts.\n  -/\ndef timeout (p: Proc) :=\n    p ∉ s.crashed\n  ∧ s.clock = s.nextTimeout[p]!\n  -- if `p` suspects an alive process, increase the delay\n  ∧ let nextDelay :=\n      if s.alive[p]! ∩ s.suspected[p]! ≠ ∅\n      then s.delay[p]! + InitDelay\n      else s.delay[p]!\n    s'.delay = s.delay.insert p nextDelay\n  -- recompute the set of suspected processes\n  ∧ let nextSuspected := Finset.univ \\ s.alive[p]!\n      /- q ∉ s.alive[p]! is equivalent to the original code:\n        on q ∉ s.alive[p]! ∧ q ∉ s.suspected[p]! trigger Suspect q\n        on q ∈ s.alive[p]! ∧ q ∈ s.suspected[p]! trigger Restore q\n        else keep q ∈ s.suspected[p]!\n       -/\n    s'.suspected = s.suspected.insert p nextSuspected\n  -- send heartbeat requests to all processes, including `p` itself\n  ∧ s'.sent = s.sent ∪ Finset.univ.image (fun q => {\n      kind := MsgTag.HeartbeatRequest, src := p, dst := q, timestamp := s.clock\n    })\n  -- set alive to empty and reset the timer\n  ∧ s'.alive = s.alive.insert p ∅\n  ∧ s'.nextTimeout = s.nextTimeout.insert p (s.clock + s.delay[p]!)\n  -- everything else remains unchanged\n  ∧ s'.rcvd = s.rcvd\n  ∧ s'.crashed = s.crashed\n  ∧ s'.clock = s.clock"
+  },
+  "https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/Propositional.lean lean 107-120": {
+    "url": "https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/Propositional.lean",
+    "lang": "lean",
+    "lines": "107-120",
+    "code": "/--\n  A process `p` crashes. This action is not part of the protocol itself, but\n  rather a part of the environment (or the adversary).\n  -/\ndef crash (p: Proc) :=\n    p ∉ s.crashed\n  ∧ s'.crashed = s.crashed ∪ { p }\n  ∧ s'.sent = s.sent\n  ∧ s'.rcvd = s.rcvd\n  ∧ s'.clock = s.clock\n  ∧ s'.alive = s.alive\n  ∧ s'.suspected = s.suspected\n  ∧ s'.delay = s.delay\n  ∧ s'.nextTimeout = s.nextTimeout"
+  },
+  "https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/Propositional.lean lean 122-134": {
+    "url": "https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/Propositional.lean",
+    "lang": "lean",
+    "lines": "122-134",
+    "code": "/--\n  The global system clock advances. We advance the clock by exactly one unit.\n  If we had a rational clock, we would have to advance it by `delta` units.\n  -/\ndef advance_clock :=\n    s'.clock = s.clock + 1\n  ∧ s'.crashed = s.crashed\n  ∧ s'.sent = s.sent\n  ∧ s'.rcvd = s.rcvd\n  ∧ s'.alive = s.alive\n  ∧ s'.suspected = s.suspected\n  ∧ s'.delay = s.delay\n  ∧ s'.nextTimeout = s.nextTimeout"
+  },
+  "https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/Propositional.lean lean 136-165": {
+    "url": "https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/Propositional.lean",
+    "lang": "lean",
+    "lines": "136-165",
+    "code": "/--\n  Initialize a map with the default value `v` for each process in `all`.\n  -/\nnoncomputable def init_map {α: Type} (v: α) : Std.HashMap Proc α :=\n  Finset.univ.toList.foldl (fun m p => m.insert p v) (Std.HashMap.emptyWithCapacity 0)\n\n/--\n  The initial state of the protocol.\n  -/\ndef init: Prop :=\n    s.crashed = ∅\n  ∧ s.sent = ∅\n  ∧ s.rcvd = ∅\n  ∧ s.clock = 0\n  ∧ s.alive = init_map Proc ∅\n  ∧ s.suspected = init_map Proc ∅\n  ∧ s.delay = init_map Proc InitDelay\n  ∧ s.nextTimeout = init_map Proc InitDelay\n\n/--\n  The transition relation of the protocol.\n  -/\ndef next: Prop :=\n    advance_clock Proc s s'\n  ∨ ∃ p: Proc,\n        timeout Proc InitDelay s s' p\n      ∨ crash Proc s s' p\n      ∨ ∃ q: Proc, ∃ t: ℕ,\n            rcv_heartbeat_request Proc GST MsgDelay s s' p q t\n          ∨ rcv_heartbeat_reply Proc GST MsgDelay s s' p q t"
+  },
+  "https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/Propositional.lean lean 182-189": {
+    "url": "https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/Propositional.lean",
+    "lang": "lean",
+    "lines": "182-189",
+    "code": "def is_strongly_complete\n    (Crashed: Finset Proc)\n    (seq: ℕ → ProtocolState Proc): Prop :=\n  (∀ p: Proc, p ∈ Crashed ↔ ∃ i: ℕ, p ∈ (seq i).crashed)\n    → ∃ k: ℕ,\n        ∀ i: ℕ,\n          ∀ p q: Proc,\n            p ∉ Crashed ∧ q ∈ Crashed → q ∈ (seq (k + i)).suspected[p]!"
+  },
+  "https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/Propositional.lean lean 200-207": {
+    "url": "https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/Propositional.lean",
+    "lang": "lean",
+    "lines": "200-207",
+    "code": "def is_eventually_strongly_accurate\n    (Crashed: Finset Proc)\n    (seq: ℕ → (ProtocolState Proc)) : Prop :=\n  (∀ p: Proc, p ∈ Crashed ↔ ∃ i: ℕ, p ∈ (seq i).crashed)\n    → ∃ k: ℕ,\n        ∀ i: ℕ,\n          ∀ p q: Proc,\n            p ∉ Crashed ∧ q ∉ Crashed → q ∉ (seq (i + k)).suspected[p]!"
+  },
+  "https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/Propositional.lean lean 218-224": {
+    "url": "https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/Propositional.lean",
+    "lang": "lean",
+    "lines": "218-224",
+    "code": "inductive Action where\n  | Init\n  | AdvanceClock\n  | Timeout(p: Proc)\n  | Crash(p: Proc)\n  | RcvHeartbeatRequest(src: Proc) (dst: Proc) (timestamp: ℕ)\n  | RcvHeartbeatReply(src: Proc) (dst: Proc) (timestamp: ℕ)"
+  },
+  "https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/Propositional.lean lean 229-242": {
+    "url": "https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/Propositional.lean",
+    "lang": "lean",
+    "lines": "229-242",
+    "code": "def next_a (a: @Action Proc): Prop :=\nmatch a with\n| Action.Init =>\n    s' = s -- dummy action\n| Action.AdvanceClock =>\n    advance_clock Proc s s'\n| Action.Timeout p =>\n    timeout Proc InitDelay s s' p\n| Action.Crash p =>\n    crash Proc s s' p\n| Action.RcvHeartbeatRequest src dst timestamp =>\n    rcv_heartbeat_request Proc GST MsgDelay s s' src dst timestamp\n| Action.RcvHeartbeatReply src dst timestamp =>\n    rcv_heartbeat_reply Proc GST MsgDelay s s' src dst timestamp"
+  },
+  "https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/PropositionalProofs.lean lean 925-929": {
+    "url": "https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/PropositionalProofs.lean",
+    "lang": "lean",
+    "lines": "925-929",
+    "code": "theorem next_a_iff_next\n    (s: ProtocolState Proc)\n    (s': ProtocolState Proc):\n      s' = s ∨ next Proc InitDelay GST MsgDelay s s'\n        ↔ ∃ a: Action Proc, next_a Proc InitDelay GST MsgDelay s s' a := by"
+  },
+  "https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/Propositional.lean lean 247-266": {
+    "url": "https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/Propositional.lean",
+    "lang": "lean",
+    "lines": "247-266",
+    "code": "structure StateAction where\n  s: ProtocolState Proc\n  a: @Action Proc\n\n/--\n  A trace is an infinite sequence of pairs:\n   - a state and\n   - the action that produced the state from the previous one.\n\n  The initial state is produced by the dummy action `Init`.\n  We do not enforce the states to be connected by the `next` relation.\n  See `is_path` and `is_run` for stronger conditions.\n  -/\nabbrev Trace := ℕ → StateAction Proc\n\n/--\n  Interpret a trace as a sequence of protocol states.\n  -/\ndef states_of_trace (tr: Trace Proc) :=\n  fun i: ℕ => (tr i).s"
+  },
+  "https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/Propositional.lean lean 305-330": {
+    "url": "https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/Propositional.lean",
+    "lang": "lean",
+    "lines": "305-330",
+    "code": "/--\n  A trace is a path, if every pair of state-action pairs `((s_i, _), (s_{i+1},\n  a_{i+1})` is a transition via `next_a`. A path does not have to start with an\n  initial state.\n  -/\ndef is_path (tr: Trace Proc) : Prop :=\n  ∀ i: ℕ,\n    next_a Proc InitDelay GST MsgDelay (tr i).s (tr (i + 1)).s (tr (i + 1)).a\n\n/--\n  A trace is a (protocol) run, if it starts with an initial state,\n  and it is a path.\n  -/\ndef is_run (tr: Trace Proc) : Prop :=\n  let s0 := (tr 0).s\n  init Proc InitDelay s0\n    ∧ is_path Proc InitDelay GST MsgDelay tr\n\n/--\n  Does a trace constitute a fair run of the protocol?\n  -/\ndef is_fair_run (tr: Trace Proc) : Prop :=\n  is_run Proc InitDelay GST MsgDelay tr\n    ∧ is_reliable_communication Proc GST MsgDelay tr\n    ∧ is_fair_timeout Proc tr\n    ∧ is_fair_clock Proc tr"
+  },
+  "https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/Propositional.lean lean 300-303": {
+    "url": "https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/Propositional.lean",
+    "lang": "lean",
+    "lines": "300-303",
+    "code": "def is_fair_clock (tr: Trace Proc) : Prop :=\n  ∀ i: ℕ,\n    ∃ j: ℕ,\n      j > i ∧ (tr j).a = Action.AdvanceClock"
+  },
+  "https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/Propositional.lean lean 289-295": {
+    "url": "https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/Propositional.lean",
+    "lang": "lean",
+    "lines": "289-295",
+    "code": "def is_fair_timeout (tr: Trace Proc): Prop :=\n  ∀ i: ℕ,\n    ∀ p: Proc,\n      ∃ k: ℕ,\n        (p ∉ (tr (i + k - 1)).s.crashed → (tr (i + k)).a = Action.Timeout p)\n          -- TODO: is this a bit too strong in the presence of is_fair_clock?\n          ∧ (tr (i + k)).s.clock = (tr i).s.nextTimeout[p]!"
+  },
+  "https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/Propositional.lean lean 273-284": {
+    "url": "https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/Propositional.lean",
+    "lang": "lean",
+    "lines": "273-284",
+    "code": "def is_reliable_communication (tr: Trace Proc) : Prop :=\n  ∀ k: ℕ,\n    ∀ m ∈ (tr k).s.sent,\n      ∃ i: ℕ,\n        let { s := s_j, a := a_j } := tr (k + i)\n        isMsgTimely GST MsgDelay m.timestamp s_j.clock\n          ∧ m.dst ∈ s_j.crashed\n            ∨ match m.kind with\n            | MsgTag.HeartbeatReply =>\n                a_j = Action.RcvHeartbeatReply m.src m.dst m.timestamp\n            | MsgTag.HeartbeatRequest =>\n                a_j = Action.RcvHeartbeatRequest m.src m.dst m.timestamp"
+  },
+  "https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/PropositionalProofs.lean lean 899-911": {
+    "url": "https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/PropositionalProofs.lean",
+    "lang": "lean",
+    "lines": "899-911",
+    "code": "/--\n  Show that the property `is_strongly_complete` holds on fair runs.\n  -/\ntheorem strong_completeness_on_states\n    (tr: Trace Proc)\n    (h_is_fair_run: is_fair_run Proc InitDelay GST MsgDelay tr)\n    (Crashed: Finset Proc):\n      is_strongly_complete Proc Crashed (states_of_trace Proc tr) := by\n  unfold is_strongly_complete states_of_trace\n  intro h_crashed\n  have h_is_crashing_set: is_crashing_set tr Crashed := by exact h_crashed\n  exact strong_completeness InitDelay GST MsgDelay\n    tr h_is_fair_run Crashed h_is_crashing_set"
+  },
+  "https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/PropositionalProofs.lean lean 27-30": {
+    "url": "https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/PropositionalProofs.lean",
+    "lang": "lean",
+    "lines": "27-30",
+    "code": "/-- A process `p` never crashes, i.e., `[](p ∉ crashed)`.  -/\ndef never_crashes (tr: Trace Proc) (p: Proc): Prop :=\n  ∀ i: ℕ,\n    p ∉ (tr i).s.crashed"
+  },
+  "https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/PropositionalProofs.lean lean 32-35": {
+    "url": "https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/PropositionalProofs.lean",
+    "lang": "lean",
+    "lines": "32-35",
+    "code": "/-- A process `p` eventually crashes, i.e., `<>(p ∈ crashed)`.  -/\ndef eventually_crashes (tr: Trace Proc) (p: Proc): Prop :=\n  ∃ i: ℕ,\n    p ∈ (tr i).s.crashed"
+  },
+  "https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/PropositionalProofs.lean lean 37-42": {
+    "url": "https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/PropositionalProofs.lean",
+    "lang": "lean",
+    "lines": "37-42",
+    "code": "/--\n  Eventually, `p` never registers `q` as alive, i.e., `<>[](q ∉ alive[p])`.\n  -/\ndef eventually_never_alive (tr: Trace Proc) (p q: Proc): Prop :=\n  ∃ k: ℕ, ∀ i: ℕ,\n    q ∉ (tr (k + i)).s.alive[p]!"
+  },
+  "https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/PropositionalProofs.lean lean 44-57": {
+    "url": "https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/PropositionalProofs.lean",
+    "lang": "lean",
+    "lines": "44-57",
+    "code": "/--\n  `p` suspects `q` permanently from some point `k`, i.e.,\n  `tr[k,...] ⊧ [](q ∈ suspected[p])`.\n  -/\ndef q_is_always_suspected (tr: Trace Proc) (p q: Proc) (k: ℕ): Prop :=\n  ∀ i: ℕ,\n    q ∈ (tr (k + i)).s.suspected[p]!\n\n/--\n  Eventually, `p` suspects `q` permanently, i.e., `<>[](q ∈ suspected[p])`.\n  -/\ndef eventually_q_is_always_suspected (tr: Trace Proc) (p q: Proc): Prop :=\n  ∃ k: ℕ,\n    q_is_always_suspected tr p q k"
+  },
+  "https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/PropositionalProofs.lean lean 59-64": {
+    "url": "https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/PropositionalProofs.lean",
+    "lang": "lean",
+    "lines": "59-64",
+    "code": "/--\n  A set of processes `C` is a crashing set if every process in `C`\n  eventually crashes, and every process not in `C` never crashes.\n -/\ndef is_crashing_set (tr: Trace Proc) (C: Finset Proc): Prop :=\n  ∀ p: Proc, p ∈ C ↔ eventually_crashes tr p"
+  },
+  "https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/PropositionalProofs.lean lean 100-114": {
+    "url": "https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/PropositionalProofs.lean",
+    "lang": "lean",
+    "lines": "100-114",
+    "code": "/--\n  A single step does not decrease the clock value. In temporal logic,\n  `[](clock' ≥ clock)`.\n  -/\nlemma clock_is_monotonic_in_one_step\n    (s: ProtocolState Proc) (s': ProtocolState Proc) (a: Action Proc)\n    (h_next: next_a Proc InitDelay GST MsgDelay s s' a):\n      s'.clock ≥ s.clock := by\n  unfold next_a crash rcv_heartbeat_reply advance_clock\n         rcv_heartbeat_request timeout at h_next\n  cases a with\n  | Init => simp at h_next; rw [h_next]\n  | AdvanceClock | RcvHeartbeatRequest _ _ _\n  | RcvHeartbeatReply _ _ _ | Timeout _ | Crash _ =>\n    simp [h_next]"
+  },
+  "https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/PropositionalProofs.lean lean 116-131": {
+    "url": "https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/PropositionalProofs.lean",
+    "lang": "lean",
+    "lines": "116-131",
+    "code": "/--\n  A single step does not decrease the set of the crashed processes.\n  In temporal logic, `[](crashed' ⊇ crashed)`.\n  -/\nlemma crashed_is_monotonic_in_one_step\n    (s: ProtocolState Proc) (s': ProtocolState Proc) (a: Action Proc)\n    (h_next: next_a Proc InitDelay GST MsgDelay s s' a):\n      s'.crashed ⊇ s.crashed := by\n  -- literally the same proof as above\n  unfold next_a crash rcv_heartbeat_reply\n         advance_clock rcv_heartbeat_request timeout at h_next\n  cases a with\n  | Init => simp at h_next; rw [h_next]\n  | AdvanceClock | RcvHeartbeatRequest _ _ _\n  | RcvHeartbeatReply _ _ _ | Timeout _ | Crash _ =>\n    simp [h_next]"
+  },
+  "https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/PropositionalProofs.lean lean 162-185": {
+    "url": "https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/PropositionalProofs.lean",
+    "lang": "lean",
+    "lines": "162-185",
+    "code": "/--\n  The set `crashed` grows monotonically in a fair run.\n\n  In temporal logic, `∀p: Proc, [](p ∈ crashed) → [](p ∈ crashed))`.\n  -/\nlemma crashed_is_monotonic_in_fair_run\n    (tr: Trace Proc)\n    (h_is_fair_run: is_fair_run Proc InitDelay GST MsgDelay tr)\n    (p: Proc) (k: ℕ) (h_p_crashed: p ∈ (tr k).s.crashed) (i: ℕ):\n      p ∈ (tr (k + i)).s.crashed := by\n  induction i with\n  | zero => exact h_p_crashed\n  | succ i ih =>\n    unfold is_fair_run at h_is_fair_run\n    rcases h_is_fair_run with ⟨ h_is_run, _ ⟩\n    unfold is_run at h_is_run\n    rcases h_is_run with ⟨ _, h_is_path ⟩\n    unfold is_path at h_is_path\n    specialize h_is_path (k + i)\n    -- apply crashed_is_monotonic_in_one_step to the last step\n    have h_last_step_mono :=\n      crashed_is_monotonic_in_one_step InitDelay GST MsgDelay\n        (tr (k + i)).s (tr (k + i + 1)).s (tr (k + i + 1)).a h_is_path\n    exact h_last_step_mono ih"
+  },
+  "https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/PropositionalProofs.lean lean 187-197": {
+    "url": "https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/PropositionalProofs.lean",
+    "lang": "lean",
+    "lines": "187-197",
+    "code": "/--\n  Every fair run covers every clock value `t`. Note that this requires fairness.\n  Otherwise, the clock may not advance at all.\n\n  In temporal logic, `∀t ∈ ℕ, <>(clock ≥ t)`.\n  -/\nlemma eventually_clock_is_t\n    (tr: Trace Proc)\n    (h_is_fair_run: is_fair_run Proc InitDelay GST MsgDelay tr)\n    (t: ℕ):\n      (∃ i: ℕ, (tr i).s.clock ≥ t) := by"
+  },
+  "https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/PropositionalProofs.lean lean 716-722": {
+    "url": "https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/PropositionalProofs.lean",
+    "lang": "lean",
+    "lines": "716-722",
+    "code": "lemma eventually_crashes_implies_always_suspected\n    (tr: Trace Proc)\n    (h_is_fair_run: is_fair_run Proc InitDelay GST MsgDelay tr)\n    (p q: Proc)\n    (h_p_never_crashes: never_crashes tr p)\n    (h_crashes: eventually_crashes tr q):\n      eventually_q_is_always_suspected tr p q := by"
+  },
+  "https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/PropositionalProofs.lean lean 538-544": {
+    "url": "https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/PropositionalProofs.lean",
+    "lang": "lean",
+    "lines": "538-544",
+    "code": "lemma eventually_crashes_implies_never_alive\n    (tr: Trace Proc)\n    (h_is_fair_run: is_fair_run Proc InitDelay GST MsgDelay tr)\n    (p q: Proc)\n    (h_p_never_crashes: never_crashes tr p)\n    (h_crashes: eventually_crashes tr q):\n      eventually_never_alive tr p q := by"
+  },
+  "https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/PropositionalProofs.lean lean 241-248": {
+    "url": "https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/PropositionalProofs.lean",
+    "lang": "lean",
+    "lines": "241-248",
+    "code": "lemma eventually_alive_is_empty\n    (tr: Trace Proc)\n    (h_is_fair_run: is_fair_run Proc InitDelay GST MsgDelay tr)\n    (p: Proc)\n    (h_p_never_crashes: never_crashes tr p)\n    (k: ℕ)\n    (h_i_positive: k > 0):\n      ∃ i: ℕ, (tr (k + i)).s.alive[p]! = ∅ := by"
+  },
+  "https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/PropositionalProofs.lean lean 419-425": {
+    "url": "https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/PropositionalProofs.lean",
+    "lang": "lean",
+    "lines": "419-425",
+    "code": "lemma crashed_process_does_not_send\n    (tr: Trace Proc)\n    (h_is_fair_run: is_fair_run Proc InitDelay GST MsgDelay tr)\n    (p: Proc) (k: ℕ) (h_p_crashed: p ∈ (tr k).s.crashed):\n      ∀ i: ℕ,\n        ∀ m ∈ (tr (k + i)).s.sent,\n          m.src = p → m.timestamp ≤ (tr k).s.clock := by"
+  },
+  "https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/PropositionalProofs.lean lean 303-308": {
+    "url": "https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/PropositionalProofs.lean",
+    "lang": "lean",
+    "lines": "303-308",
+    "code": "lemma no_sent_from_the_future\n    (tr: Trace Proc)\n    (h_is_fair_run: is_fair_run Proc InitDelay GST MsgDelay tr):\n      ∀ i: ℕ,\n        ∀ m ∈ (tr i).s.sent,\n          m.timestamp ≤ (tr i).s.clock := by"
+  },
+  "https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/PropositionalProofs.lean lean 850-856": {
+    "url": "https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/PropositionalProofs.lean",
+    "lang": "lean",
+    "lines": "850-856",
+    "code": "theorem strong_completeness\n    (tr: Trace Proc)\n    (h_is_fair_run: is_fair_run Proc InitDelay GST MsgDelay tr)\n    (Crashed: Finset Proc)\n    (h_is_crashing_set: is_crashing_set tr Crashed):\n      ∃ k: ℕ, ∀ i: ℕ, ∀ p q: Proc,\n        (p ∉ Crashed ∧ q ∈ Crashed) → q ∈ (tr (k + i)).s.suspected[p]! := by"
+  },
+  "https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/TemporalLemmas.lean lean 17-26": {
+    "url": "https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/TemporalLemmas.lean",
+    "lang": "lean",
+    "lines": "17-26",
+    "code": "/--\n  For a finite set of values `vs` and a state proposition `P`, show that we can\n  swap a universal quantifier and eventually-always. In temporal logic `∀ v ∈\n  vs, <>[](P v) → <>[](∀ v ∈ vs, P v)`.\n  -/\ntheorem forall_FG_implies_FG_forall\n    (P: TraceProp)\n    (vs: Finset Val):\n    (∀ v ∈ vs, ∃ k: ℕ, ∀ i: ℕ, P (k + i) v) →\n      (∃ k: ℕ, ∀ i: ℕ, ∀ v ∈ vs, P (k + i) v) := by"
+  },
+  "https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/PropositionalProofs.lean lean 810-845": {
+    "url": "https://raw.githubusercontent.com/konnov/leanda/a96eb677d7f514e8d6ac1cdd6970643f2488b442/epfd/Epfd/PropositionalProofs.lean",
+    "lang": "lean",
+    "lines": "810-845",
+    "code": "/--\n  For a set of crashing processes `C` and a trace `tr`, show that if for every\n  crashing process `q` and every correct process `p`, it holds that `p`\n  eventually suspects `q` forever, then there is a common time point `k` such\n  that all correct processes suspect all crashed processes forever.\n\n  In temporal logic, `∀ q ∈ Crashed, ∀ p ∈ Correct, <>[](q ∈ suspected[p]!)`\n  implies `<>[] ∀ q ∈ Crashed, ∀ p ∈ Correct, q ∈ suspected[p]!`.\n  -/\nlemma eventually_always_suspected_meet\n    (tr: Trace Proc)\n    (Crashed: Finset Proc)\n    (h_suspected:\n      ∀ q ∈ Crashed,\n        ∀ p ∈ Finset.univ \\ Crashed,\n          eventually_q_is_always_suspected tr p q):\n      ∃ k: ℕ,\n        ∀ i: ℕ,\n          ∀ q ∈ Crashed,\n            ∀ p ∈ Finset.univ \\ Crashed,\n              q ∈ (tr (k + i)).s.suspected[p]! := by\n  -- fix the set of correct processes\n  let Correct := Finset.univ \\ Crashed\n  -- we have to bubble up `∃ k: ℕ` two times\n  -- bubble up `∃ k: ℕ` the first time\n  have bubble_once: (q: Proc) → (h_q_crashed: q ∈ Crashed) →\n      ∃ k: ℕ, ∀ i: ℕ, ∀ p ∈ Correct, q ∈ (tr (k + i)).s.suspected[p]! := by\n    intro q h_q_crashed\n    specialize h_suspected q h_q_crashed\n    let P (i: ℕ) (p: Proc) := q ∈ (tr i).s.suspected[p]!\n    exact forall_FG_implies_FG_forall P Correct h_suspected\n  -- the predicate `P` to use in the next instance of `forall_FG_implies_FG_forall`\n  let P (i: ℕ) (q: Proc) :=\n    ∀ p ∈ Correct, q ∈ (tr i).s.suspected[p]!\n  -- bubble up `∃ k: ℕ` the second time\n  exact forall_FG_implies_FG_forall P Crashed bubble_once"
+  },
+  "https://raw.githubusercontent.com/konnov/cyclic-buffer-challenge/refs/heads/main/tla/BuggyCircularBuffer.tla tlaplus 1-72": {
+    "url": "https://raw.githubusercontent.com/konnov/cyclic-buffer-challenge/refs/heads/main/tla/BuggyCircularBuffer.tla",
+    "lang": "tlaplus",
+    "lines": "1-72",
+    "code": "----------------------------- MODULE BuggyCircularBuffer -----------------------------\n(**\n * A very simple specification of a circular buffer with a bug.\n * Generated with ChatGPT and beautified by Igor Konnov, 2025.\n * ChatGPT learned abstraction so well that it omitted the actual buffer storage!\n *)\nEXTENDS Integers\n\nCONSTANTS\n    \\* Size of the circular buffer.\n    \\* @type: Int;\n    BUFFER_SIZE,\n    \\* The set of possible buffer elements.\n    \\* @type: Set(Int);\n    BUFFER_ELEMS\n\nASSUME BUFFER_SIZE > 0\n\nVARIABLES\n    \\* The integer buffer of size BUFFER_SIZE.\n    \\* @type: Int -> Int;\n    buffer,\n    \\* Index of the next element to POP.\n    \\* @type: Int;\n    head,\n    \\* Index of the next free slot for PUSH.\n    \\* @type: Int;\n    tail,\n    \\* Number of elements currently stored.\n    \\* @type: Int;\n    count\n\n\\* Initial state\nInit ==\n  /\\ buffer = [ i \\in 0..(BUFFER_SIZE - 1) |-> 0 ]\n  /\\ head = 0\n  /\\ tail = 0\n  /\\ count = 0\n\n\\* Buggy PUT: Advance tail, increment count, but no fullness check!\nPut(x) ==\n  Put::\n  LET nextTail == (tail + 1) % BUFFER_SIZE IN\n  /\\ buffer' = [buffer EXCEPT ![tail] = x]\n  /\\ head' = head\n  /\\ tail' = nextTail\n  /\\ count' = count + 1\n\n\\* GET: Only allowed when count > 0.\nGet ==\n  Get::\n  LET nextHead == (head + 1) % BUFFER_SIZE IN\n  /\\ count > 0\n  /\\ UNCHANGED buffer\n  /\\ head' = nextHead\n  /\\ tail' = tail\n  /\\ count' = count - 1\n\n\\* Either Put or Get may happen in any step.\nNext ==\n    \\/ \\E x \\in BUFFER_ELEMS:\n        Put(x)\n    \\/ Get\n\nvars == <<buffer, head, tail, count>>\n\n\\* Complete specification\nSpec == Init /\\ [][Next]_vars\n\n\\* Safety property we *intend* to hold, but it is violated:\n\\* count must never exceed the buffer capacity.\nSafeInv == count <= BUFFER_SIZE"
+  },
+  "https://raw.githubusercontent.com/konnov/tftp-symbolic-testing/6fb00d1878b7e37a629868ac25b853d95b16cbdc/spec/tftp.tla tlaplus 470-499": {
+    "url": "https://raw.githubusercontent.com/konnov/tftp-symbolic-testing/6fb00d1878b7e37a629868ac25b853d95b16cbdc/spec/tftp.tla",
+    "lang": "tlaplus",
+    "lines": "470-499",
+    "code": "Next ==\n    \\* the actions by the clients\n    \\/  \\E srcIp \\in CLIENT_IPS, srcPort \\in PORTS:\n            \\E filename \\in DOMAIN FILES, timeout \\in 1..255:\n                \\* \"man tftpd\": 65464 is the theoretical maximum for block size\n                \\* https://linux.die.net/man/8/tftpd\n                \\E tsize \\in 0..FILES[filename], blksize \\in 0..65464:\n                    \\* choose a subset of the options to request\n                    \\E optionKeys \\in SUBSET OPTIONS_RFC2349:\n                        LET options ==\n                            mk_options(optionKeys, blksize, tsize, timeout)\n                        IN\n                        ClientSendRRQ(srcIp, srcPort, filename, options)\n    \\/  \\E udp \\in packets:\n            \\/ ClientRecvDATA(udp)\n            \\/ ClientRecvOACK(udp)\n            \\/ ClientRecvErrorAndCloseConn(udp)\n    \\/  \\E ipPort \\in DOMAIN clientTransfers:\n            ClientTimeout(ipPort)\n    \\* the server\n    \\/  \\E udp \\in packets:\n            \\/ ServerRecvRRQ(udp)\n            \\/ ServerSendDATA(udp)\n            \\/ ServerRecvAckAndCloseConn(udp)\n            \\/ ServerRecvErrorAndCloseConn(udp)\n    \\/  \\E ipPort \\in DOMAIN serverTransfers:\n            ServerTimeout(ipPort)\n    \\* handle the clock and timeouts\n    \\/  \\E delta \\in 1..255:\n            AdvanceClock(delta)"
+  },
+  "https://raw.githubusercontent.com/konnov/tftp-symbolic-testing/6fb00d1878b7e37a629868ac25b853d95b16cbdc/spec/typedefs.tla tlaplus 18-36": {
+    "url": "https://raw.githubusercontent.com/konnov/tftp-symbolic-testing/6fb00d1878b7e37a629868ac25b853d95b16cbdc/spec/typedefs.tla",
+    "lang": "tlaplus",
+    "lines": "18-36",
+    "code": "  // TFTP Packet Types\n  @typeAlias: tftpPacket =\n    // Read Request (RFC 1350, Figure 5-1, RFC 2347).\n    // See RFCs 2348-2349 for the options.\n      RRQ({ opcode: Int, filename: Str, mode: Str, options: Str -> Int })\n    // Write Request (RFC 1350, Figure 5-1, RFC 2347).\n    // See RFCs 2348-2349 for the options.\n    | WRQ({ opcode: Int, filename: Str, mode: Str, options: Str -> Int })\n    // Acknowledgment (RFC 1350, Figure 5-3)\n    | ACK({ opcode: Int, blockNum: Int })\n    // Option Acknowledgment (RFC 2347)\n    | OACK({ opcode: Int, options: Str -> Int })\n    // Data packet (RFC 1350, Figure 5-2)\n    // In our specification, we simply pass the length of data instead of the\n    // data itself. The test harness should pass the actual data.\n    | DATA({ opcode: Int, blockNum: Int, data: Int })\n    // Error packet (RFC 1350, Figure 5-4)\n    | ERROR({ opcode: Int, errorCode: Int, msg: Str })\n  ;"
+  },
+  "https://raw.githubusercontent.com/konnov/tftp-symbolic-testing/refs/heads/main/spec/tftp.tla tlaplus 691-692": {
+    "url": "https://raw.githubusercontent.com/konnov/tftp-symbolic-testing/refs/heads/main/spec/tftp.tla",
+    "lang": "tlaplus",
+    "lines": "691-692",
+    "code": "    \\/ \\E udp \\in packets:\n        ClientSendDup(udp)"
+  },
+  "https://raw.githubusercontent.com/konnov/tftp-symbolic-testing/refs/heads/main/spec/tftp.tla tlaplus 642-649": {
+    "url": "https://raw.githubusercontent.com/konnov/tftp-symbolic-testing/refs/heads/main/spec/tftp.tla",
+    "lang": "tlaplus",
+    "lines": "642-649",
+    "code": "\\* A client resends a duplicate packet that it sent in the past.\n\\* This is to test for the Sourcerer's Apprentice syndrome.\n\\* @type: $udpPacket => Bool;\nClientSendDup(_udp) ==\n    ClientSendDup::\n    /\\ _udp.destIp = SERVER_IP\n    /\\ lastAction' = ActionRecvSend(_udp)\n    /\\ UNCHANGED <<packets, serverTransfers, clientTransfers, clock>>"
+  },
+  "https://raw.githubusercontent.com/konnov/pbt-example-summation/refs/heads/main/python/src/pbt_add/add.py python 4-5": {
+    "url": "https://raw.githubusercontent.com/konnov/pbt-example-summation/refs/heads/main/python/src/pbt_add/add.py",
+    "lang": "python",
+    "lines": "4-5",
+    "code": "def add(a: int, b: int) -> int:\n    return a + b"
+  },
+  "https://raw.githubusercontent.com/konnov/pbt-example-summation/2164991e4d0a9891fc4919843dabe21775421bf0/python/tests/test_add.py python 9-25": {
+    "url": "https://raw.githubusercontent.com/konnov/pbt-example-summation/2164991e4d0a9891fc4919843dabe21775421bf0/python/tests/test_add.py",
+    "lang": "python",
+    "lines": "9-25",
+    "code": "@given(st.integers())\ndef test_identity(a):\n    \"\"\"Test identity property: a + 0 = a.\"\"\"\n    assert add(a, 0) == a\n    assert add(0, a) == a\n\n\n@given(st.integers(), st.integers())\ndef test_commutativity(a, b):\n    \"\"\"Test commutativity property: a + b = b + a.\"\"\"\n    assert add(a, b) == add(b, a)\n\n\n@given(st.integers(), st.integers(), st.integers())\ndef test_associativity(a, b, c):\n    \"\"\"Test associativity property: (a + b) + c = a + (b + c).\"\"\"\n    assert add(add(a, b), c) == add(a, add(b, c))"
+  },
+  "https://raw.githubusercontent.com/konnov/pbt-example-summation/2164991e4d0a9891fc4919843dabe21775421bf0/tla-spec/Add.tla tlaplus 1-17,24-28,44-54,62-66": {
+    "url": "https://raw.githubusercontent.com/konnov/pbt-example-summation/2164991e4d0a9891fc4919843dabe21775421bf0/tla-spec/Add.tla",
+    "lang": "tlaplus",
+    "lines": "1-17,24-28,44-54,62-66",
+    "code": "----------------------------------- MODULE Add --------------------------------\n(*\n * A simple TLA+ specification of different kinds of addition.\n *\n * Igor Konnov, 2025\n *)\nEXTENDS Integers\n\nVARIABLE\n    \\* @type: Int;\n    x,\n    \\* @type: Int;\n    y,\n    \\* @type: Int;\n    z\n\nAddMath(a, b) == a + b\n\nInitMath ==\n    /\\ x \\in Int\n    /\\ y \\in Int\n    /\\ z \\in Int\n\nNext == UNCHANGED <<x, y, z>>\n\nIdentity(F(_, _)) ==\n    F(x, 0) = x\n\nCommutativity(F(_, _)) ==\n    F(x, y) = F(y, x)\n\nAssociativity(F(_, _)) ==\n    F(F(x, y), z) = F(x, F(y, z))\n\nInvMath ==\n    /\\ Identity(AddMath)\n    /\\ Commutativity(AddMath)\n    /\\ Associativity(AddMath)"
+  },
+  "https://raw.githubusercontent.com/konnov/pbt-example-summation/42f782ff09c6a957fc36b33d3a4b933674e9799d/python/src/pbt_add/add.py python 8-9": {
+    "url": "https://raw.githubusercontent.com/konnov/pbt-example-summation/42f782ff09c6a957fc36b33d3a4b933674e9799d/python/src/pbt_add/add.py",
+    "lang": "python",
+    "lines": "8-9",
+    "code": "def add32(a: int, b: int) -> int:\n    return (a + b) % (2**32)"
+  },
+  "https://raw.githubusercontent.com/konnov/pbt-example-summation/42f782ff09c6a957fc36b33d3a4b933674e9799d/python/tests/test_add.py python 26-48": {
+    "url": "https://raw.githubusercontent.com/konnov/pbt-example-summation/42f782ff09c6a957fc36b33d3a4b933674e9799d/python/tests/test_add.py",
+    "lang": "python",
+    "lines": "26-48",
+    "code": "# Tests for add32 (32-bit natural numbers with wrapping)\n\n@given(st.integers(min_value=0, max_value=2**32 - 1))\ndef test_add32_identity(a):\n    \"\"\"Test identity property for add32: a + 0 = a.\"\"\"\n    assert add32(a, 0) == a\n    assert add32(0, a) == a\n\n\n@given(st.integers(min_value=0, max_value=2**32 - 1), st.integers(min_value=0, max_value=2**32 - 1))\ndef test_add32_commutativity(a, b):\n    \"\"\"Test commutativity property for add32: a + b = b + a.\"\"\"\n    assert add32(a, b) == add32(b, a)\n\n\n@given(\n    st.integers(min_value=0, max_value=2**32 - 1),\n    st.integers(min_value=0, max_value=2**32 - 1),\n    st.integers(min_value=0, max_value=2**32 - 1)\n)\ndef test_add32_associativity(a, b, c):\n    \"\"\"Test associativity property for add32: (a + b) + c = a + (b + c).\"\"\"\n    assert add32(add32(a, b), c) == add32(a, add32(b, c))"
+  },
+  "https://raw.githubusercontent.com/konnov/pbt-example-summation/42f782ff09c6a957fc36b33d3a4b933674e9799d/python/tests/test_add.py python 75-94": {
+    "url": "https://raw.githubusercontent.com/konnov/pbt-example-summation/42f782ff09c6a957fc36b33d3a4b933674e9799d/python/tests/test_add.py",
+    "lang": "python",
+    "lines": "75-94",
+    "code": "@given(st.integers(0))\ndef test_add32_unbounded_inputs_identity(a):\n    \"\"\"Test identity property for add32: a + 0 = a.\"\"\"\n    assert add32(a, 0) == a\n    assert add32(0, a) == a\n\n@given(st.integers(0), st.integers(0))\ndef test_add32_unbounded_inputs_commutativity(a, b):\n    \"\"\"Test commutativity property for add32: a + b = b + a.\"\"\"\n    assert add32(a, b) == add32(b, a)\n\n\n@given(\n    st.integers(0),\n    st.integers(0),\n    st.integers(0)\n)\ndef test_add32_unbounded_inputs_associativity(a, b, c):\n    \"\"\"Test associativity property for add32: (a + b) + c = a + (b + c).\"\"\"\n    assert add32(add32(a, b), c) == add32(a, add32(b, c))"
+  },
+  "https://raw.githubusercontent.com/konnov/pbt-example-summation/42f782ff09c6a957fc36b33d3a4b933674e9799d/python/src/pbt_add/add.py python 14-15": {
+    "url": "https://raw.githubusercontent.com/konnov/pbt-example-summation/42f782ff09c6a957fc36b33d3a4b933674e9799d/python/src/pbt_add/add.py",
+    "lang": "python",
+    "lines": "14-15",
+    "code": "def add256(a: int, b: int) -> int:\n    return (a + b) % (2**256)"
+  },
+  "https://raw.githubusercontent.com/konnov/pbt-example-summation/42f782ff09c6a957fc36b33d3a4b933674e9799d/python/tests/test_add.py python 120-142": {
+    "url": "https://raw.githubusercontent.com/konnov/pbt-example-summation/42f782ff09c6a957fc36b33d3a4b933674e9799d/python/tests/test_add.py",
+    "lang": "python",
+    "lines": "120-142",
+    "code": "@given(st.integers(0))\n@settings(max_examples=100000)\ndef test_add256_unbounded_inputs_identity(a):\n    \"\"\"Test identity property for add256: a + 0 = a.\"\"\"\n    assert add256(a, 0) == a\n    assert add256(0, a) == a\n\n@given(st.integers(0), st.integers(0))\n@settings(max_examples=100000)\ndef test_add256_unbounded_inputs_commutativity(a, b):\n    \"\"\"Test commutativity property for add256: a + b = b + a.\"\"\"\n    assert add256(a, b) == add256(b, a)\n\n\n@given(\n    st.integers(0),\n    st.integers(0),\n    st.integers(0)\n)\n@settings(max_examples=100000)\ndef test_add256_unbounded_inputs_associativity(a, b, c):\n    \"\"\"Test associativity property for add256: (a + b) + c = a + (b + c).\"\"\"\n    assert add256(add256(a, b), c) == add256(a, add256(b, c))"
+  },
+  "https://raw.githubusercontent.com/konnov/pbt-example-summation/refs/heads/main/tla-spec/Add.tla tlaplus 23-23,29-34,87-90": {
+    "url": "https://raw.githubusercontent.com/konnov/pbt-example-summation/refs/heads/main/tla-spec/Add.tla",
+    "lang": "tlaplus",
+    "lines": "23-23,29-34,87-90",
+    "code": "Add256(a, b) == (a + b) % (2^256)\n\nInitNat ==\n    /\\ x \\in Nat\n    /\\ y \\in Nat\n    /\\ z \\in Nat\n\nInv256 ==\n    /\\ Identity(Add256)\n    /\\ Commutativity(Add256)\n    /\\ Associativity(Add256)"
+  },
+  "https://raw.githubusercontent.com/konnov/pbt-example-summation/d802eccab3bda7e7b4638a9c650749e9d1fc4812/python/tests/test_add_crosshair.py python 3-14": {
+    "url": "https://raw.githubusercontent.com/konnov/pbt-example-summation/d802eccab3bda7e7b4638a9c650749e9d1fc4812/python/tests/test_add_crosshair.py",
+    "lang": "python",
+    "lines": "3-14",
+    "code": "from crosshair.core_and_libs import standalone_statespace\nfrom pbt_add import add256\n\n\ndef check_add256_identity(a: int) -> bool:\n    \"\"\"\n    Check identity property for add256: a + 0 = a.\n    \n    pre: a >= 0\n    post: _\n    \"\"\"\n    return add256(a, 0) == a and add256(0, a) == a"
+  }
+}
