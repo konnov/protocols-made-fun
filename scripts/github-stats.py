@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
-"""Plot per-day additions and deletions between two git commits.
+"""Plot additions and deletions between two git commits.
 
-The default output is an SVG with green bars above zero for added lines and red
-bars below zero for deleted lines, matching the style of Figure 3 in the
-ZooKeeper testing post.
+The default output is an SVG with one bar per commit, grouped by day. Green bars
+above zero show added lines, red bars below zero show deleted lines.
 """
 
 from __future__ import annotations
@@ -19,6 +18,16 @@ import xml.sax.saxutils
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Sequence
+
+
+@dataclass(frozen=True)
+class CommitStat:
+    commit: str
+    short_commit: str
+    date: dt.date
+    subject: str
+    added: int
+    deleted: int
 
 
 @dataclass(frozen=True)
@@ -47,18 +56,20 @@ def resolve_commit(repo: Path, commit: str) -> str:
     return run_git(repo, ["rev-parse", "--verify", f"{commit}^{{commit}}"]).strip()
 
 
-def collect_stats(
+def collect_commit_stats(
     repo: Path,
     start_commit: str,
     end_commit: str,
     pathspecs: Sequence[str],
-) -> list[DailyStat]:
-    """Return per-day numstat totals for commits in start_commit..end_commit."""
+    date_field: str,
+) -> list[CommitStat]:
+    """Return per-commit numstat totals for commits in start_commit..end_commit."""
+    date_format = "%ad" if date_field == "author" else "%cd"
     args = [
         "log",
         "--reverse",
         "--date=short",
-        "--format=%x1e%cd",
+        f"--format=%x1e%H%x1f%h%x1f{date_format}%x1f%s",
         "--numstat",
         f"{start_commit}..{end_commit}",
     ]
@@ -66,8 +77,29 @@ def collect_stats(
         args.extend(["--", *pathspecs])
 
     output = run_git(repo, args)
-    totals: dict[dt.date, list[int]] = {}
+    commits: list[CommitStat] = []
+    current_commit: str | None = None
+    current_short_commit: str | None = None
     current_date: dt.date | None = None
+    current_subject = ""
+    current_added = 0
+    current_deleted = 0
+
+    def flush_current() -> None:
+        nonlocal current_commit, current_short_commit, current_date, current_subject
+        nonlocal current_added, current_deleted
+        if current_commit is None or current_short_commit is None or current_date is None:
+            return
+        commits.append(
+            CommitStat(
+                commit=current_commit,
+                short_commit=current_short_commit,
+                date=current_date,
+                subject=current_subject,
+                added=current_added,
+                deleted=current_deleted,
+            )
+        )
 
     # Use newline-only splitting: str.splitlines() treats Git's \x1e record
     # separator as a line boundary, which would strip our date marker.
@@ -75,8 +107,16 @@ def collect_stats(
         if not line:
             continue
         if line.startswith("\x1e"):
-            current_date = dt.date.fromisoformat(line[1:])
-            totals.setdefault(current_date, [0, 0])
+            flush_current()
+            fields = line[1:].split("\x1f", 3)
+            if len(fields) != 4:
+                raise SystemExit(f"unexpected git log marker: {line!r}")
+            current_commit = fields[0]
+            current_short_commit = fields[1]
+            current_date = dt.date.fromisoformat(fields[2])
+            current_subject = fields[3]
+            current_added = 0
+            current_deleted = 0
             continue
         if current_date is None:
             continue
@@ -87,21 +127,47 @@ def collect_stats(
         added, deleted = fields[0], fields[1]
         if added == "-" or deleted == "-":
             continue
-        totals[current_date][0] += int(added)
-        totals[current_date][1] += int(deleted)
+        current_added += int(added)
+        current_deleted += int(deleted)
 
+    flush_current()
+    return commits
+
+
+def aggregate_by_day(commits: Sequence[CommitStat]) -> list[DailyStat]:
+    totals: dict[dt.date, list[int]] = {}
+    for commit in commits:
+        values = totals.setdefault(commit.date, [0, 0])
+        values[0] += commit.added
+        values[1] += commit.deleted
     return [
         DailyStat(date=date, added=values[0], deleted=values[1])
         for date, values in sorted(totals.items())
     ]
 
 
-def write_csv(stats: Sequence[DailyStat], output: Path) -> None:
+def write_daily_csv(stats: Sequence[DailyStat], output: Path) -> None:
     with output.open("w", newline="", encoding="utf-8") as out:
         writer = csv.writer(out)
         writer.writerow(["date", "lines_added", "lines_deleted"])
         for stat in stats:
             writer.writerow([stat.date.isoformat(), stat.added, stat.deleted])
+
+
+def write_commit_csv(stats: Sequence[CommitStat], output: Path) -> None:
+    with output.open("w", newline="", encoding="utf-8") as out:
+        writer = csv.writer(out)
+        writer.writerow(["date", "commit", "lines_added", "lines_deleted", "subject"])
+        for stat in stats:
+            writer.writerow(
+                [
+                    stat.date.isoformat(),
+                    stat.commit,
+                    stat.added,
+                    stat.deleted,
+                    stat.subject,
+                ]
+            )
 
 
 def date_range(stats: Sequence[DailyStat]) -> list[dt.date]:
@@ -183,7 +249,7 @@ def svg_text(
     return f"<text {' '.join(attrs)}>{escaped}</text>"
 
 
-def render_svg(stats: Sequence[DailyStat], output: Path) -> None:
+def render_daily_svg(stats: Sequence[DailyStat], output: Path) -> None:
     width = 1800
     height = 600
     margin_left = 120
@@ -198,17 +264,16 @@ def render_svg(stats: Sequence[DailyStat], output: Path) -> None:
     max_added = max((stat.added for stat in stats), default=0)
     max_deleted = max((stat.deleted for stat in stats), default=0)
     ticks, y_min, y_max = y_ticks(max_added, max_deleted)
+    day_indexes = {day: index for index, day in enumerate(days)}
+    day_band = plot_width / max(1, len(days))
 
     def x_for(day: dt.date) -> float:
-        if len(days) <= 1:
-            return margin_left + plot_width / 2
-        return margin_left + ((day - days[0]).days / (len(days) - 1)) * plot_width
+        return margin_left + (day_indexes[day] + 0.5) * day_band
 
     def y_for(value: float) -> float:
         return margin_top + ((y_max - value) / (y_max - y_min)) * plot_height
 
-    day_step = plot_width / max(1, len(days) - 1)
-    bar_width = min(26, max(3, day_step * 0.75))
+    bar_width = min(26, max(3, day_band * 0.75))
     zero_y = y_for(0)
 
     elements: list[str] = [
@@ -298,7 +363,147 @@ def render_svg(stats: Sequence[DailyStat], output: Path) -> None:
     output.write_text("\n".join(elements) + "\n", encoding="utf-8")
 
 
-def render_png(stats: Sequence[DailyStat], output: Path) -> None:
+def group_commit_indexes(stats: Sequence[CommitStat]) -> list[tuple[dt.date, int, int]]:
+    groups: list[tuple[dt.date, int, int]] = []
+    start = 0
+    while start < len(stats):
+        date = stats[start].date
+        end = start + 1
+        while end < len(stats) and stats[end].date == date:
+            end += 1
+        groups.append((date, start, end))
+        start = end
+    return groups
+
+
+def render_commit_svg(stats: Sequence[CommitStat], output: Path) -> None:
+    commit_count = max(1, len(stats))
+    width = max(1800, 165 + commit_count * 7)
+    height = 650
+    margin_left = 120
+    margin_right = 45
+    margin_top = 55
+    margin_bottom = 105
+    plot_width = width - margin_left - margin_right
+    plot_height = height - margin_top - margin_bottom
+
+    max_added = max((stat.added for stat in stats), default=0)
+    max_deleted = max((stat.deleted for stat in stats), default=0)
+    ticks, y_min, y_max = y_ticks(max_added, max_deleted)
+    commit_band = plot_width / commit_count
+
+    def x_for_index(index: int) -> float:
+        return margin_left + (index + 0.5) * commit_band
+
+    def y_for(value: float) -> float:
+        return margin_top + ((y_max - value) / (y_max - y_min)) * plot_height
+
+    bar_width = min(8, max(1.5, commit_band * 0.8))
+    zero_y = y_for(0)
+
+    elements: list[str] = [
+        f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}">',
+        "<style>"
+        "text{font-family:Arial,Helvetica,sans-serif;fill:#000}"
+        ".axis{stroke:#000;stroke-width:1.4}"
+        ".tick{stroke:#000;stroke-width:1}"
+        ".grid{stroke:#ddd;stroke-width:.8}"
+        ".day-separator{stroke:#999;stroke-width:1;stroke-dasharray:4 4}"
+        "</style>",
+        '<rect width="100%" height="100%" fill="white"/>',
+        svg_text(width / 2, 26, "Lines added / deleted per commit", size=28),
+    ]
+
+    # Alternating day bands keep dense commit bars readable.
+    for group_index, (_date, start, end) in enumerate(group_commit_indexes(stats)):
+        if group_index % 2 == 0:
+            continue
+        x = margin_left + start * commit_band
+        group_width = (end - start) * commit_band
+        elements.append(
+            f'<rect x="{x:.2f}" y="{margin_top}" width="{group_width:.2f}" '
+            f'height="{plot_height}" fill="#f7f7f7"/>'
+        )
+
+    elements.append(
+        f'<rect x="{margin_left}" y="{margin_top}" width="{plot_width}" height="{plot_height}" '
+        'fill="none" class="axis"/>'
+    )
+
+    for tick in ticks:
+        y = y_for(tick)
+        elements.append(
+            f'<line x1="{margin_left - 7}" y1="{y:.2f}" x2="{margin_left}" y2="{y:.2f}" class="tick"/>'
+        )
+        if tick != 0:
+            elements.append(
+                f'<line x1="{margin_left}" y1="{y:.2f}" x2="{width - margin_right}" y2="{y:.2f}" class="grid"/>'
+            )
+        elements.append(svg_text(margin_left - 16, y + 5, str(tick), size=23, anchor="end"))
+
+    elements.append(
+        f'<line x1="{margin_left}" y1="{zero_y:.2f}" x2="{width - margin_right}" y2="{zero_y:.2f}" class="axis"/>'
+    )
+
+    for date, start, end in group_commit_indexes(stats):
+        if start > 0:
+            x = margin_left + start * commit_band
+            elements.append(
+                f'<line x1="{x:.2f}" y1="{margin_top}" x2="{x:.2f}" '
+                f'y2="{height - margin_bottom}" class="day-separator"/>'
+            )
+        center_x = margin_left + ((start + end) / 2) * commit_band
+        elements.append(
+            f'<line x1="{center_x:.2f}" y1="{height - margin_bottom}" x2="{center_x:.2f}" '
+            f'y2="{height - margin_bottom + 7}" class="tick"/>'
+        )
+        elements.append(
+            svg_text(
+                center_x - 4,
+                height - margin_bottom + 46,
+                date.isoformat(),
+                size=23,
+                rotate=-20,
+            )
+        )
+
+    elements.append(svg_text(22, height / 2, "Lines of code", size=23, rotate=-90))
+    elements.append(svg_text(width / 2, height - 15, "Commits grouped by day", size=18))
+
+    for index, stat in enumerate(stats):
+        x = x_for_index(index) - bar_width / 2
+        title = xml.sax.saxutils.escape(
+            f"{stat.short_commit} {stat.date.isoformat()} +{stat.added} -{stat.deleted} {stat.subject}"
+        )
+        if stat.added:
+            y = y_for(stat.added)
+            elements.append(
+                f'<rect x="{x:.2f}" y="{y:.2f}" width="{bar_width:.2f}" '
+                f'height="{zero_y - y:.2f}" fill="green"><title>{title}</title></rect>'
+            )
+        if stat.deleted:
+            y = y_for(-stat.deleted)
+            elements.append(
+                f'<rect x="{x:.2f}" y="{zero_y:.2f}" width="{bar_width:.2f}" '
+                f'height="{y - zero_y:.2f}" fill="red"><title>{title}</title></rect>'
+            )
+
+    legend_x = width - margin_right - 220
+    legend_y = margin_top + 10
+    elements.append(
+        f'<rect x="{legend_x}" y="{legend_y}" width="200" height="70" '
+        'rx="3" ry="3" fill="white" stroke="#d3d3d3" stroke-width="1.5"/>'
+    )
+    elements.append(f'<rect x="{legend_x + 15}" y="{legend_y + 13}" width="42" height="16" fill="green"/>')
+    elements.append(svg_text(legend_x + 75, legend_y + 29, "lines added", size=22, anchor="start"))
+    elements.append(f'<rect x="{legend_x + 15}" y="{legend_y + 43}" width="42" height="16" fill="red"/>')
+    elements.append(svg_text(legend_x + 75, legend_y + 59, "lines deleted", size=22, anchor="start"))
+
+    elements.append("</svg>")
+    output.write_text("\n".join(elements) + "\n", encoding="utf-8")
+
+
+def render_daily_png(stats: Sequence[DailyStat], output: Path) -> None:
     try:
         import matplotlib.dates as mdates
         import matplotlib.pyplot as plt
@@ -325,11 +530,43 @@ def render_png(stats: Sequence[DailyStat], output: Path) -> None:
     fig.savefig(output, dpi=100)
 
 
-def print_summary(stats: Sequence[DailyStat], start_commit: str, end_commit: str) -> None:
+def render_commit_png(stats: Sequence[CommitStat], output: Path) -> None:
+    try:
+        import matplotlib.pyplot as plt
+    except ModuleNotFoundError as err:
+        raise SystemExit(
+            "PNG output requires matplotlib. Install it or use an .svg output path."
+        ) from err
+
+    xs = list(range(len(stats)))
+    added = [stat.added for stat in stats]
+    deleted = [-stat.deleted for stat in stats]
+    fig_width = max(18, len(stats) / 18)
+
+    fig, axis = plt.subplots(figsize=(fig_width, 6.5))
+    axis.bar(xs, added, color="green", label="lines added")
+    axis.bar(xs, deleted, color="red", label="lines deleted")
+    axis.axhline(0, color="black", linewidth=1.0)
+    axis.set_title("Lines added / deleted per commit")
+    axis.set_ylabel("Lines of code")
+    axis.set_xlabel("Commits grouped by day")
+
+    for date, start, end in group_commit_indexes(stats):
+        if start > 0:
+            axis.axvline(start - 0.5, color="#999", linewidth=1.0, linestyle="--")
+        axis.text((start + end - 1) / 2, 0, date.isoformat(), rotation=20, ha="right", va="top")
+
+    axis.legend(loc="upper right")
+    fig.tight_layout()
+    fig.savefig(output, dpi=100)
+
+
+def print_summary(stats: Sequence[CommitStat], start_commit: str, end_commit: str) -> None:
     added = sum(stat.added for stat in stats)
     deleted = sum(stat.deleted for stat in stats)
-    days_with_commits = len(stats)
+    days_with_commits = len({stat.date for stat in stats})
     print(f"range: {start_commit}..{end_commit}")
+    print(f"commits: {len(stats)}")
     print(f"days with commits: {days_with_commits}")
     print(f"lines added: {added}")
     print(f"lines deleted: {deleted}")
@@ -351,6 +588,18 @@ def parse_args(argv: Sequence[str]) -> argparse.Namespace:
     )
     parser.add_argument("--csv", type=Path, help="optional CSV output path")
     parser.add_argument(
+        "--granularity",
+        choices=("commit", "day"),
+        default="commit",
+        help="plot one bar per commit or aggregate by day (default: commit)",
+    )
+    parser.add_argument(
+        "--date-field",
+        choices=("author", "committer"),
+        default="author",
+        help="date to aggregate by (default: author)",
+    )
+    parser.add_argument(
         "--path",
         action="append",
         default=[],
@@ -370,26 +619,39 @@ def main(argv: Sequence[str]) -> int:
     repo = args.repo.resolve()
     start_commit = resolve_commit(repo, args.start_commit)
     end_commit = resolve_commit(repo, args.end_commit)
-    stats = collect_stats(repo, start_commit, end_commit, args.path)
+    commit_stats = collect_commit_stats(repo, start_commit, end_commit, args.path, args.date_field)
+    daily_stats = aggregate_by_day(commit_stats)
 
     output = args.output
     output.parent.mkdir(parents=True, exist_ok=True)
     suffix = output.suffix.lower()
     if suffix == ".csv":
-        write_csv(stats, output)
+        if args.granularity == "commit":
+            write_commit_csv(commit_stats, output)
+        else:
+            write_daily_csv(daily_stats, output)
     elif suffix == ".png":
-        render_png(stats, output)
+        if args.granularity == "commit":
+            render_commit_png(commit_stats, output)
+        else:
+            render_daily_png(daily_stats, output)
     elif suffix == ".svg" or suffix == "":
-        render_svg(stats, output)
+        if args.granularity == "commit":
+            render_commit_svg(commit_stats, output)
+        else:
+            render_daily_svg(daily_stats, output)
     else:
         raise SystemExit(f"unsupported output extension {suffix!r}; use .svg, .png, or .csv")
 
     if args.csv:
         args.csv.parent.mkdir(parents=True, exist_ok=True)
-        write_csv(stats, args.csv)
+        if args.granularity == "commit":
+            write_commit_csv(commit_stats, args.csv)
+        else:
+            write_daily_csv(daily_stats, args.csv)
 
     if args.summary:
-        print_summary(stats, start_commit[:12], end_commit[:12])
+        print_summary(commit_stats, start_commit[:12], end_commit[:12])
 
     return 0
 
