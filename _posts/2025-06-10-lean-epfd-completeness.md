@@ -655,7 +655,7 @@ This property can be visualized as follows:
     <td>✅</td>
   </tr>
 </table>
-<p class="timeline-valid">[](p ∉ crashed) holds</p>
+<p class="timeline-valid">□(p ∉ crashed) holds</p>
 
 The negation of `never_crashes` is `eventually_crashes`:
 
@@ -693,7 +693,7 @@ The negation of `never_crashes` is `eventually_crashes`:
     <td>✅</td>
   </tr>
 </table>
-<p class="timeline-valid">&lt;&gt;(p ∈ crashed) holds</p>
+<p class="timeline-valid">◇(p ∈ crashed) holds</p>
 
 We also need `eventually_never_alive`:
 
@@ -731,7 +731,7 @@ We also need `eventually_never_alive`:
     <td>✅</td>
   </tr>
 </table>
-<p class="timeline-valid">&lt;&gt;[] (q ∉ alive[p]) holds</p>
+<p class="timeline-valid">◇□ (q ∉ alive[p]) holds</p>
 
 We also need `q_is_always_suspected` and `eventually_q_is_always_suspected`:
 
@@ -769,7 +769,7 @@ We also need `q_is_always_suspected` and `eventually_q_is_always_suspected`:
     <td>✅</td>
   </tr>
 </table>
-<p class="timeline-valid">&lt;&gt;[] (q ∈ suspected[p]) holds</p>
+<p class="timeline-valid">◇□ (q ∈ suspected[p]) holds</p>
 
 Finally, we need the definition of the set of crashing processes:
 

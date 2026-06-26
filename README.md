@@ -94,6 +94,12 @@ They are selected with `prefers-color-scheme` by default and follow the site's
 manual light/dark theme switcher when a reader chooses a theme. Do not add
 client-side Highlight.js scripts to posts or layouts.
 
+## Math Rendering
+
+Posts can use TeX math with `$...$`, `$$...$$`, `\(...\)`, and `\[...\]`.
+Eleventy renders math to inline SVG at build time with MathJax. Do not add
+client-side MathJax scripts to posts or layouts.
+
 ## GitHub Embeds
 
 The custom `{% github_embed ... %}` tag renders pinned source snippets from

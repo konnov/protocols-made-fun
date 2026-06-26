@@ -7,11 +7,31 @@ const markdownItAttrs = require("markdown-it-attrs");
 const markdownItEmoji = require("markdown-it-emoji").full;
 const markdownItFootnote = require("markdown-it-footnote");
 const hljs = require("highlight.js");
+const { mathjax } = require("mathjax-full/js/mathjax.js");
+const { TeX } = require("mathjax-full/js/input/tex.js");
+const { SVG } = require("mathjax-full/js/output/svg.js");
+const { liteAdaptor } = require("mathjax-full/js/adaptors/liteAdaptor.js");
+const { RegisterHTMLHandler } = require("mathjax-full/js/handlers/html.js");
+const { AllPackages } = require("mathjax-full/js/input/tex/AllPackages.js");
 
 const siteUrl = "https://protocols-made-fun.com";
 const outputDir = "_site";
 const embedCachePath = path.join(__dirname, ".cache", "github-embeds.json");
 const markdownEscapedChars = new Set("\\!\"#$%&'()*+,./:;<=>?@[]^_`{|}~-".split(""));
+const mathCache = new Map();
+const mathAdaptor = liteAdaptor();
+
+RegisterHTMLHandler(mathAdaptor);
+
+const texInput = new TeX({
+  packages: AllPackages,
+  macros: {
+    bold: ["{\\bf #1}", 1],
+    tla: ["{\\textsf{TLA}^+}", 0],
+  },
+});
+const svgOutput = new SVG({ fontCache: "none" });
+const mathDocument = mathjax.document("", { InputJax: texInput, OutputJax: svgOutput });
 
 const feedUtm = {
   utm_source: "protocols_made_fun",
@@ -148,6 +168,204 @@ function preserveTexBraceEscapeRule(state, silent) {
 
 function escapeXml(value) {
   return escapeHtml(value).replace(/'/g, "&apos;");
+}
+
+function isEscaped(source, pos) {
+  let backslashes = 0;
+  for (let i = pos - 1; i >= 0 && source[i] === "\\"; i--) {
+    backslashes++;
+  }
+  return backslashes % 2 === 1;
+}
+
+function findClosingDelimiter(source, start, delimiter) {
+  let pos = start;
+  while (pos < source.length) {
+    const found = source.indexOf(delimiter, pos);
+    if (found === -1) {
+      return -1;
+    }
+    if (!isEscaped(source, found)) {
+      return found;
+    }
+    pos = found + delimiter.length;
+  }
+  return -1;
+}
+
+function escapeTextttUnderscores(text) {
+  let escaped = "";
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    escaped += ch === "_" && text[i - 1] !== "\\" ? "\\_" : ch;
+  }
+  return escaped;
+}
+
+function normalizeTexForBuild(tex) {
+  return String(tex)
+    .replace(/\\require\s*\{[^{}]+\}\s*/g, "")
+    .replace(/\\texttt\{([^{}]*)\}/g, (_match, text) => `\\texttt{${escapeTextttUnderscores(text)}}`);
+}
+
+function renderMathSvg(tex, display) {
+  const normalizedTex = normalizeTexForBuild(tex);
+  const key = `${display ? "display" : "inline"}\0${normalizedTex}`;
+  if (mathCache.has(key)) {
+    return mathCache.get(key);
+  }
+
+  try {
+    const node = mathDocument.convert(normalizedTex, { display });
+    const rendered = mathAdaptor.outerHTML(node);
+    mathCache.set(key, rendered);
+    return rendered;
+  } catch (error) {
+    console.warn(`Could not render TeX: ${tex}\n${error.message}`);
+    const fallback = display ? `$$${escapeHtml(normalizedTex)}$$` : `$${escapeHtml(normalizedTex)}$`;
+    mathCache.set(key, fallback);
+    return fallback;
+  }
+}
+
+function mathInlineRule(state, silent) {
+  const start = state.pos;
+  const source = state.src;
+
+  if (source.startsWith("\\(", start) || source.startsWith("\\[", start)) {
+    const open = source.slice(start, start + 2);
+    const close = open === "\\(" ? "\\)" : "\\]";
+    const end = findClosingDelimiter(source, start + 2, close);
+    if (end === -1) {
+      return false;
+    }
+    if (!silent) {
+      const token = state.push("math_inline", "", 0);
+      token.content = source.slice(start + 2, end);
+      token.meta = { display: open === "\\[" };
+    }
+    state.pos = end + 2;
+    return true;
+  }
+
+  if (source.charCodeAt(start) !== 0x24) {
+    return false;
+  }
+
+  const doubleDollar = source.startsWith("$$", start);
+  const delimiter = doubleDollar ? "$$" : "$";
+  const contentStart = start + delimiter.length;
+  const end = findClosingDelimiter(source, contentStart, delimiter);
+  if (end === -1 || end === contentStart) {
+    return false;
+  }
+
+  if (!silent) {
+    const token = state.push("math_inline", "", 0);
+    token.content = source.slice(contentStart, end);
+    token.meta = { display: doubleDollar };
+  }
+  state.pos = end + delimiter.length;
+  return true;
+}
+
+function mathBlockRule(state, startLine, endLine, silent) {
+  let pos = state.bMarks[startLine] + state.tShift[startLine];
+  let max = state.eMarks[startLine];
+
+  if (!state.src.startsWith("$$", pos)) {
+    return false;
+  }
+
+  pos += 2;
+  const firstLine = state.src.slice(pos, max);
+  const sameLineClose = firstLine.lastIndexOf("$$");
+  if (sameLineClose !== -1) {
+    if (!silent) {
+      const token = state.push("math_block", "", 0);
+      token.block = true;
+      token.content = firstLine.slice(0, sameLineClose);
+      token.map = [startLine, startLine + 1];
+      token.markup = "$$";
+    }
+    state.line = startLine + 1;
+    return true;
+  }
+
+  let nextLine = startLine;
+  let content = firstLine ? `${firstLine}\n` : "";
+
+  while (++nextLine < endLine) {
+    pos = state.bMarks[nextLine] + state.tShift[nextLine];
+    max = state.eMarks[nextLine];
+    const line = state.src.slice(pos, max);
+    if (line.trim() === "$$") {
+      if (!silent) {
+        const token = state.push("math_block", "", 0);
+        token.block = true;
+        token.content = content.replace(/\n$/, "");
+        token.map = [startLine, nextLine + 1];
+        token.markup = "$$";
+      }
+      state.line = nextLine + 1;
+      return true;
+    }
+    content += `${line}\n`;
+  }
+
+  return false;
+}
+
+function markdownItMathSvg(md) {
+  md.inline.ruler.before("escape", "math_inline", mathInlineRule);
+  md.block.ruler.before("fence", "math_block", mathBlockRule, {
+    alt: ["paragraph", "reference", "blockquote", "list"],
+  });
+  md.renderer.rules.math_inline = (tokens, idx) => {
+    const token = tokens[idx];
+    const display = Boolean(token.meta?.display);
+    const rendered = renderMathSvg(token.content.trim(), display);
+    return display
+      ? `<span class="math-display math-display-inline">${rendered}</span>`
+      : `<span class="math-inline">${rendered}</span>`;
+  };
+  md.renderer.rules.math_block = (tokens, idx) => {
+    return `<div class="math-display">${renderMathSvg(tokens[idx].content.trim(), true)}</div>\n`;
+  };
+}
+
+function renderMathInlineHtml(tex, display) {
+  const rendered = renderMathSvg(tex.trim(), display);
+  return display
+    ? `<span class="math-display math-display-inline">${rendered}</span>`
+    : `<span class="math-inline">${rendered}</span>`;
+}
+
+function renderMathInText(text) {
+  return text
+    .replace(/\\\[([\s\S]*?)\\\]/g, (_match, tex) => renderMathInlineHtml(tex, true))
+    .replace(/\\\(([\s\S]*?)\\\)/g, (_match, tex) => renderMathInlineHtml(tex, false))
+    .replace(/\$\$([\s\S]*?)\$\$/g, (_match, tex) => renderMathInlineHtml(tex, true))
+    .replace(/(?<!\$)\$(?!\$)([\s\S]*?)(?<!\\)(?<!\$)\$(?!\$)/g, (_match, tex) => renderMathInlineHtml(tex, false));
+}
+
+function renderResidualHtmlMath(content, outputPath) {
+  if (!outputPath || !outputPath.endsWith(".html")) {
+    return content;
+  }
+
+  return String(content)
+    .split(/(<(?:pre|code|script|style)\b[\s\S]*?<\/(?:pre|code|script|style)>)/gi)
+    .map((block) => {
+      if (/^<(?:pre|code|script|style)\b/i.test(block)) {
+        return block;
+      }
+      return block
+        .split(/(<[^>]+>)/g)
+        .map((part) => (part.startsWith("<") ? part : renderMathInText(part)))
+        .join("");
+    })
+    .join("");
 }
 
 function dateFor(data) {
@@ -378,7 +596,8 @@ module.exports = function (eleventyConfig) {
     .use(markdownItAnchor, { permalink: markdownItAnchor.permalink.headerLink() })
     .use(markdownItAttrs)
     .use(markdownItEmoji)
-    .use(markdownItFootnote);
+    .use(markdownItFootnote)
+    .use(markdownItMathSvg);
   mdLib.inline.ruler.at("escape", preserveTexBraceEscapeRule);
 
   const originalRender = mdLib.render.bind(mdLib);
@@ -387,10 +606,7 @@ module.exports = function (eleventyConfig) {
       .replace(/^\{:\s*\.([A-Za-z0-9_-]+)\s*\}$/gm, "{.$1}")
       .replace(/^\{:\s*start=["']?(\d+)["']?\s*\}$/gm, "{start=$1}")
       .replace(/^<a\s+id=(["'])([^"']+)\1\s*(?:\/>|><\/a>|>)\s*$/gm, '<span id="$2"></span>\n')
-      .replace(/^(\[\^[^\]]+]:[^\n]+)\n(?=\[[^\]]+]:)/gm, "$1\n\n")
-      .replace(/(^|\n)\$\$\n([\s\S]*?)\n\$\$(?=\n|$)/g, (_match, prefix, math) => {
-        return `${prefix}<div class="math-display">$$\n${escapeHtml(math)}\n$$</div>`;
-      });
+      .replace(/^(\[\^[^\]]+]:[^\n]+)\n(?=\[[^\]]+]:)/gm, "$1\n\n");
     return originalRender(normalized, env);
   };
 
@@ -428,6 +644,7 @@ module.exports = function (eleventyConfig) {
   });
   eleventyConfig.addFilter("post_url", (post) => postUrlFromData(post.data || post));
   eleventyConfig.addFilter("post_old_url", (post) => postOldUrlFromData(post.data || post));
+  eleventyConfig.addTransform("render_math_svg", renderResidualHtmlMath);
 
   eleventyConfig.addCollection("posts", (collectionApi) => {
     return collectionApi
