@@ -434,7 +434,7 @@ alternative to using `HashMap`, please let me know in the
 
 [Igor Konnov]: https://konnov.phd?utm_source=protocols_made_fun&utm_medium=referral&utm_campaign=pmf_site
 [Ilya Sergey]: https://ilyasergey.net/
-[Thomas Pani]: https://thpani.net/[Lean]: https://github.com/leanprover/lean4
+[Thomas Pani]: https://thpani.net/
 [Veil]: https://github.com/verse-lab/veil/
 [Lean]: https://github.com/leanprover/lean4
 [two-phase-typed]: https://github.com/apalache-mc/apalache/blob/main/test/tla/TwoPhaseTyped.tla

@@ -1,0 +1,9 @@
+---
+layout: redirect
+pagination:
+  data: collections.posts
+  size: 1
+  alias: post
+permalink: "{{ post | post_old_url }}"
+eleventyExcludeFromCollections: true
+---

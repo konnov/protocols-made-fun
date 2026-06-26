@@ -39,20 +39,20 @@ jobs:
         id: pages
         uses: actions/configure-pages@v4
 
-      - name: Setup Ruby
-        uses: ruby/setup-ruby@v1
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
-          ruby-version: 3.3
-          bundler-cache: true
+          node-version: 22
+          cache: npm
 
-      - name: Bundle install
-        run: bundle install
+      - name: Install dependencies
+        run: npm ci
 
       - name: Build site
-        run: bundle exec jekyll b -d "_site${{ steps.pages.outputs.base_path }}"
-        env:
-          JEKYLL_ENV: "production"
+        run: npm run build
 
+      - name: Check site
+        run: npm run check
 
       # https://github.com/konnov/protocols-made-fun/issues/20
       #- name: Test site
