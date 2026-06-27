@@ -51,10 +51,10 @@ customers. Nobody wanted to commit to a long-term project, to get formal proofs
 (for more complex protocols than Ben-Or).
 
 Now, as of June 2026, **the economics of formal proofs has changed**. I ran
-*Codex GPT 5.5 xhigh/high* and *Claude 4.8 xhigh/high* to write the complete
-proofs of inductiveness and safety of the Ben-Or protocol, both in Lean 4 and
-TLAPS. In both cases, the proofs took **about 4-5 days to generate**. At some
-point, both tools were stuck, so I had to help them. Also, one of the tools
+*Codex GPT 5.5 xhigh/high* and *Claude 4.8 Opus xhigh/high* to write the
+complete proofs of inductiveness and safety of the Ben-Or protocol, both in Lean
+4 and TLAPS. In both cases, the proofs took **about 4-5 days to generate**. At
+some point, both tools were stuck, so I had to help them. Also, one of the tools
 cheated in the proofs. Both in cases of Lean and TLAPS, the tools burned most of
 my weekly subscriptions. It is important to note that in both cases, **the tools
 were given the inductive invariant** in TLA<sup>+</sup> as a starting point. So
@@ -126,8 +126,8 @@ assumption of $N = 6$ and $T = 1$. It was a good starting point, though,
 obviously, my goal was to have the proofs for $N > 5 \cdot T$ and $T \ge F \ge
 0$.
 
-In addition to that, C1 has absolutely cheated to speed up the proof. Look at
-the assumptions below. Unfortunately, I have only a low-resolution screenshot:
+In addition to that, C1 has absolutely cheated to speed up the proof. Just look
+at the assumptions below:
 
 
 ```lean
@@ -149,8 +149,8 @@ checked by Lean, but it only checks that the proofs are correct with respect to
 the theorem statements.
 
 After catching C1 cheating, I gave it instructions to avoid moving the goal
-posts.  I was checking with C1 from time to time. When it looked alternating
-between the same kind of things, I was giving it a few hints.
+posts. Then, I was checking with C1 from time to time. When it looked
+alternating between the same kind of things, I was giving it a few hints.
 
 **Finishing the proof.** After 4 days I started to worry. The proof file was
 approaching 30 KLOC. Not only C1 was close to the weekly limit of my
@@ -214,9 +214,10 @@ In case of TLA<sup>+</sup>, the proof structure was clear from the beginning.
 The proof file had a lot of `OMITTED` statements, and the job of the AI tools
 was to turn them into real proofs one by one.
 
-Every time, I was giving C1 the goal of closing 5 `OMITTED` statements.  This
-worked well until 3-4 `OMITTED` statements were left. C1 was really stuck there.
-It actually hinted at potential problems with Lemma 8. But it was not sure.
+Every time, I was giving C1 the goal of closing five `OMITTED` statements.  This
+worked well until three to four `OMITTED` statements were left. C1 was really
+stuck there.  It actually hinted at potential problems with Lemma 8. But it was
+not sure.
 
 So I switched to C2. Then, something interesting happened. C2 simply ran
 [Apalache][] to check the inductiveness of Lemma 8 for $T = 2$. This is
@@ -224,8 +225,8 @@ brilliant. After some time, it got a counterexamples and proposed a fix.  You
 can see the correction in [this git
 commit](https://github.com/konnov/apalache-examples/commit/d624842d697fe9e1c539eda1d3636326b28962ad).
 It simply had to fix $2 \cdot x_0 \le N$ to $2 \cdot x_0 < N + T$ (and the same
-for $x_1$). It worked without the fix for $T = 1$, but not for $T > 1$. This is
-how Lemma 8 looks like after the fix:
+for $x_1$). This condition worked without the fix for $T = 1$, but not for $T >
+1$. This is how Lemma 8 looks like after the fix:
 
 {% github_embed
   https://raw.githubusercontent.com/konnov/apalache-examples/refs/heads/main/ben-or83/Ben_or83_inductive.tla
