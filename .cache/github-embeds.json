@@ -622,5 +622,17 @@
     "lang": "python",
     "lines": "3-14",
     "code": "from crosshair.core_and_libs import standalone_statespace\nfrom pbt_add import add256\n\n\ndef check_add256_identity(a: int) -> bool:\n    \"\"\"\n    Check identity property for add256: a + 0 = a.\n    \n    pre: a >= 0\n    post: _\n    \"\"\"\n    return add256(a, 0) == a and add256(0, a) == a"
+  },
+  "https://raw.githubusercontent.com/wunderspec/wunderspec/refs/heads/main/examples/ben_or.py python 189-197": {
+    "url": "https://raw.githubusercontent.com/wunderspec/wunderspec/refs/heads/main/examples/ben_or.py",
+    "lang": "python",
+    "lines": "189-197",
+    "code": "@action(inline=False)\ndef step1(c: Context[BenOrState], rid: Expr):\n    s = c.state\n    rnd = c.cache(s.round[rid])\n    c.assume(s.step[rid] == Step.S1)\n    # \"send the message (1, r, x_P) to all the processes\"\n    s.msgs1[rnd] |= Set(mk_m1(rid, rnd, s.value[rid]))\n    s.step[rid] = Step.S2\n    s.ghost_trigger = Val(False)"
+  },
+  "https://raw.githubusercontent.com/konnov/leanda/refs/heads/main/Ben-Or/BenOr/Defs.lean lean 194-209": {
+    "url": "https://raw.githubusercontent.com/konnov/leanda/refs/heads/main/Ben-Or/BenOr/Defs.lean",
+    "lang": "lean",
+    "lines": "194-209",
+    "code": "def step1 (rid : Int) (s s' : State) : Prop :=\n  (let _cache21 := Finmap.lookupD rid s.round;\n    Finmap.lookupD rid s.step = Step.S1 ∧\n      s'.msgs1 =\n          Finmap.insert _cache21\n            (Finmap.lookupD _cache21 s.msgs1 ∪\n              insert (Msg1.mk _cache21 rid (Finmap.lookupD rid s.value)) (∅ : Finset Msg1))\n            s.msgs1 ∧\n        s'.step = Finmap.insert rid Step.S2 s.step ∧ s'.ghost_trigger = false) ∧\n    s'.N = s.N ∧\n      s'.T = s.T ∧\n        s'.F = s.F ∧\n          s'.CORRECT = s.CORRECT ∧\n            s'.FAULTY = s.FAULTY ∧\n              s'.ROUNDS = s.ROUNDS ∧\n                s'.value = s.value ∧ s'.decision = s.decision ∧ s'.round = s.round ∧ s'.msgs2 = s.msgs2"
   }
 }

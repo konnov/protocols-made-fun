@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="600" viewBox="0 0 1800 600">
+<style>text{font-family:Arial,Helvetica,sans-serif;fill:#000}.axis{stroke:#000;stroke-width:1.4}.tick{stroke:#000;stroke-width:1}.grid{stroke:#ddd;stroke-width:.8}</style>
+<rect width="100%" height="100%" fill="white"/>
+<text x="900.00" y="26.00" font-size="28" text-anchor="middle">Lines added / deleted per day</text>
+<rect x="120" y="55" width="1635" height="460" fill="none" class="axis"/>
+<line x1="113" y1="515.00" x2="120" y2="515.00" class="tick"/>
+<line x1="120" y1="515.00" x2="1755" y2="515.00" class="grid"/>
+<text x="104.00" y="520.00" font-size="23" text-anchor="end">-20000</text>
+<line x1="113" y1="438.33" x2="120" y2="438.33" class="tick"/>
+<line x1="120" y1="438.33" x2="1755" y2="438.33" class="grid"/>
+<text x="104.00" y="443.33" font-size="23" text-anchor="end">-15000</text>
+<line x1="113" y1="361.67" x2="120" y2="361.67" class="tick"/>
+<line x1="120" y1="361.67" x2="1755" y2="361.67" class="grid"/>
+<text x="104.00" y="366.67" font-size="23" text-anchor="end">-10000</text>
+<line x1="113" y1="285.00" x2="120" y2="285.00" class="tick"/>
+<line x1="120" y1="285.00" x2="1755" y2="285.00" class="grid"/>
+<text x="104.00" y="290.00" font-size="23" text-anchor="end">-5000</text>
+<line x1="113" y1="208.33" x2="120" y2="208.33" class="tick"/>
+<text x="104.00" y="213.33" font-size="23" text-anchor="end">0</text>
+<line x1="113" y1="131.67" x2="120" y2="131.67" class="tick"/>
+<line x1="120" y1="131.67" x2="1755" y2="131.67" class="grid"/>
+<text x="104.00" y="136.67" font-size="23" text-anchor="end">5000</text>
+<line x1="113" y1="55.00" x2="120" y2="55.00" class="tick"/>
+<line x1="120" y1="55.00" x2="1755" y2="55.00" class="grid"/>
+<text x="104.00" y="60.00" font-size="23" text-anchor="end">10000</text>
+<line x1="120" y1="208.33" x2="1755" y2="208.33" class="axis"/>
+<line x1="324.38" y1="515" x2="324.38" y2="522" class="tick"/>
+<text x="320.38" y="561.00" font-size="23" text-anchor="middle" transform="rotate(-20.00 320.38 561.00)">2026-06-08</text>
+<line x1="733.12" y1="515" x2="733.12" y2="522" class="tick"/>
+<text x="729.12" y="561.00" font-size="23" text-anchor="middle" transform="rotate(-20.00 729.12 561.00)">2026-06-09</text>
+<line x1="1141.88" y1="515" x2="1141.88" y2="522" class="tick"/>
+<text x="1137.88" y="561.00" font-size="23" text-anchor="middle" transform="rotate(-20.00 1137.88 561.00)">2026-06-10</text>
+<line x1="1550.62" y1="515" x2="1550.62" y2="522" class="tick"/>
+<text x="1546.62" y="561.00" font-size="23" text-anchor="middle" transform="rotate(-20.00 1546.62 561.00)">2026-06-11</text>
+<text x="22.00" y="300.00" font-size="23" text-anchor="middle" transform="rotate(-90.00 22.00 300.00)">Lines of code</text>
+<rect x="311.38" y="139.49" width="26.00" height="68.85" fill="green"/>
+<rect x="311.38" y="208.33" width="26.00" height="12.27" fill="red"/>
+<rect x="720.12" y="83.23" width="26.00" height="125.10" fill="green"/>
+<rect x="720.12" y="208.33" width="26.00" height="11.90" fill="red"/>
+<rect x="1128.88" y="59.83" width="26.00" height="148.50" fill="green"/>
+<rect x="1128.88" y="208.33" width="26.00" height="14.49" fill="red"/>
+<rect x="1537.62" y="137.71" width="26.00" height="70.63" fill="green"/>
+<rect x="1537.62" y="208.33" width="26.00" height="277.21" fill="red"/>
+<rect x="1535" y="65" width="200" height="70" rx="3" ry="3" fill="white" stroke="#d3d3d3" stroke-width="1.5"/>
+<rect x="1550" y="78" width="42" height="16" fill="green"/>
+<text x="1610.00" y="94.00" font-size="22" text-anchor="start">lines added</text>
+<rect x="1550" y="108" width="42" height="16" fill="red"/>
+<text x="1610.00" y="124.00" font-size="22" text-anchor="start">lines deleted</text>
+</svg>
