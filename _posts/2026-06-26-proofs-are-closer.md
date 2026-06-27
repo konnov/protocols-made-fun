@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Formal proofs for distributed protocols may be closer than you think"
+title: "Formal proofs for distributed protocols with AI may be closer than you think"
 date: 2026-06-26
 author: Igor Konnov
 categories: distributed proving
@@ -19,16 +19,17 @@ ChatGPT 5.5.*
 
 In November 2024, I wrote a [blog post][ben-or-blogpost] about checking safety
 of the Ben-Or consensus protocol using TLA<sup>+</sup> and [Apalache][]. The
-[last section][ben-or-inductive] of the blog post introduce an inductive
+[last section][ben-or-inductive] of the blog post introduces an inductive
 invariant `IndInv` that is used to prove protocol safety for executions of
 arbitrary length. Two things are important to note about this inductive
 invariant:
 
- 1. Back then, it took me about **two days** to come with the lemmas. After
- that, it took the model checker about **nine days** to check these lemmas.
- Hence, the most of the time went into **computing**. If this reminds you of
- what we have with LLMs now, yes, this is a similar picture. Most of the the
- time went into computing, not into thinking.
+ 1. Back then, it took me about **two days** to come with the lemmas
+ iteratively. I was fixing the lemmas after counterexamples shown by the model
+ checker. After that, it took the model checker about **nine days** to check
+ these lemmas. Hence, the most of the time went into **computing**. If this
+ reminds you of what we have with LLMs now, yes, this is a similar picture.
+ Most of the the time went into computing, not into thinking.
  
  1. Apalache checked the inductive invariant for two **fixed configurations** of
  $N=6$, $T=1$, $F \in \{0, 1\}$, and three rounds. This is very important for the
@@ -36,10 +37,10 @@ invariant:
  inductiveness and safety for **arbitrary configurations** of $N > 5 \cdot T$ and
  $T \ge F \ge 0$, as well as for **arbitrary number of rounds**.
 
-Since then, I challenged a few professors to write a complete proof of safety
-for the Ben-Or protocol in Lean or TLAPS. Indeed, the proof structure is already
-there, and the lemmas are already known. However, the proof economics did not
-work, as it would take a few months to write the proof by hand, which would lock a
+Since then, I challenged several professors to write a complete proof of safety
+for the Ben-Or protocol in Lean or TLAPS. The proof structure is already there,
+and the lemmas are already known. However, the proof economics did not work, as
+it would take a few months to write the proof by hand, which would lock a
 student or an intern for a long time. I've heard similar objections from the
 customers. Nobody wanted to commit to a long-term project, to get formal proofs
 (for more complex protocols than Ben-Or).
@@ -47,12 +48,23 @@ customers. Nobody wanted to commit to a long-term project, to get formal proofs
 Now, as of June 2026, **the economics of formal proofs has changed**. I ran
 *Codex GPT 5.5 xhigh/high* and *Claude 4.8 xhigh/high* to write the complete
 proofs of inductiveness and safety of the Ben-Or protocol, both in Lean 4 and
-TLAPS. In both cases, the proofs took **about 4-5 days to write**. At some
+TLAPS. In both cases, the proofs took **about 4-5 days to generate**. At some
 point, both tools were stuck, so I had to help them. Also, one of the tools
 cheated in the proofs. Both in cases of Lean and TLAPS, the tools burned most of
 my weekly subscriptions. It is important to note that in both cases, **the tools
 were given the inductive invariant** in TLA<sup>+</sup> as a starting point. So
 **they had the core proof argument and did not have to invent it**.
+
+Just to be clear about the time figure, Ben-Or's consensus is the core
+algorithm. Practical implementations contain 5-10 more protocols on top of the
+core consensus such as p2p, write-ahead log, etc. Hence, a **practical consensus
+would take more time to prove**.
+
+At some point, it became clear that the tools had a trouble proving the
+inductiveness. There was a good reason for that! Lemma 8 worked for $T = 1$, but
+it did not hold true for $T > 1$. Since we checked inductiveness for $T = 1$
+with Apalache, it was not obvious that it does not hold true in the general
+case. Keep reading, to see how the AI tools figured this out.
 
 In the rest of this blog post, I will refer to both AI tools as "C1" and "C2",
 without disclosing which is which. It is one benchmark, so I don't want you to
@@ -60,12 +72,6 @@ make wrong conclusions about which one is better. They are getting updated every
 few months anyways. Interestingly, the tools did not require a lot of
 hand-holding, though C1 was definitely diverging at some point, producing more
 and more theorems.
-
-At some point, it became clear that the tools had a trouble proving the
-inductiveness. There was a good reason for that! Lemma 8 worked for $T = 1$, but
-it did not hold true for $T > 1$. Since we checked inductiveness for $T = 1$
-with Apalache, it was not obvious that it does not hold true in the general
-case. Keep reading, to see how C1 and C2 figured this out.
 
 *The big picture of our approach looks as follows*:
 
@@ -84,8 +90,7 @@ case. Keep reading, to see how C1 and C2 figured this out.
 To write the Lean proofs, we start with the specification of Ben-Or protocol in
 Python DSL. If you are interested, check [ben_or.py]. This specification is
 automatically translated into Lean 4. See [Defs.lean][Ben-or-defs] for the
-generated Lean code. If you want to try this translator, conact me via
-[contact].
+generated Lean code. If you want to try this translator, [contact me][contact].
 
 Just to get the feeling of it, here is a fragment of `step1` in the DSL:
 
@@ -189,9 +194,9 @@ cheating.
 I let C1 do the bootstrapping. It installed the TLA proof manager (TLAPM).  As I
 am running the AI tools inside a virtual machine on a MacBook Pro, the standard
 distributions of TLAPS did not work. The combination of Linux and Arm64 is in
-general not well supported. However, C1 managed to compile TLAPM from scratch.
-It had to patch Z3 and the build process on the way. This is definitely
-something I would not like doing by hand. 
+general not well supported. C1 managed to compile TLAPM from scratch. It had to
+patch Z3 and the build process on the way. This is definitely something I would
+not like doing by hand. 
 
 C1 started well. At some point, I saw it struggling with set cardinalities, and
 things did not look improving. This is a well-known pain point with proofs
@@ -212,7 +217,13 @@ brilliant. After some time, it got a counterexamples and proposed a fix.  You
 can see the correction in [this git
 commit](https://github.com/konnov/apalache-examples/commit/d624842d697fe9e1c539eda1d3636326b28962ad).
 It simply had to fix $2 \cdot x_0 \le N$ to $2 \cdot x_0 < N + T$ (and the same
-for $x_1$). It worked without the fix for $T = 1$, but not for $T > 1$.
+for $x_1$). It worked without the fix for $T = 1$, but not for $T > 1$. This is
+how Lemma 8 looks like after the fix:
+
+{% github_embed
+  https://raw.githubusercontent.com/konnov/apalache-examples/refs/heads/main/ben-or83/Ben_or83_inductive.tla
+  tlaplus 203-220
+ %}
 
 Again, C1 and C2 managed to construct the proofs. Closer to the end, it was
 taking TLAPM a lot of time to check the proofs. So it was becoming a bottleneck.
@@ -245,10 +256,11 @@ The economics of formal proofs has definitely changed. It is still not fully
 automated. AI tools require supervision and good proof structure. Given that,
 they can write proofs that would take me much longer to write by hand.
 
-Note that the **AI tools were already given core proof arguments** in the form
-of an inductive invariant in TLA<sup>+</sup>. I suspect that it would be much
-harder to come up with the right inductive invariant. The search space is much
-larger than proving the lemmas for a given invariant.
+Note that the **AI tools were given the core proof arguments and the proof
+structure** in the form of an inductive invariant in TLA<sup>+</sup>. I suspect
+that it would be much harder for them to come up with a good inductive
+invariant. The search space is much larger than proving the lemmas for a given
+invariant.
 
 This is where coordination between humans, model checkers (like Apalache), and
 AI tools plays well. Now, we can delegate the tedious work of checking the

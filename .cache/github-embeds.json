@@ -634,5 +634,11 @@
     "lang": "lean",
     "lines": "194-209",
     "code": "def step1 (rid : Int) (s s' : State) : Prop :=\n  (let _cache21 := Finmap.lookupD rid s.round;\n    Finmap.lookupD rid s.step = Step.S1 ∧\n      s'.msgs1 =\n          Finmap.insert _cache21\n            (Finmap.lookupD _cache21 s.msgs1 ∪\n              insert (Msg1.mk _cache21 rid (Finmap.lookupD rid s.value)) (∅ : Finset Msg1))\n            s.msgs1 ∧\n        s'.step = Finmap.insert rid Step.S2 s.step ∧ s'.ghost_trigger = false) ∧\n    s'.N = s.N ∧\n      s'.T = s.T ∧\n        s'.F = s.F ∧\n          s'.CORRECT = s.CORRECT ∧\n            s'.FAULTY = s.FAULTY ∧\n              s'.ROUNDS = s.ROUNDS ∧\n                s'.value = s.value ∧ s'.decision = s.decision ∧ s'.round = s.round ∧ s'.msgs2 = s.msgs2"
+  },
+  "https://raw.githubusercontent.com/konnov/apalache-examples/refs/heads/main/ben-or83/Ben_or83_inductive.tla tlaplus 203-220": {
+    "url": "https://raw.githubusercontent.com/konnov/apalache-examples/refs/heads/main/ben-or83/Ben_or83_inductive.tla",
+    "lang": "tlaplus",
+    "lines": "203-220",
+    "code": "Lemma8_Q2RequiresNoQuorumFaster ==\n  Lemma8a ::\n  LET RoundsWithQ2 ==\n    { r \\in ROUNDS:\n      \\E m \\in msgs2[r]: IsQ2(m) /\\ AsQ2(m).src \\in CORRECT }\n  IN\n  \\A r \\in RoundsWithQ2:\n    \\* follows from Step2\n    LET n0 == Cardinality({ id \\in CORRECT: [ src |-> id, r |-> r, v |-> 0 ] \\in msgs1[r] })\n        n1 == Cardinality({ id \\in CORRECT: [ src |-> id, r |-> r, v |-> 1 ] \\in msgs1[r] })\n        \\* we wrap the map in a filter to constrain the set bound\n        nf == Cardinality({ id \\in FAULTY: id \\in { m.src: m \\in msgs1[r] } })\n    IN\n    \\E x0, x1 \\in 0..N:\n      /\\ x0 <= n0 /\\ x1 <= n1\n      /\\ x0 + x1 + nf >= N - T\n      /\\ 2 * x0 <= N + T\n      /\\ 2 * x1 <= N + T"
   }
 }
