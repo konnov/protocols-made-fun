@@ -37,6 +37,11 @@ invariant:
  inductiveness and safety for **arbitrary configurations** of $N > 5 \cdot T$ and
  $T \ge F \ge 0$, as well as for **arbitrary number of rounds**.
 
+This very example is used in the tool paper on *The TLA+ Model Checker Apalache*
+that is going to be presented at [Computer-Aided Verification 2026][cav2026].
+As soon as the paper is published, I will update this blog post with a link to
+it.
+
 Since then, I challenged several professors to write a complete proof of safety
 for the Ben-Or protocol in Lean or TLAPS. The proof structure is already there,
 and the lemmas are already known. However, the proof economics did not work, as
@@ -295,3 +300,4 @@ it yourself, or you can save your time by hiring me to do it for you.
 [Ben-or-inductive.tla]: https://github.com/konnov/apalache-examples/blob/main/ben-or83/Ben_or83_inductive.tla
 [Ben-or-lean-proofs]: https://github.com/konnov/leanda/tree/main/Ben-Or
 [Ben-or-tla-proofs]: https://github.com/konnov/apalache-examples/blob/main/ben-or83/Ben_or83_proofs.tla
+[cav2026]: https://conferences.i-cav.org/2026/accepted/
