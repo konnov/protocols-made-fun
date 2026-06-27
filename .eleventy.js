@@ -441,14 +441,19 @@ const postMap = loadPostMap();
 
 function linkUrl(target) {
   const cleaned = String(target).replace(/^['"]|['"]$/g, "");
-  if (postMap.byFile.has(cleaned)) {
-    return postMap.byFile.get(cleaned);
+  const [, pathPart, suffix = ""] = cleaned.match(/^([^?#]*)([?#].*)?$/) || [];
+  if (!pathPart) {
+    return cleaned;
   }
-  if (cleaned.startsWith("_posts/")) {
-    return postMap.byFile.get(cleaned) || cleaned;
+  if (postMap.byFile.has(pathPart)) {
+    return `${postMap.byFile.get(pathPart)}${suffix}`;
   }
-  if (cleaned.endsWith(".md") || cleaned.endsWith(".html")) {
-    return rootPageUrl(cleaned);
+  if (pathPart.startsWith("_posts/")) {
+    const url = postMap.byFile.get(pathPart);
+    return url ? `${url}${suffix}` : cleaned;
+  }
+  if (pathPart.endsWith(".md") || pathPart.endsWith(".html")) {
+    return `${rootPageUrl(pathPart)}${suffix}`;
   }
   return cleaned;
 }

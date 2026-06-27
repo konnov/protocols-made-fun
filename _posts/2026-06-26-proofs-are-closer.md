@@ -271,7 +271,7 @@ it yourself, or you can save your time by hiring me to do it for you.
 [Apalache JSON-RPC]: https://github.com/apalache-mc/apalache/tree/main/json-rpc
 [Apalache]: https://apalache-mc.org
 [ben-or-blogpost]: {% link _posts/2024-11-03-ben-or.md %}
-[ben-or-inductive]: {% link _posts/2024-11-03-ben-or.md5#checking-unbounded-executions-via-an-inductive-invariant %}
+[ben-or-inductive]: {% link _posts/2024-11-03-ben-or.md#5.-checking-unbounded-executions-via-an-inductive-invariant %}
 [ben_or.py]: https://github.com/wunderspec/wunderspec/blob/main/examples/ben_or.py
 [tftp-testing]: {% link _posts/2025-12-15-tftp-symbolic-testing.md %}
 [LI]: https://www.linkedin.com/in/igor-konnov-at/
