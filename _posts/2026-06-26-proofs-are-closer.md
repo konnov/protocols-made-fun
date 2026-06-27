@@ -88,9 +88,11 @@ and more theorems.
 ## 1. Proving inductiveness and safety with Lean 4
 
 To write the Lean proofs, we start with the specification of Ben-Or protocol in
-Python DSL. If you are interested, check [ben_or.py]. This specification is
-automatically translated into Lean 4. See [Defs.lean][Ben-or-defs] for the
-generated Lean code. If you want to try this translator, [contact me][contact].
+Python DSL. It is the same DSL that I mentioned in the blog post about
+[Zookeeper testing][zookeeper-testing]. If you are interested, check
+[ben_or.py]. This specification is automatically translated into Lean 4. See
+[Defs.lean][Ben-or-defs] for the generated Lean code. If you want to try this
+translator, [contact me][contact].
 
 Just to get the feeling of it, here is a fragment of `step1` in the DSL:
 
@@ -284,6 +286,7 @@ it yourself, or you can save your time by hiring me to do it for you.
 [Apalache]: https://apalache-mc.org
 [ben-or-blogpost]: {% link _posts/2024-11-03-ben-or.md %}
 [ben-or-inductive]: {% link _posts/2024-11-03-ben-or.md#5.-checking-unbounded-executions-via-an-inductive-invariant %}
+[zookeeper-testing]: {% link _posts/2026-05-26-zookeeper-testing.md %}
 [ben_or.py]: https://github.com/wunderspec/wunderspec/blob/main/examples/ben_or.py
 [tftp-testing]: {% link _posts/2025-12-15-tftp-symbolic-testing.md %}
 [LI]: https://www.linkedin.com/in/igor-konnov-at/
