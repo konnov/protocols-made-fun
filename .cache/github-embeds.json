@@ -640,5 +640,29 @@
     "lang": "tlaplus",
     "lines": "203-220",
     "code": "Lemma8_Q2RequiresNoQuorumFaster ==\n  Lemma8a ::\n  LET RoundsWithQ2 ==\n    { r \\in ROUNDS:\n      \\E m \\in msgs2[r]: IsQ2(m) /\\ AsQ2(m).src \\in CORRECT }\n  IN\n  \\A r \\in RoundsWithQ2:\n    \\* follows from Step2\n    LET n0 == Cardinality({ id \\in CORRECT: [ src |-> id, r |-> r, v |-> 0 ] \\in msgs1[r] })\n        n1 == Cardinality({ id \\in CORRECT: [ src |-> id, r |-> r, v |-> 1 ] \\in msgs1[r] })\n        \\* we wrap the map in a filter to constrain the set bound\n        nf == Cardinality({ id \\in FAULTY: id \\in { m.src: m \\in msgs1[r] } })\n    IN\n    \\E x0, x1 \\in 0..N:\n      /\\ x0 <= n0 /\\ x1 <= n1\n      /\\ x0 + x1 + nf >= N - T\n      /\\ 2 * x0 <= N + T\n      /\\ 2 * x1 <= N + T"
+  },
+  "https://raw.githubusercontent.com/konnov/apalache-examples/refs/heads/main/tendermint/tendermint_single_indinv_proofs.tla tlaplus 199-200": {
+    "url": "https://raw.githubusercontent.com/konnov/apalache-examples/refs/heads/main/tendermint/tendermint_single_indinv_proofs.tla",
+    "lang": "tlaplus",
+    "lines": "199-200",
+    "code": "THEOREM InitInd ==\n  Init => TypedIndInv"
+  },
+  "https://raw.githubusercontent.com/konnov/apalache-examples/refs/heads/main/tendermint/tendermint_single_indinv_proofs.tla tlaplus 4603-4605": {
+    "url": "https://raw.githubusercontent.com/konnov/apalache-examples/refs/heads/main/tendermint/tendermint_single_indinv_proofs.tla",
+    "lang": "tlaplus",
+    "lines": "4603-4605",
+    "code": "THEOREM Inductive ==\n  ASSUME TypedIndInv, Step\n  PROVE  TypedIndInv'"
+  },
+  "https://raw.githubusercontent.com/konnov/apalache-examples/refs/heads/main/tendermint/tendermint_single_indinv_proofs.tla tlaplus 4694-4695": {
+    "url": "https://raw.githubusercontent.com/konnov/apalache-examples/refs/heads/main/tendermint/tendermint_single_indinv_proofs.tla",
+    "lang": "tlaplus",
+    "lines": "4694-4695",
+    "code": "THEOREM AgreementThm ==\n  TypedIndInv => Agreement"
+  },
+  "https://raw.githubusercontent.com/konnov/apalache-examples/refs/heads/main/tendermint/tendermint_single_indinv_proofs.tla tlaplus 38-93": {
+    "url": "https://raw.githubusercontent.com/konnov/apalache-examples/refs/heads/main/tendermint/tendermint_single_indinv_proofs.tla",
+    "lang": "tlaplus",
+    "lines": "38-93",
+    "code": "\\* The actual number of faulty replicas. The spec declares no `F` constant, so we\n\\* define it here as the cardinality of the Faulty set.\nF == Cardinality(Faulty)\n\n\\* TLAPS' standard proof of natural-number induction uses Isabelle. This workbench\n\\* runs without an Isabelle backend, so we trust the induction principle instead of\n\\* replaying that library proof. Needed for the round induction in Section D.\nAXIOM NatInductionTrusted ==\n  \\A Q \\in [Nat -> BOOLEAN] :\n    (/\\ Q[0]\n     /\\ \\A n \\in Nat : Q[n] => Q[n + 1])\n      => \\A n \\in Nat : Q[n]\n\n\\*****************************************************************************\n\\* NAMED ASSUMPTIONS\n\\*\n\\* The Apalache spec declares no module-level ASSUME. We state the parameter\n\\* constraints the proofs rely on under names, so steps can USE/cite them.\n\\* Resilience (confirmed with the spec author): N > 3*T /\\ T >= F /\\ F >= 0.\n\\*****************************************************************************\n\n\\* Tendermint/BFT resilience: strictly more than three times the fault bound.\nASSUME NgtT == N > 3 * T\n\n\\* The optimal BFT replica count (confirmed by the spec author). REQUIRED for quorum\n\\* intersection: with a fixed 2T+1 quorum threshold, two quorums share a *correct*\n\\* process only when N = 3T+1. Without it QuorumsIntersectInCorrect is FALSE, e.g.\n\\* N=5, T=1, F=1, A={c1,c2,f}, B={c3,c4,f}: both have size 2T+1=3 but meet only in\n\\* the faulty node; agreement fails for N>3T+1 (a 2T+1 quorum is below 2/3 of N).\nASSUME Neq3Tp1 == N = 3 * T + 1\n\n\\* The actual number of faults is bounded by T.\nASSUME TgeF == T >= F\n\n\\* The number of faults is non-negative.\nASSUME FnonNeg == F >= 0\n\n\\* Correct and faulty replicas are disjoint.\nASSUME DisjointCF == Corr \\cap Faulty = {}\n\n\\* Cardinality is only meaningful for finite sets; there are finitely many replicas.\nASSUME FiniteCF == IsFiniteSet(Corr) /\\ IsFiniteSet(Faulty)\n\n\\* N counts all replicas (correct + faulty), which are disjoint.\nASSUME NCard == N = Cardinality(Corr) + Cardinality(Faulty)\n\n\\* The protocol parameters are natural numbers.\nASSUME ConstNat == N \\in Nat /\\ T \\in Nat /\\ MaxRound \\in Nat\n\n\\* Nil is encoded as -1 and is not a valid value. (Confirmed by the spec's use of\n\\* -1 as the nil sentinel throughout; TODO: confirm with the spec author.)\nASSUME NilNotValid == -1 \\notin ValidValues\n\n\\* There is at least one valid value to propose. Needed by the base case for the\n\\* existential witness inside AllNoEquivocationByCorrect over empty message logs.\nASSUME ValidValuesNonEmpty == ValidValues # {}"
   }
 }
