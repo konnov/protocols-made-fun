@@ -26,7 +26,7 @@ needed a fix in one of the lemmas for the general case of $T \ge 1$.
 
 As in the [previous blog post][ben-or-proofs-blogpost], here I used Claude Code
 Opus 4.8 and Codex GPT 5.5. I refer to them as "C1" and "C2", without disclosing
-which is which. I have not tried Fable and GPT 5.6 in this experiment.
+which is which. I have not tried Fable and GPT 5.6 in this case study.
 
 **Next stop: Tendermint**.
 Ben-Or published [his paper][ben-or] in 1983. It does not look like this
@@ -34,7 +34,7 @@ algorithm has a modern implementation, though implementations of randomized BFT
 consensus protocols exist. Hence, I thought of trying the same approach with a
 modern BFT consensus protocol that runs in the wild.
 [Tendermint][tendermint-paper] is the most obvious candidate for this
-experiment. It has a [formal specification][tendermint-acc-spec] in
+case study. It has a [formal specification][tendermint-acc-spec] in
 TLA<sup>+</sup>, which I wrote with Zarko Milosevic in 2020, back at Informal
 Systems. This specification even has lemmas for an [inductive
 invariant][tendermint-acc-inductive] in TLA<sup>+</sup>.
