@@ -66,7 +66,7 @@ business priority anymore.
 In the following sections, I give a bit more details about the process of fixing
 the inductive invariant and generating the proofs.
 
-## 1. Fixing the inductive invariant
+## 1. Repairing the inductive invariant
 
 In any case, to write the proofs, I had to fix the inductive invariant first.  A
 few years ago, fixing the inductive invariant meant the following:
@@ -78,7 +78,7 @@ few years ago, fixing the inductive invariant meant the following:
  1. think about the consensus protocol and why the invariant was not strong
  enough,
  
- 1. fix the invariant and repeat.
+ 1. improve the invariant and repeat.
 
 Obviously, the part of the process that included "staring at the counterexample"
 was not automated at all.
