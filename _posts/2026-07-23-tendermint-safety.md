@@ -13,6 +13,8 @@ hidden: false
 feed: true
 ---
 
+**Update (2026-07-28): Add Lean 4 proofs**
+
 *This text is artisanally typed using Das Keyboard, with occasional suggestions
 by Copilot (most of them ignored anyways). The figures are generated with
 ChatGPT 5.5.*
@@ -131,10 +133,9 @@ rabbit hole of reasoning about the evidence sets. Hence, the file
 specification of the original Tendermint without the additional features, as
 well as the fixed inductive invariant. The TLA<sup>+</sup> specification is
 generated from two specifications in a Python DSL: [tendermint-single.py][] and
-[tendermint-single-indinv.py][tendermint-single-indinv.py]. This is not really
-relevant for this story though, as the AI tools work well with TLA<sup>+</sup>
-as well as with the Python DSL. Moreover, once the invariant was fixed, the AI
-tools effortlessly transferred the fix to the original TLA<sup>+</sup>
+[tendermint-single-indinv.py][tendermint-single-indinv.py]. This is relevant for
+the story, if you are looking for proofs in Lean. Once the invariant was fixed,
+the AI tools effortlessly transferred the fix to the original TLA<sup>+</sup>
 specification.
 
 ## 2. Generating TLAPS proofs
@@ -204,11 +205,33 @@ machine. Surprisingly, it was taking SMT longer on my host machine to prove
 certain goals than on the virtual machines. I asked C1 and C2 to stabilize the
 proofs.
 
-## 3. Conclusions
+## 3. Bonus: Generating Lean 4 proofs from the TLA+ proofs
+
+Recall that the TLA<sup>+</sup> specification is generated
+from two specifications in a Python DSL: [tendermint-single.py][] and
+[tendermint-single-indinv.py][]. So I have simply translated the Lean 4
+definitions from [tendermint-single-indinv.py][]. You can find them in
+[Defs.lean][tendermint-single-lean-defs]. For the moment, the translator to Lean
+4 lives in a private repository. I am planning to give access to the interested
+readers.
+
+This time, I decided to simply ask Codex GPT 5.6-sol xhigh to transfer the TLAPS
+proofs to Lean 4. Believe me or not, but after **2.5 hours** of work, Codex has
+transferred the TLAPS proofs to Lean 4. Not much to report. You can find the
+complete proofs in [TendermintSingle/Proofs][tendermint-single-lean-proofs].
+
+|                                              | TLA<sup>+</sup>     | Lean 4            |
+|----------------------------------------------|--------------------:|------------------:|
+| **Specification & inductive invariant LOC**  | 875                 | 1405              |
+| **Proofs LOC**                               | 4.6K                | 7K                |
+
+## 4. Conclusions
 
 I believe we only start to see what is possible at the intersection of
 TLA<sup>+</sup> and AI tools. Obviously, the AI tools help with usability a lot.
-Running TLA<sup>+</sup> tools and writing TLAPS proofs is way easier now.
+Running TLA<sup>+</sup> tools and writing TLAPS proofs is way easier now.  It's
+also exciting to see how different provers like TLAPS and Lean 4 reinforce each
+other with the help of AI tools.
 
 When it comes to Tendermint, the obvious next steps would be:
 
@@ -253,3 +276,5 @@ or other protocols, [contact me][contact].
 [tendermint-single-indinv.py]: https://github.com/wunderspec/wunderspec/blob/main/examples/tendermint_single_indinv.py
 [cav2026]: https://conferences.i-cav.org/2026/accepted/
 [threshold automata]: https://lmcs.episciences.org/10824
+[tendermint-single-lean-defs]: https://github.com/konnov/leanda/blob/main/tendermint-single/TendermintSingle/Defs.lean
+[tendermint-single-lean-proofs]: https://github.com/konnov/leanda/tree/main/tendermint-single/TendermintSingle/Proofs
