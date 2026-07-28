@@ -89,7 +89,7 @@ support from Apalache. The tool can already generate example behaviors, not just
 counterexamples to invariants. This is an often overlooked feature of Apalache.
 
 As a first step, I was running Apalache to generate example states that satisfy
-`TypedInvInv`. Then, I was asking C1, whether these states presented feasible
+`TypedIndInv`. Then, I was asking C1, whether these states presented feasible
 states that were reachable from the initial states as defined with `Init`. This way,
 C1 added seven additional lemmas.
 
